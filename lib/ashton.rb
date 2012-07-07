@@ -1,8 +1,9 @@
 require 'opengl'
 require 'gosu' # Hope we are using 0.8 and all is lovely!
 
+# Set the window global, in case it hasn't been set (e.g. by Chingu)
 module Ashton
-  module CreateWindowGlobal
+  module SetWindowGlobal
     def initialize(*args, &block)
       $window = self
       super *args, &block
@@ -12,7 +13,7 @@ end
 
 module Gosu
   class Window
-    include Ashton::CreateWindowGlobal
+    include Ashton::SetWindowGlobal
   end
 end
 

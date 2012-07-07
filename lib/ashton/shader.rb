@@ -3,7 +3,7 @@ module Ashton
     INVALID_LOCATION = -1
     BOOL_TRUE, BOOL_FALSE = 1, 0
 
-    attr_reader :image
+    attr_reader :image, :fragment_source, :vertex_source
 
     class << self
       # Canvas used to copy out the screen before post-processing it back onto the screen.
@@ -21,10 +21,14 @@ module Ashton
       end
     end
 
+    # @option options [String] :vertex Source code for vertex shader.
+    # @option options [String] :fragment Source code for fragment shader.
+    # @option options [String] :frag equivalent to :fragment
     def initialize(options = {})
       @uniform_locations = {}
       @attribute_locations = {}
       @image = nil
+      @program = nil
 
       @vertex_source = options[:vertex] || DEFAULT_VERTEX_SOURCE
       @fragment_source = options[:fragment] || options[:frag] || DEFAULT_FRAGMENT_SOURCE
@@ -35,6 +39,19 @@ module Ashton
       link
 
       self.color = [1, 1, 1, 1]
+    end
+
+
+    # Creates a copy of the shader program, recompiling the source,
+    # but not preserving the uniform values.
+    def dup
+      copy = self.class.new :vertex => @vertex_source, :fragment => @fragment_source
+
+      # Save some time by copying the cached uniform/attribute identifiers.
+      copy.instance_variable_set :@uniform_locations, @uniform_locations.dup
+      copy.instance_variable_set :@attribute_locations, @attribute_locations.dup
+
+      copy
     end
 
     # Make this the current shader program.

@@ -26,7 +26,7 @@ module Ashton
 
     # Enable the framebuffer to use (e.g. to draw or convert it).
     def use
-      raise unless block_given?
+      raise ArgumentError, "block required" unless block_given?
 
       glBindFramebufferEXT GL_FRAMEBUFFER_EXT, @fbo
       result = yield self

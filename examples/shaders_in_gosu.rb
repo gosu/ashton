@@ -56,7 +56,7 @@ class GLBackground
         s.color = [0, 0, 0, 0]
         glVertex2d width, height / 2 # TR
         s.color = [1, 0, 0, 1]
-        glVertex2d width, height# BR   
+        glVertex2d width, height# BR
       end
     end
   end
