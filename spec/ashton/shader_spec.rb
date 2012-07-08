@@ -6,10 +6,6 @@ describe Ashton::Shader do
     @subject = described_class.new # Default code.
   end
 
-  describe "self.canvas_texture" do
-    pending
-  end
-
   describe "initialize" do
     it "should not be current?" do
       @subject.should_not be_current
@@ -48,8 +44,8 @@ describe Ashton::Shader do
     pending
   end
 
-  describe "post_process" do
-    pending
+  describe "[]" do
+    pending "implementation"
   end
 
   describe "uniform" do

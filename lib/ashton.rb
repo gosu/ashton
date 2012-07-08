@@ -1,23 +1,29 @@
 require 'opengl'
-require 'gosu' # Hope we are using 0.8 and all is lovely!
+require 'gosu'
 
 # Set the window global, in case it hasn't been set (e.g. by Chingu)
-module Ashton
-  module SetWindowGlobal
+module Gosu
+  class Window
+    alias_method :ashton_initialize, :initialize
     def initialize(*args, &block)
       $window = self
-      super *args, &block
+      ashton_initialize *args, &block
     end
   end
 end
 
-module Gosu
-  class Window
-    include Ashton::SetWindowGlobal
-  end
+module Ashton
+  class Error < RuntimeError; end
+
+  class ShaderError < Error; end
+  class ShaderCompileError < ShaderError; end
+  class ShaderLinkError < ShaderError; end
+  class ShaderUniformError < ShaderError; end
+  class ShaderAttributeError < ShaderError; end
 end
 
 require "ashton/version"
 require "ashton/shader"
+require "ashton/post_process"
 require "ashton/framebuffer"
 require "ashton/image_stub"

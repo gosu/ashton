@@ -1,5 +1,19 @@
 module Ashton
   class Framebuffer
+    TEXTURE_COORDINATES = [
+        [0, 1], # TL
+        [0, 0], # BL
+        [1, 0], # TR
+        [1, 1], # BR
+    ]
+
+    TEXTURE_COORDINATES_FLIPPED = [
+        [0, 0], # BL
+        [0, 1], # TL
+        [1, 1], # BR
+        [1, 0], # TR
+    ]
+
     attr_reader :width, :height
 
     def initialize(width, height)
@@ -9,6 +23,8 @@ module Ashton
 
       status = glCheckFramebufferStatusEXT GL_FRAMEBUFFER_EXT
       raise unless status == GL_FRAMEBUFFER_COMPLETE_EXT
+
+      clear
 
       glBindFramebufferEXT GL_FRAMEBUFFER_EXT, 0
       glBindRenderbufferEXT GL_RENDERBUFFER_EXT, 0
@@ -20,37 +36,64 @@ module Ashton
           color: [0.0, 0.0, 0.0, 0.0],
       }.merge! options
 
+      glBindFramebufferEXT GL_FRAMEBUFFER_EXT, @fbo
+
       glClearColor *options[:color]
       glClear GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT
+
+      glBindFramebufferEXT GL_FRAMEBUFFER_EXT, 0
     end
 
     # Enable the framebuffer to use (e.g. to draw or convert it).
+    # BUG: This will force all draws performed in, AND BEFORE, the block!
     def use
       raise ArgumentError, "block required" unless block_given?
 
       glBindFramebufferEXT GL_FRAMEBUFFER_EXT, @fbo
       result = yield self
+
+      $window.flush
       glBindFramebufferEXT GL_FRAMEBUFFER_EXT, 0
 
       result
     end
 
-    # BUG: Draws inverted.
-    def draw x, y
+    # Draw the image, _immediately_ (no z-ordering by Gosu).
+    #
+    # This is not as versatile as converting the Framebuffer into a Gosu::Image and then
+    # drawing it, but it is many times faster, so use it when you are updating the buffer
+    # every frame, rather than just composing an image.
+    #
+    # Drawing in Gosu orientation will be flipped in standard OpenGL and visa versa.
+    #
+    # @param x [Number]
+    # @param y [Number]
+    # @option options :orientation [:gosu, :opengl] (:gosu)
+    def draw x, y, options = {}
+      options = {
+          :orientation => :gosu,
+      }.merge! options
+
       glEnable GL_TEXTURE_2D
       glBindTexture GL_TEXTURE_2D, @fbo_texture
 
+      coords = case options[:orientation]
+                 when :gosu   then TEXTURE_COORDINATES_FLIPPED
+                 when :opengl then TEXTURE_COORDINATES
+                 else raise ArgumentError, ":orientation option expected to be either :opengl or :gosu"
+               end
+
       glBegin GL_QUADS do
-        glTexCoord2d 0, 1
+        glTexCoord2d *coords[0]
         glVertex2d x, y + @height # BL
 
-        glTexCoord2d 0, 0
+        glTexCoord2d *coords[1]
         glVertex2d x, y # TL
 
-        glTexCoord2d 1, 0
+        glTexCoord2d *coords[2]
         glVertex2d x + @width, y # TR
 
-        glTexCoord2d 1, 1
+        glTexCoord2d *coords[3]
         glVertex2d x + @width, y + @height # BR
       end
 

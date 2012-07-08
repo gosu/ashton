@@ -6,7 +6,7 @@ Gem::Specification.new do |s|
   s.date = Time.now.strftime '%Y-%m-%d'
   s.authors = ['Bil Bas']
 
-  s.summary = 'Extra special effects, such as shaders, for the Gosu game-development library'
+  s.summary = 'Extra special effects, such as shader, for the Gosu game-development library'
   s.description = <<-END
 #{s.summary}
   END
@@ -18,6 +18,8 @@ Gem::Specification.new do |s|
   s.rubyforge_project = 'ashton'
   s.test_files = []
   s.has_rdoc = 'yard'
+
+  s.add_dependency 'opengl', '~> 0.8.0.pre1'
 
   s.add_development_dependency 'rspec', '~> 2.10.0'
   s.add_development_dependency 'launchy', '~> 2.1.0'
