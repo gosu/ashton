@@ -129,7 +129,7 @@ module Ashton
 
       unless glGetShaderiv shader, GL_COMPILE_STATUS
         error = glGetShaderInfoLog shader
-        error_lines = error.scan(/0\((\d+)\)+/m).map {|num| num.first.to_i }
+        error_lines = error.scan(/0\((\d+)\)+/m).map {|num| num.first.to_i }.uniq
 
         if type == GL_VERTEX_SHADER
           type_name =  "Vertex"
