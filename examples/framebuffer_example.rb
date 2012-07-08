@@ -13,7 +13,7 @@ def media_path(file); File.expand_path "media/#{file}", File.dirname(__FILE__) e
 class GameWindow < Gosu::Window
   def initialize
     super 800, 600, false
-    self.caption = "Ashton::Framebuffer example - composing an image inside a buffer - hold LMB to draw"
+    self.caption = "Ashton::Framebuffer example - composing an image inside a buffer - hold <LMB> to draw - <delete> to clear"
 
     @font = Gosu::Font.new(self, Gosu::default_font_name, 20)
     @star = Gosu::Image.new(self, media_path("LargeStar.png"), true)
@@ -37,8 +37,11 @@ class GameWindow < Gosu::Window
   end
 
   def button_down(id)
-    if id == Gosu::KbEscape
-      close
+    case id
+      when Gosu::KbDelete
+        @framebuffer.clear
+      when Gosu::KbEscape
+        close
     end
   end
 end
