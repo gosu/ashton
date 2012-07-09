@@ -31,7 +31,7 @@ module Ashton
 
       link
 
-      #glBindFragDataLocationEXT @program, 0, "out_FragColor"
+      glBindFragDataLocationEXT @program, 0, "out_FragColor"
     end
 
 

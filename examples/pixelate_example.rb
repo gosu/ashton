@@ -14,39 +14,34 @@ def media_path(file); File.expand_path "media/#{file}", File.dirname(__FILE__) e
 class TestWindow < Gosu::Window
   def initialize
     super 640, 480, false
-    self.caption = "Post-processing with 'pixelate' - hold space to disable"
+    self.caption = "Post-processing with 'pixelate' - 1..9 affect pixel size"
 
     @pixelate = Ashton::PostProcess.new shader('pixelate.frag')
-    @pixelate['in_PixelSize'] = 4
+    @pixelate['in_PixelSize'] = @pixel_size = 4
+
     @font = Gosu::Font.new self, Gosu::default_font_name, 40
     @star = Gosu::Image.new(self, media_path("LargeStar.png"), true)
 
     update # Ensure the values are initially set.
   end
 
-  def update
-    super
-  end
-
-  def draw_scene
-    @font.draw_rel "Hello world!", 330, 25, 0, 0.5, 0.5
-    @font.draw_rel "Goodbye world!", 400, 350, 0, 0.5, 0.5
-    @star.draw 0, 0, 0
-    @star.draw 200, 100, 0
+  def button_down(id)
+    if (Gosu::Kb1..Gosu::Kb9).include? id
+      @pixel_size = (id - Gosu::Kb1 + 1) ** 2
+      @pixelate['in_PixelSize'] = @pixel_size
+    end
   end
 
   def draw
-    
-    if button_down? Gosu::KbSpace
-      draw_scene
-    else
-      post_process @pixelate do
-        draw_scene
-      end
+    post_process @pixelate do
+      @font.draw_rel "Hello world!", 350, 50, 0, 0.5, 0.5
+      @font.draw_rel "Goodbye world!", 400, 350, 0, 0.5, 0.5
+      @star.draw 0, 0, 0
+      @star.draw 200, 100, 0
     end
 
     # Drawing after the effect isn't processed, which is useful for GUI elements.
-    @font.draw "FPS: #{Gosu::fps}", 0, 0, 0
+    @font.draw "Pixel ratio: 1:#{@pixel_size}", 0, 0, 0
   end
 end
 

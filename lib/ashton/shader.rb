@@ -39,9 +39,6 @@ module Ashton
 
           # Ensure that the shader knows to use the texture.
           self["in_TextureEnabled"] = true
-
-          self["in_SpriteOffset"] = [info.left, info.top]
-          self["in_SpriteSize"] = [info.right - info.left, info.bottom - info.top]
         else
           begin
             self["in_TextureEnabled"] = false

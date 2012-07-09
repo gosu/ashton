@@ -13,22 +13,22 @@ def output_path(file); File.expand_path "output/#{file}", File.dirname(__FILE__)
 
 class GameWindow < Gosu::Window
   def initialize
-    super 800, 600, false
+    super 640, 480, false
     self.caption = "Gosu & OpenGL Integration Demo (SHADERS)"
 
-    @font = Gosu::Font.new(self, Gosu::default_font_name, 20)
-    @image = Gosu::Image.new(self, media_path("Earth.png"), true)
+    @font = Gosu::Font.new self, Gosu::default_font_name, 20
+    @image = Gosu::Image.new self, media_path("Earth.png"), true
     @shader = Ashton::Shader.new # Just use default shader for now.
   end
 
   def draw
     # draw, with and without colour.
-    @image.draw 0, 0, 0, 2, 2, :shader => @shader
-    @image.draw 0, 300, 0, 2, 2, Gosu::Color::RED, :shader => @shader
+    @image.draw 10, 10, 0, :shader => @shader
+    @image.draw 10, @image.height + 20, 0, 1, 1, Gosu::Color::RED, :shader => @shader
 
     # draw#rot, with and without colour.
-    @image.draw_rot 410, 00, 0, 10, 0, 0, 2, 2, :shader => @shader
-    @image.draw_rot 410, 300, 0, 10, 0, 0, 2, 2, Gosu::Color::RED, :shader => @shader
+    @image.draw_rot 280, 0, 0, 10, 0, 0, :shader => @shader
+    @image.draw_rot 280, @image.height + 10, 0, 10, 0, 0, 1, 1, Gosu::Color::RED, :shader => @shader
   end
 
   def button_down(id)
