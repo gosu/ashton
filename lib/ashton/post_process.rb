@@ -26,7 +26,7 @@ module Ashton
 
     # Todo: Pass in a filename (String) or name of built-in pp shader (Symbol)
     def initialize(fragment)
-      super fragment, DEFAULT_VERTEX_SOURCE
+      super DEFAULT_VERTEX_SOURCE, fragment
 
       # Set up defaults that we won't need to change at run-time.
       use do

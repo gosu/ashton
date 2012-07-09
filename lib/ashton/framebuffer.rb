@@ -14,12 +14,11 @@ module Ashton
         [1, 0], # TR
     ]
 
-    attr_reader :width, :height
+    attr_reader :width, :height, :texture
 
     def initialize(width, height)
       @width, @height = width.to_i, height.to_i
-      @fbo, @fbo_texture = init_framebuffer
-      #@fbo_depth = init_framebuffer_depth # Do we even need this for Gosu?
+      @fbo, @texture = init_framebuffer
 
       status = glCheckFramebufferStatusEXT GL_FRAMEBUFFER_EXT
       raise unless status == GL_FRAMEBUFFER_COMPLETE_EXT
@@ -75,7 +74,7 @@ module Ashton
       }.merge! options
 
       glEnable GL_TEXTURE_2D
-      glBindTexture GL_TEXTURE_2D, @fbo_texture
+      glBindTexture GL_TEXTURE_2D, @texture
 
       coords = case options[:orientation]
                  when :gosu   then TEXTURE_COORDINATES_FLIPPED
@@ -139,19 +138,6 @@ module Ashton
 
     end
 
-    protected
-    def init_framebuffer_depth
-      fbo_depth = glGenRenderbuffersEXT(1)[0]
-      glBindRenderbufferEXT GL_RENDERBUFFER_EXT, fbo_depth
-      glRenderbufferStorageEXT GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT24,
-                               @width, @height
-
-      glFramebufferRenderbufferEXT GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT,
-                               GL_RENDERBUFFER_EXT, fbo_depth
-
-      fbo_depth
-    end
-
     # Create an fbo and its texture
     def init_framebuffer
       fbo = glGenFramebuffersEXT(1)[0]
@@ -186,8 +172,7 @@ module Ashton
     protected
     def delete
       glDeleteFramebuffersEXT @fbo
-      glDeleteTextures @fbo_texture
-      #glDeleteRenderbuffersEXT 1, @fbo_depth
+      glDeleteTextures @texture
 
       glDeleteFramebuffersEXT @fbo_flip if defined? @fbo_flip
       glDeleteTextures @fbo_flip_texture if defined? @fbo_flip_texture
