@@ -102,9 +102,6 @@ module Ashton
 
     # Convert the current contents of the buffer into a Gosu::Image
     #
-    #
-    # @bug Image will be inverted (Maybe use a second buffer to turn it?).
-    #
     # @option options [Boolean] :caching (true) TexPlay behaviour.
     # @option options [Boolean] :tileable (false) Standard Gosu behaviour.
     # @option options [Array<Integer>] :rect ([0, 0, width, height]) Rectangular area of buffer to use to create the image [x, y, w, h]

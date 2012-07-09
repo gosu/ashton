@@ -2,3 +2,5 @@
 /.idea
 /examples/output
 /Gemfile.lock
+/.yardoc
+/doc
