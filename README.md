@@ -20,17 +20,26 @@ Usage
 Features
 --------
 
-- Gosu::Window
-  * [TODO] #to_framebuffer - Copy the contents of the window as a {Ashton::Framebuffer}.
-  * [TODO] #to_image - Create Gosu::Image from window contents.
-  
+- Gosu::Font
+  * [TODO] #draw - :shader hash option to choose optional shader to use.
+  * [TODO] #draw_rel - :shader hash option to choose optional shader to use.
+
 - Gosu::Image
-  * [TODO] #flip!, #mirror!, #scale!, etc.
+  * #draw - added :shader hash option to choose optional shader to use.
+  * #draw_rot - added :shader hash option to choose optional shader to use.
+  * [TODO] #flip!, #flip, #mirror!, #mirror, #scale!, #scale, etc.
   * [TODO] #resize (Well, create another image which is smaller/larger).
   * [TODO] #to_framebuffer
 
+- Gosu::Window
+  * [TODO] #to_framebuffer - Copy the contents of the window as a {Ashton::Framebuffer}.
+  * [TODO] #to_image - Create Gosu::Image from window contents.
+  * [TODO] #draw_line - added :shader hash option
+  * [TODO] #draw_quad - added :shader hash option
+  * [TODO] #draw_triangle - added :shader hash option
+
 - {Ashton::Shader}
-  * #use - Inside the block, draw operations are affected by the shader (#use { ...draw operations... } )
+  * #use - Inside the block, all draw operations are affected by the shader.
   * Supports vertex and fragment shaders.
 
 - {Ashton::PostProcess}
@@ -38,12 +47,11 @@ Features
   * Supports fragment shaders.
   * [TODO] Includes a small library of example shaders (:blur, :simplex, etc).
 
-
 - {Ashton::Framebuffer}
   * #use - Inside the block, draw operations go into the framebuffer, rather than onto the window.
   * #to_image - Convert to Gosu::Image. 
   * #draw - Draw directly onto a Gosu::Window.
-  * [TODO] #flip! - Invert framebuffer's vertical orientation.
+  * [TODO] #flip!, #flip - Invert framebuffer's vertical orientation.
   
 Similar Libraries
 -----------------

@@ -2,6 +2,7 @@ module Ashton
   # @abstract
   class BaseShader
     INVALID_LOCATION = -1
+    MIN_OPENGL_VERSION = 2.0
 
     attr_reader :fragment_source, :vertex_source
 
@@ -14,6 +15,10 @@ module Ashton
     def initialize(vertex_source, fragment_source)
       raise "Can't instantiate abstract class" if self.class == BaseShader
 
+      unless GL.version_supported? MIN_OPENGL_VERSION
+        raise NotSupportedError, "Ashton requires OpenGL #{MIN_OPENGL_VERSION} support to utilise shaders"
+      end
+
       @uniform_locations = {}
       @attribute_locations = {}
       @program = nil
@@ -25,6 +30,8 @@ module Ashton
       @fragment = compile GL_FRAGMENT_SHADER, fragment_source
 
       link
+
+      glBindFragDataLocationEXT @program, 0, "out_FragColor"
     end
 
 
@@ -41,6 +48,7 @@ module Ashton
 
       if block_given?
         result = yield self
+        $window.flush # TODO: need to work out how to make shader affect delayed draws.
         glUseProgram previous_program
       end
 
@@ -155,7 +163,7 @@ module Ashton
       glLinkProgram @program
 
       unless glGetProgramiv @program, GL_LINK_STATUS
-        raise ShaderLinkError, glGetProgramInfoLog(@program)
+        raise ShaderLinkError, "Shader link error: #{glGetProgramInfoLog(@program)}"
       end
 
       nil

@@ -6,6 +6,8 @@ require 'gosu'
 module Ashton
   class Error < RuntimeError; end
 
+  class NotSupportedError < Error; end
+
   class ShaderError < Error; end
   class ShaderCompileError < ShaderError; end
   class ShaderLinkError < ShaderError; end
@@ -14,6 +16,7 @@ module Ashton
 end
 
 require "ashton/gosu_ext/window"
+require "ashton/gosu_ext/image"
 require "ashton/gosu_ext/color"
 
 require "ashton/version"
