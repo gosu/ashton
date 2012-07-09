@@ -5,7 +5,7 @@ uniform float column_width;
 
 varying vec2 var_TexCoord;
 
-void main(void)
+void main()
 {
     vec3 color = texture2D(in_Texture, var_TexCoord).rgb;
 	

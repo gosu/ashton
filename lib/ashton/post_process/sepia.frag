@@ -4,7 +4,7 @@ uniform sampler2D in_Texture;
 
 varying vec2 var_TexCoord;
 
-void main(void)
+void main()
 {
   vec4 Sepia1 = vec4( 0.2, 0.05, 0.0, 1.0 );    
   vec4 Sepia2 = vec4( 1.0, 0.9, 0.5, 1.0 );

@@ -5,7 +5,7 @@ uniform float in_contrast;
 
 varying vec2 var_TexCoord;
 
-void main(void)
+void main()
 {
   vec4 color = texture2D(in_Texture, var_TexCoord);
   

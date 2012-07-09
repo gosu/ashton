@@ -6,7 +6,7 @@ varying vec2 var_TexCoord;
 
 uniform float x, y, min, max, ratio, refraction;
 
-void main(void)
+void main()
 {
     vec3 color = texture2D(in_Texture, var_TexCoord).rgb;
     

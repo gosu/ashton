@@ -2,8 +2,13 @@
 
 #define KERNEL_SIZE 9
 
+uniform int in_WindowWidth;
+uniform int in_WindowHeight;
+
 uniform sampler2D in_Texture;
 uniform int in_PixelSize;
+
+varying vec2 var_TexCoord;
 
 vec2 texCoords[KERNEL_SIZE];
 
@@ -12,9 +17,9 @@ void main(void)
    vec4 avgColor;
    vec2 texCoordsStep = 1.0 /
             (vec2(float(in_WindowWidth), float(in_WindowHeight))/float(in_PixelSize));
-   vec2 pixelBin = floor(gl_TexCoord[0].st/texCoordsStep);
-   vec2 inPixelStep = texCoordsStep/3.0;
-   vec2 inPixelHalfStep = inPixelStep/2.0;
+   vec2 pixelBin = floor(var_TexCoord / texCoordsStep);
+   vec2 inPixelStep = texCoordsStep / 3.0;
+   vec2 inPixelHalfStep = inPixelStep / 2.0;
 
 
    texCoords[0] = vec2(inPixelHalfStep.x, inPixelStep.y*2.0 + inPixelHalfStep.y) + pixelBin * texCoordsStep;
@@ -36,8 +41,8 @@ void main(void)
               texture2D(in_Texture, texCoords[6]) +
               texture2D(in_Texture, texCoords[7]) +
               texture2D(in_Texture, texCoords[8]);
-   
+
    avgColor /= float(KERNEL_SIZE);
-   
+
    gl_FragColor = avgColor;
 }

@@ -12,7 +12,7 @@ uniform int in_Passes; // Number of passes to make (more is slower)
 
 varying vec2 var_TexCoord; // Coordinate coming from the default vertex shader.
 
-void main(void)
+void main()
 {
 	vec2 Origin = vec2(in_OriginX, 1.0 - in_OriginY);
 
