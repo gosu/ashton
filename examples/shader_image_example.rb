@@ -44,10 +44,9 @@ class GameWindow < Gosu::Window
     # Doing it with shader.
     @shader.use do |s|
       s.image = @image       # image can only be set outside of glBegin.
-      s.color = [1, 1, 1, 1]
+      s.color = Gosu::Color::BLUE
       glBegin GL_QUADS do
         # Drawing a quad in a single colour (TOP RIGHT).
-
         glVertex2d width / 2, height / 2 # BL
         glVertex2d width / 2, 0 # TL
         glVertex2d width, 0 # TR

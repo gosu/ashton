@@ -55,8 +55,11 @@ module Ashton
 
     def color=(color)
       raise unless current?
-      glVertexAttrib4f attribute("in_Color"), *color
-      @color = color
+
+      opengl_color = color.is_a?(Gosu::Color) ? color.to_opengl : color
+
+      glVertexAttrib4f attribute("in_Color"), *opengl_color
+      @color = opengl_color
     end
   end
 end
