@@ -30,7 +30,10 @@ module Ashton
 
       # Set up defaults that we won't need to change at run-time.
       use do
-        self["in_WindowWidth"], self["in_WindowHeight"] = $window.width, $window.height
+        # Width/height are optional.
+        glUniform1i glGetUniformLocation(@program, "in_WindowWidth"), $window.width
+        glUniform1i glGetUniformLocation(@program, "in_WindowHeight"), $window.height
+
         self["in_Texture"] = 0 # GL_TEXTURE0 will be activated.
       end
     end

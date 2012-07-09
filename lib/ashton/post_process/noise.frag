@@ -1,12 +1,14 @@
 #version 110
 
+// Rather poor quality noise generation, but better than nothing and sort of looks like TV static a bit.
+
 uniform sampler2D in_Texture;
 
-uniform int in_WindowWidth;
-uniform int in_WindowHeight;
+uniform int in_WindowWidth; // Not used.
+uniform int in_WindowHeight; // Not used.
 
-uniform float intensity;
-uniform int t;
+uniform float in_Intensity;
+uniform float in_T;
 
 varying vec2 var_TexCoord;
 
@@ -19,7 +21,7 @@ void main() {
 	
 	vec4 influence = min(color, 1.0 - color);
 	
-	float noise = 1.0 - 2.0*rand(var_TexCoord + float(t) / in_WindowWidth);
+	float noise = 1.0 - 2.0 * rand(var_TexCoord + float(in_T));
 	
-    gl_FragColor = color + intensity*influence*noise;
+    gl_FragColor = color + in_Intensity * influence * noise;
 }

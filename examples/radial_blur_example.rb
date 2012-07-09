@@ -34,6 +34,8 @@ class TestWindow < Gosu::Window
     if (Gosu::Kb1..Gosu::Kb9).include? id
       @blur_factor = (id - Gosu::Kb1 + 1).to_f
       @blur['in_BlurFactor'] = @blur_factor
+    elsif id == Gosu::KbEscape
+      close
     end
   end
 

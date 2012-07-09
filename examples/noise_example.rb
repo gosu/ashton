@@ -14,36 +14,41 @@ def media_path(file); File.expand_path "media/#{file}", File.dirname(__FILE__) e
 class TestWindow < Gosu::Window
   def initialize
     super 640, 480, false
-    self.caption = "Post-processing with 'pixelate' - 1..9 affect pixel size"
+    self.caption = "Post-processing with 'noise'"
 
-    @pixelate = Ashton::PostProcess.new shader('pixelate.frag')
-    @pixelate['in_PixelSize'] = @pixel_size = 4
+    @shader = Ashton::PostProcess.new shader('noise.frag')
+    @shader['in_Intensity'] = 2.0
 
     @font = Gosu::Font.new self, Gosu::default_font_name, 40
     @star = Gosu::Image.new(self, media_path("LargeStar.png"), true)
+    @background = Gosu::Image.new(self, media_path("Earth.png"), true)
 
     update # Ensure the values are initially set.
   end
 
-  def button_down(id)
-    if (Gosu::Kb1..Gosu::Kb9).include? id
-      @pixel_size = (id - Gosu::Kb1 + 1) ** 2
-      @pixelate['in_PixelSize'] = @pixel_size
-    elsif id == Gosu::KbEscape
-      close
-    end
+  def update
+    @shader['in_T'] = Math::sin(Gosu::milliseconds / 500.0) * 1000
   end
 
   def draw
-    post_process @pixelate do
-      @font.draw_rel "Hello world!", 350, 50, 0, 0.5, 0.5
-      @font.draw_rel "Goodbye world!", 400, 350, 0, 0.5, 0.5
+    post_process @shader do
+      @background.draw 0, 0, 0, width.fdiv(@background.width), height.fdiv(@background.height)
+
+      @font.draw_rel "Hello world!", 350, 50, 0, 0.5, 0.5, 1, 1, Gosu::Color::GREEN
+      @font.draw_rel "Goodbye world!", 400, 350, 0, 0.5, 0.5, 2, 2, Gosu::Color::BLUE
+
       @star.draw 0, 0, 0
       @star.draw 200, 100, 0
     end
 
     # Drawing after the effect isn't processed, which is useful for GUI elements.
-    @font.draw "Pixel ratio: 1:#{@pixel_size}", 0, 0, 0
+    @font.draw "FPS: #{Gosu::fps}", 0, 0, 0
+  end
+
+  def button_down(id)
+    if id == Gosu::KbEscape
+      close
+    end
   end
 end
 
