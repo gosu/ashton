@@ -58,6 +58,11 @@ Similar Libraries
 Credits
 -------
 
-- simplex.glsl - simplex noise implementation - Copyright (C) 2011 Ashima Arts - MIT license.
-  
+- classicnoise2D.glsl - Classic Perlin noise implementation - Copyright (C) 2011 Ashima Arts - MIT license.
+- classicnoise3D.glsl - Classic Perlin noise implementation - Copyright (C) 2011 Ashima Arts - MIT license.
+- classicnoise4D.glsl - Classic Perlin noise implementation - Copyright (C) 2011 Ashima Arts - MIT license.
+- noise2D.glsl - Simplex noise implementation - Copyright (C) 2011 Ashima Arts - MIT license.
+- noise2D.glsl - Simplex noise implementation - Copyright (C) 2011 Ashima Arts - MIT license.
+- noise2D.glsl - Simplex noise implementation - Copyright (C) 2011 Ashima Arts - MIT license.
+
 

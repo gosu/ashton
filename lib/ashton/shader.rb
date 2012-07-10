@@ -106,6 +106,9 @@ module Ashton
           when Integer
             glUniform1i uniform(name), value
 
+          when Gosu::Color
+            glUniform4f uniform(name), *value.to_opengl
+
           when Array
             size = value.size
 
