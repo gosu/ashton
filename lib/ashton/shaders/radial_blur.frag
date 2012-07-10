@@ -6,15 +6,14 @@ uniform int in_WindowHeight;
 
 uniform float in_BlurFactor;
 uniform float in_BrightFactor;
-uniform float in_OriginX;
-uniform float in_OriginY;
+uniform vec2 in_Origin;
 uniform int in_Passes; // Number of passes to make (more is slower)
 
 varying vec2 var_TexCoord; // Coordinate coming from the default vertex shader.
 
 void main()
 {
-	vec2 Origin = vec2(in_OriginX, 1.0 - in_OriginY);
+	vec2 Origin = vec2(in_Origin.x, 1.0 - in_Origin.y);
 
 	vec2 TexCoord = vec2(var_TexCoord);
 

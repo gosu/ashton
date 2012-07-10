@@ -16,7 +16,7 @@ class TestWindow < Gosu::Window
     self.caption = "Post-processing with 'pixelate' - 1..9 affect pixel size"
 
     @pixelate = Ashton::Shader.new fragment: :pixelate
-    @pixelate[:in_PixelSize] = @pixel_size = 4
+    @pixelate.pixel_size = @pixel_size = 4
 
     @font = Gosu::Font.new self, Gosu::default_font_name, 40
     @star = Gosu::Image.new(self, media_path("LargeStar.png"), true)
@@ -27,7 +27,7 @@ class TestWindow < Gosu::Window
   def button_down(id)
     if (Gosu::Kb1..Gosu::Kb9).include? id
       @pixel_size = (id - Gosu::Kb1 + 1) ** 2
-      @pixelate['in_PixelSize'] = @pixel_size
+      @pixelate.pixel_size = @pixel_size
     elsif id == Gosu::KbEscape
       close
     end

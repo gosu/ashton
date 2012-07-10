@@ -16,7 +16,7 @@ class TestWindow < Gosu::Window
     self.caption = "Post-processing with both 'tv_screen.frag' and 'static.frag'"
 
     @screen = Ashton::Shader.new fragment: :tv_screen
-    @screen[:in_ColumnWidth] = 1.0
+    @screen.column_width = 1.0
 
     @static = Ashton::Shader.new fragment: :static
 

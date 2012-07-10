@@ -14,9 +14,9 @@ class TestWindow < Gosu::Window
     self.caption = "Post-processing with 'radial_blur' - hold space to disable; 1..9 sets blurriness"
 
     @blur = Ashton::Shader.new fragment: :radial_blur
-    @blur[:in_BrightFactor] = 1.5
-    @blur[:in_BlurFactor] = @blur_factor = 2.0
-    @blur[:in_Passes] = 20 # Quite a lot of work, but just proves how fast shader are!
+    @blur.bright_factor = 1.5
+    @blur.blur_factor = @blur_factor = 2.0
+    @blur.passes = 20 # Quite a lot of work, but just proves how fast shader are!
     @font = Gosu::Font.new self, Gosu::default_font_name, 40
 
     update # Ensure the values are initially set.
@@ -24,14 +24,13 @@ class TestWindow < Gosu::Window
 
   def update
     # Wiggle the blur about a bit each frame!
-    @blur[:in_OriginX] = mouse_x
-    @blur[:in_OriginY] = mouse_y
+    @blur.origin = [mouse_x, mouse_y]
   end
 
   def button_down(id)
     if (Gosu::Kb1..Gosu::Kb9).include? id
       @blur_factor = (id - Gosu::Kb1 + 1).to_f
-      @blur['in_BlurFactor'] = @blur_factor
+      @blur.blur_factor = @blur_factor
     elsif id == Gosu::KbEscape
       close
     end

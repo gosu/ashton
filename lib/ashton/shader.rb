@@ -92,6 +92,20 @@ module Ashton
       glGetIntegerv(GL_CURRENT_PROGRAM) == @program
     end
 
+    # Allow
+    #   `shader.blob_frequency = 5`
+    # to map to
+    #   `shader[:in_BlobFrequency] = 5`
+    # TODO: define specific methods at compile time, based on parsing the source?
+    def method_missing(meth, *args, &block)
+      if args.size == 1 and meth =~ /^(.+)=$/
+        uniform_name = "in_#{$1.split("_").map(&:capitalize).join}"
+        self[uniform_name] = args[0]
+      else
+        super meth, *args, &block
+      end
+    end
+
     # Set the value of a uniform.
     def []=(name, value)
       name = name.to_sym
