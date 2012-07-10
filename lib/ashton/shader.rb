@@ -3,16 +3,18 @@ module Ashton
     INVALID_LOCATION = -1
     MIN_OPENGL_VERSION = 2.0
 
-    attr_reader :image
-
     INCLUDE_PATH = File.expand_path "../shaders/include", __FILE__
     SHADER_PATH = File.expand_path "../shaders", __FILE__
+    FRAGMENT_EXTENSION = ".frag"
+    VERTEX_EXTENSION = ".vert"
 
     # List of built-in functions.
     BUILT_IN_FUNCTIONS = Dir[File.join(INCLUDE_PATH, "*.glsl")].map do |filename|
       filename =~ /(\w+)\.glsl/
       $1.to_sym
     end
+
+    attr_reader :image
 
     # Instead of passing in source code, a file-name will be loaded or use a symbol to choose a built-in shader.
     #
@@ -33,8 +35,8 @@ module Ashton
       vertex = options[:vertex] || options[:vert] || :default
       fragment = options[:fragment] || options[:frag] || :default
 
-      @vertex_source = process_source vertex, 'vert'
-      @fragment_source = process_source fragment, 'frag'
+      @vertex_source = process_source vertex, VERTEX_EXTENSION
+      @fragment_source = process_source fragment, FRAGMENT_EXTENSION
 
       @uniform_locations = {}
       @attribute_locations = {}
@@ -92,6 +94,8 @@ module Ashton
 
     # Set the value of a uniform.
     def []=(name, value)
+      name = name.to_sym
+
       use do
         case value
           when true, GL_TRUE
@@ -241,7 +245,7 @@ module Ashton
     # TODO: What about line numbers getting messed up by #include?
     def process_source(shader, extension)
       source = if shader.is_a? Symbol
-                 File.read File.expand_path("#{shader}.#{extension}", SHADER_PATH)
+                 File.read File.expand_path("#{shader}#{extension}", SHADER_PATH)
                elsif File.exists? shader
                  File.read shader
                else
