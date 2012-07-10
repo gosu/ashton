@@ -3,6 +3,9 @@
 uniform sampler2D in_Texture;
 uniform bool in_TextureEnabled;
 
+uniform int in_WindowWidth;
+uniform int in_WindowHeight;
+
 varying vec4 var_Color;
 varying vec2 var_TexCoord;
 

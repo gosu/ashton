@@ -21,6 +21,5 @@ require "ashton/gosu_ext/color"
 
 require "ashton/version"
 require "ashton/shader"
-require "ashton/post_process"
 require "ashton/framebuffer"
 require "ashton/image_stub"

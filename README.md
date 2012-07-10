@@ -32,7 +32,7 @@ Features
   * [TODO] #to_framebuffer
 
 - Gosu::Window
-  * #post_process {} - Draws contents of block into a back-buffer, then applies a shader as it draws that onto the screen.
+  * #post_process {} - Apply a shader (or shaders) to the contents of the block, after they have been drawn.
   * [TODO] #to_framebuffer - Copy the contents of the window as a {Ashton::Framebuffer}.
   * [TODO] #to_image - Create Gosu::Image from window contents.
   * [TODO] #draw_line - Added :shader hash option
@@ -42,17 +42,12 @@ Features
 - {Ashton::Shader}
   * #use {} - Inside the block, all draw operations are affected by the shader.
   * Supports vertex and fragment shaders.
-
-- {Ashton::PostProcess}
-  * A specific type of shader to perform full-screen post-processing.
-  * #process - Used to post-process the entire Gosu::Window at once, after some, or all, drawing is complete.
-  * Supports fragment shaders.
-  * [TODO] Includes a small library of example shaders (:blur, :simplex, etc).
+  * Includes a small library of example shaders (:radial_blur, :pixelate, etc).
 
 - {Ashton::Framebuffer}
   * #use {} - Inside the block, draw operations go into the framebuffer, rather than onto the window.
   * #to_image - Convert to Gosu::Image. 
-  * #draw - Draw directly onto a Gosu::Window.
+  * #draw - Draw directly onto a Gosu::Window (Only accepts x, y coordinate).
   * [TODO] #flip!, #flip - Invert framebuffer's vertical orientation.
   
 Similar Libraries

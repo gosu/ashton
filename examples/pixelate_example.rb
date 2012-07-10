@@ -8,7 +8,7 @@ end
 $LOAD_PATH.unshift File.expand_path('../lib/', File.dirname(__FILE__))
 require "ashton"
 
-def shader(file); File.read File.expand_path("../lib/ashton/post_process/#{file}", File.dirname(__FILE__)) end
+def shader(file); File.read File.expand_path("../lib/ashton/shaders/#{file}", File.dirname(__FILE__)) end
 def media_path(file); File.expand_path "media/#{file}", File.dirname(__FILE__) end
 
 class TestWindow < Gosu::Window
@@ -16,7 +16,7 @@ class TestWindow < Gosu::Window
     super 640, 480, false
     self.caption = "Post-processing with 'pixelate' - 1..9 affect pixel size"
 
-    @pixelate = Ashton::PostProcess.new shader('pixelate.frag')
+    @pixelate = Ashton::Shader.new fragment: shader('pixelate.frag')
     @pixelate['in_PixelSize'] = @pixel_size = 4
 
     @font = Gosu::Font.new self, Gosu::default_font_name, 40

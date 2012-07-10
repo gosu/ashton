@@ -8,7 +8,7 @@ end
 $LOAD_PATH.unshift File.expand_path('../lib/', File.dirname(__FILE__))
 require "ashton"
 
-def shader(file); File.read File.expand_path("../lib/ashton/post_process/#{file}", File.dirname(__FILE__)) end
+def shader(file); File.read File.expand_path("../lib/ashton/shaders/#{file}", File.dirname(__FILE__)) end
 def media_path(file); File.expand_path "media/#{file}", File.dirname(__FILE__) end
 
 class TestWindow < Gosu::Window
@@ -16,11 +16,10 @@ class TestWindow < Gosu::Window
     super 640, 480, false
     self.caption = "Post-processing with both 'tv_screen.frag' and 'noise.frag'"
 
-    @screen = Ashton::PostProcess.new shader('tv_screen.frag')
+    @screen = Ashton::Shader.new fragment: shader('tv_screen.frag')
     @screen['in_ColumnWidth'] = 1.0
 
-    @noise = Ashton::PostProcess.new shader('noise.frag')
-
+    @noise = Ashton::Shader.new fragment: shader('noise.frag')
 
     @font = Gosu::Font.new self, Gosu::default_font_name, 40
     @star = Gosu::Image.new(self, media_path("LargeStar.png"), true)
@@ -35,16 +34,15 @@ class TestWindow < Gosu::Window
   end
 
   def draw
-    @background.draw 0, 0, 0, width.fdiv(@background.width), height.fdiv(@background.height)
+    post_process @noise, @screen do
+      @background.draw 0, 0, 0, width.fdiv(@background.width), height.fdiv(@background.height)
 
-    @font.draw_rel "Hello world!", 350, 50, 0, 0.5, 0.5, 1, 1, Gosu::Color::GREEN
-    @font.draw_rel "Goodbye world!", 400, 350, 0, 0.5, 0.5, 2, 2, Gosu::Color::BLUE
+      @font.draw_rel "Hello world!", 350, 50, 0, 0.5, 0.5, 1, 1, Gosu::Color::GREEN
+      @font.draw_rel "Goodbye world!", 400, 350, 0, 0.5, 0.5, 2, 2, Gosu::Color::BLUE
 
-    @star.draw 0, 0, 0
-    @star.draw 200, 100, 0
-
-    @noise.process
-    @screen.process
+      @star.draw 0, 0, 0
+      @star.draw 200, 100, 0
+    end
 
     # Drawing after the effect isn't processed, which is useful for GUI elements.
     @font.draw "FPS: #{Gosu::fps}", 0, 0, 0
