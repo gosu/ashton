@@ -1,4 +1,4 @@
-#version 120
+#version 110
 
 // http://www.gamerendering.com/2008/12/20/radial-blur-filter/
 
@@ -13,9 +13,18 @@ varying vec2 var_TexCoord;
 
 void main(void)
 {
-    // some sample positions
-    float samples[10] =
-        float[](-0.08, -0.05, -0.03, -0.02, -0.01, 0.01, 0.02, 0.03, 0.05, 0.08);
+    // some sample positions. GLSL 1.10 is painfully dumb with arrays :)
+    float samples[10];
+    samples[0] = -0.08;
+    samples[1] = -0.05;
+    samples[2] = -0.03;
+    samples[3] = -0.02;
+    samples[4] = -0.01;
+    samples[5] =  0.01;
+    samples[6] =  0.02;
+    samples[7] =  0.03;
+    samples[8] =  0.05;
+    samples[9] =  0.08;
 
     // 0.5,0.5 is the center of the screen
     // so substracting uv from it will result in

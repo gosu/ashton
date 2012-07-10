@@ -12,7 +12,7 @@ def media_path(file); File.expand_path "media/#{file}", File.dirname(__FILE__) e
 
 class TestWindow < Gosu::Window
   NOISE_FRAGMENT =<<-END
-#version 120
+#version 110
 
 // Use 3D Simplex noise, even though the shader operates on a 2D
 // texture, since then we can make the Z-coordinate act as time.
