@@ -8,7 +8,18 @@ module Ashton
     INCLUDE_PATH = File.expand_path "../shaders/include", __FILE__
     SHADER_PATH = File.expand_path "../shaders", __FILE__
 
+    # List of built-in functions.
+    BUILT_IN_FUNCTIONS = Dir[File.join(INCLUDE_PATH, "*.glsl")].map do |filename|
+      filename =~ /(\w+)\.glsl/
+      $1.to_sym
+    end
+
     # Instead of passing in source code, a file-name will be loaded or use a symbol to choose a built-in shader.
+    #
+    # `#include` will be recursively replaced in the source.
+    #
+    # * `#include <noise>` will load the built-in shader function, shaders/include/noise.glsl
+    # * `#include "/home/spooner/noise.glsl"` will include that file, relative to the current working directory, NOT the source file.
     #
     # @option options [String, Symbol] :vertex Source code for vertex shader.
     # @option options [String, Symbol] :vert equivalent to :vertex
@@ -22,23 +33,8 @@ module Ashton
       vertex = options[:vertex] || options[:vert] || :default
       fragment = options[:fragment] || options[:frag] || :default
 
-      # Passing in a file-name should load that file.
-      # Passing in a symbol picks a standard shader.
-      @vertex_source = if vertex.is_a? Symbol
-        File.read File.expand_path("#{vertex}.vert", SHADER_PATH)
-      elsif File.exists? vertex
-        File.read vertex
-      else
-        vertex
-      end
-
-      @fragment_source = if fragment.is_a? Symbol
-        File.read File.expand_path("#{fragment}.frag", SHADER_PATH)
-      elsif File.exists? fragment
-        File.read fragment
-      else
-        fragment
-      end
+      @vertex_source = process_source vertex, 'vert'
+      @fragment_source = process_source fragment, 'frag'
 
       @uniform_locations = {}
       @attribute_locations = {}
@@ -231,6 +227,42 @@ module Ashton
       end
 
       nil
+    end
+
+    protected
+    # Symbol => load a built-in
+    # Filename => load file
+    # Source => use directly.
+    #
+    # Also recursively replaces #include
+    # TODO: What about line numbers getting messed up by #include?
+    def process_source(shader, extension)
+      source = if shader.is_a? Symbol
+                 File.read File.expand_path("#{shader}.#{extension}", SHADER_PATH)
+               elsif File.exists? shader
+                 File.read shader
+               else
+                 shader
+               end
+
+      replace_include source
+    end
+
+    protected
+    # Recursively replace #include.
+    #
+    # * Replace '#include <rand>' with the contents of include/rand.glsl
+    # * Replace '#include "/home/spooner/my_shader_functions/frog.glsl"' with the contents of that file.
+    #
+    # @return [String] Source code that has been expanded.
+    def replace_include(source)
+      source.gsub! /^#include\s+<(.+)?>\s+$/ do
+        replace_include File.read(File.expand_path("#{$1}.glsl", INCLUDE_PATH))
+      end
+
+      source.gsub /^#include\s+"(\w+)"\s+$/ do
+        replace_include File.read($1)
+      end
     end
   end
 end
