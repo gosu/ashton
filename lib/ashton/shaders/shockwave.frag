@@ -1,40 +1,36 @@
 #version 110
 
-uniform sampler2D in_Texture;
+// http://empire-defense.crystalin.fr/blog/2d_shock_wave_texture_with_shader
+// http://www.geeks3d.com/20091116/shader-library-2d-shockwave-post-processing-filter-glsl/
 
-varying vec2 var_TexCoord;
+uniform sampler2D in_Texture; // 0
+uniform vec2 in_Center; // Mouse position
+uniform float in_Time; // effect elapsed time. Multiply this to affect speed.
 
-uniform float in_Center;
-uniform float in_WaveWidth;
-uniform float in_Time;
-uniform float in_Ratio;
-uniform float in_Refraction;
+// Amplitude?, Refraction?, Width?  e.g. 10.0, 0.8, 0.1
+uniform vec3 in_ShockParams;
 
 uniform int in_WindowWidth;
 uniform int in_WindowHeight;
 
-const float PI = 3.14159;
+varying vec2 var_TexCoord;
 
 void main()
 {
-    vec2 source_coords = var_TexCoord;
-    vec3 color = texture2D(in_Texture, source_coords).rgb;
+  vec2 uv = var_TexCoord;
+  vec2 texCoord = uv;
+  float distance = distance(uv, in_Center / vec2(float(in_WindowWidth), float(in_WindowHeight)));
 
-    float x = in_X / float(in_WindowHeight);
-    float y = 1.0 - in_Y / float(in_WindowHeight);
-    vec2 rel = source_coords - vec2(x, y);
-    rel.x *= in_Ratio;
+  if ( (distance <= (in_Time + in_ShockParams.z)) &&
+       (distance >= (in_Time - in_ShockParams.z)) )
+  {
+    float diff = (distance - in_Time);
+    float powDiff = 1.0 - pow(abs(diff * in_ShockParams.x),
+                                in_ShockParams.y);
+    float diffTime = diff  * powDiff;
+    vec2 diffUV = normalize(uv - in_Center);
+    texCoord = uv + (diffUV * diffTime);
+  }
 
-    float dist = sqrt(rel.x * rel.x + rel.y * rel.y);
-
-    if(dist >= in_Min && dist <= in_Max)
-    {
-        float inner = (dist - in_Min) / (in_Max - in_Min);
-        float depth = 0.5 + 0.5 * cos((inner + 0.5) * 2.0 * PI);
-
-        source_coords -= depth * rel / dist * in_Refraction;
-        color = texture2D(in_Texture, source_coords).rgb;
-    }
-    
-    gl_FragColor.rgb = color;
+  gl_FragColor = texture2D(in_Texture, texCoord);
 }

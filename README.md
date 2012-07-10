@@ -79,4 +79,7 @@ Credits
 - [Bloom filter by myheroics](http://myheroics.wordpress.com/2008/09/04/glsl-bloom-shader/)
   * lib/ashton/shaders/include/bloom.frag
 
+- [Shockwave by Crystalin](http://empire-defense.crystalin.fr/blog/2d_shock_wave_texture_with_shader)
+  * lib/ashton/shaders/include/shockwave.frag
+
 
