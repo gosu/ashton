@@ -14,7 +14,7 @@ module Ashton
       $1.to_sym
     end
 
-    attr_reader :image
+    attr_reader :vertex_source, :fragment_source
 
     # Instead of passing in source code, a file-name will be loaded or use a symbol to choose a built-in shader.
     #

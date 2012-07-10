@@ -31,6 +31,10 @@ class GameWindow < Gosu::Window
     @fade = Ashton::Shader.new :fragment => :fade
     @fade.fade = 0.75
 
+    @grey_scale = Ashton::Shader.new :fragment => :grayscale
+
+    @color_inversion = Ashton::Shader.new :fragment => :color_inversion
+
     update # Ensure values are set before draw.
   end
 
@@ -51,11 +55,18 @@ class GameWindow < Gosu::Window
     @font.draw ":mezzotint", 10, 400, 0
 
     # draw_rot, with and without colour.
-    @image.draw_rot 280, 0, 0, 10, 0, 0, :shader => @contrast
-    @font.draw ":contrast #{"%.2f" % @contrast_contrast}", 280, 150, 0
+    @image.draw_rot 235, 0, 0, 10, 0, 0, :shader => @contrast
+    @font.draw ":contrast #{"%.2f" % @contrast_contrast}", 235, 150, 0
 
-    @image.draw_rot 280, @image.height + 110, 0, 10, 0, 0, 1, 1, Gosu::Color::RED, :shader => @fade
-    @font.draw ":fade #{"%.2f" % @fade_fade}", 280, 400, 0
+    @image.draw_rot 235, @image.height + 110, 0, 10, 0, 0, 1, 1, Gosu::Color::RED, :shader => @fade
+    @font.draw ":fade #{"%.2f" % @fade_fade}", 235, 400, 0
+
+    # More draws.
+    @image.draw 430, 10, 0, :shader => @grey_scale
+    @font.draw ":grey_scale", 430, 150, 0
+
+    @image.draw 430, @image.height + 110, 0, :shader => @color_inversion
+    @font.draw ":color_inversion", 430, 400, 0
   end
 
   def button_down(id)
