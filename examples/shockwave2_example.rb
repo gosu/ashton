@@ -18,13 +18,13 @@ class Shockwave
 
   def initialize(x, y)
     @shader = Ashton::Shader.new fragment: :shockwave2
-    @shader['in_ShockParams'] = [10.0, 0.8, 0.1] # Not entirely sure what these represent!
-    @shader['in_Center'] = [x, $window.height - y]
+    @shader[:in_ShockParams] = [10.0, 0.8, 0.1] # Not entirely sure what these represent!
+    @shader[:in_Center] = [x, $window.height - y]
     @start_time = Gosu::milliseconds
   end
 
   def update
-    @shader['in_Time'] = age
+    @shader[:in_Time] = age
   end
 end
 

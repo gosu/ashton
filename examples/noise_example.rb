@@ -57,7 +57,7 @@ void main()
     self.caption = "Post-processing with the simplex noise function - intelligent blob?"
 
     @noise = Ashton::Shader.new fragment: NOISE_FRAGMENT
-    @noise['in_BlobColor'] = Gosu::Color.rgb 0, 40, 0
+    @noise[:in_BlobColor] = Gosu::Color.rgb 0, 40, 0
 
     @font = Gosu::Font.new self, Gosu::default_font_name, 40
     @background = Gosu::Image.new(self, media_path("Earth.png"), true)
@@ -66,7 +66,7 @@ void main()
   end
 
   def update
-    @noise['in_T'] = Gosu::milliseconds / 1000.0
+    @noise[:in_T] = Gosu::milliseconds / 1000.0
   end
 
   def draw

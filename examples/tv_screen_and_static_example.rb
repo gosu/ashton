@@ -16,7 +16,7 @@ class TestWindow < Gosu::Window
     self.caption = "Post-processing with both 'tv_screen.frag' and 'static.frag'"
 
     @screen = Ashton::Shader.new fragment: :tv_screen
-    @screen['in_ColumnWidth'] = 1.0
+    @screen[:in_ColumnWidth] = 1.0
 
     @static = Ashton::Shader.new fragment: :static
 
@@ -28,8 +28,8 @@ class TestWindow < Gosu::Window
   end
 
   def update
-    @static['in_T'] = Math::sin(Gosu::milliseconds / 500.0) * 1000
-    @static['in_Intensity'] = Math::sin(Gosu::milliseconds / 2345.0) + 1.5
+    @static[:in_T] = Math::sin(Gosu::milliseconds / 500.0) * 1000
+    @static[:in_Intensity] = Math::sin(Gosu::milliseconds / 2345.0) + 1.5
   end
 
   def draw

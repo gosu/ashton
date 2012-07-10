@@ -55,7 +55,7 @@ module Gosu
 
         # Draw the back-buffer onto the window, utilising the shader.
         shaders[0].use do |shader|
-          shader["in_Texture"] = 0
+          shader[:in_Texture] = 0
           buffer.draw 0, 0
         end
 
@@ -65,7 +65,7 @@ module Gosu
           glBindTexture GL_TEXTURE_2D, buffer.texture
           glCopyTexImage2D GL_TEXTURE_2D, 0, GL_RGBA8, 0, 0, width, height, 0
 
-          shader["in_Texture"] = 0
+          shader[:in_Texture] = 0
           shader.use do
             buffer.draw 0, 0
           end

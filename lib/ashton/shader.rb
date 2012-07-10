@@ -159,14 +159,14 @@ module Ashton
           # Bind the single texture to 'in_Texture'
           glActiveTexture GL_TEXTURE0
           glBindTexture GL_TEXTURE_2D, info.tex_name
-          self["in_Texture"] = 0
+          self[:in_Texture] = 0
           raise unless glGetIntegerv(GL_ACTIVE_TEXTURE) == GL_TEXTURE0
 
           # Ensure that the shader knows to use the texture.
-          self["in_TextureEnabled"] = true
+          self[:in_TextureEnabled] = true
         else
           begin
-            self["in_TextureEnabled"] = false
+            self[:in_TextureEnabled] = false
           rescue
           end
         end
