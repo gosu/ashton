@@ -22,6 +22,7 @@ Gem::Specification.new do |s|
   s.add_dependency 'opengl', '~> 0.8.0.pre1'
 
   s.add_development_dependency 'rspec', '~> 2.10.0'
+  s.add_development_dependency 'rr', '~> 1.0.4'
   s.add_development_dependency 'launchy', '~> 2.1.0'
   s.add_development_dependency 'RedCloth', '~> 4.2.9'
   s.add_development_dependency 'redcarpet', '~> 2.1.1'

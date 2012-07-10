@@ -4,7 +4,7 @@ require File.expand_path("../../helper.rb", __FILE__)
 describe Ashton::Framebuffer do
   before :all do
     $window ||= Gosu::Window.new 16, 16, false
-    @testcard_image = Gosu::Image.new $window, File.expand_path("../../../examples/media/simple.png", __FILE__)
+    @testcard_image = Gosu::Image.new $window, media_path("simple.png")
   end
 
   before :each do
@@ -79,7 +79,7 @@ describe Ashton::Framebuffer do
   describe "init_framebuffer" do
     it "should create a framebuffer object and a color buffer" do
       pending
-      @subject.should_receive :init_framebuffer_texture
+      mock(@subject).init_framebuffer_texture
     end
   end
 
