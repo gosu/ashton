@@ -1,5 +1,4 @@
 #version 110
-#extension GL_EXT_gpu_shader4 : enable
 
 uniform sampler2D in_Texture;
 
@@ -17,16 +16,8 @@ void main()
 
 	float column_index = var_TexCoord.x * float(in_WindowWidth) / in_ColumnWidth;
 
-	switch(int(column_index) % 3)
-    {
-      case 0:
-        gl_FragColor.r = color.r;
-        break;
-      case 1:
-        gl_FragColor.g = color.g;
-        break;
-      case 2:
-        gl_FragColor.b = color.b;
-        break;
-    }
+    int c = int(mod(column_index, 3.0));
+    if(c == 0) { gl_FragColor.r = color.r; }
+    else if(c == 1) { gl_FragColor.g = color.g; }
+    else if(c == 2) { gl_FragColor.b = color.b; }
 }
