@@ -5,7 +5,7 @@
 
 uniform sampler2D in_Texture;
 
-uniform float in_Fade; # 1.0 => no effect, 0.0 => becomes invisible.
+uniform float in_Fade; // 1.0 => no effect, 0.0 => becomes invisible.
 
 varying vec2 var_TexCoord;
 

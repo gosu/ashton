@@ -175,16 +175,10 @@ module Ashton
           glBindTexture GL_TEXTURE_2D, info.tex_name
           self[:in_Texture] = 0
           raise unless glGetIntegerv(GL_ACTIVE_TEXTURE) == GL_TEXTURE0
-
-          # Ensure that the shader knows to use the texture.
-          self[:in_TextureEnabled] = true
-        else
-          begin
-            self[:in_TextureEnabled] = false
-          rescue
-          end
         end
       end
+
+      glUniform1i glGetAttribLocation(@program, "in_TextureEnabled"), image ? 1 : 0
 
       @image = image
     end
@@ -194,7 +188,7 @@ module Ashton
 
       opengl_color = color.is_a?(Gosu::Color) ? color.to_opengl : color
 
-      glVertexAttrib4f attribute("in_Color"), *opengl_color
+      #glVertexAttrib4f glGetAttribLocation(@program, "in_Color"), *opengl_color
       @color = opengl_color
     end
 

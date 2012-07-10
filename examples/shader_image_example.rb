@@ -16,19 +16,46 @@ class GameWindow < Gosu::Window
     super 640, 480, false
     self.caption = "Gosu & OpenGL Integration Demo (SHADERS)"
 
-    @font = Gosu::Font.new self, Gosu::default_font_name, 20
+    GC.disable
+
+    @font = Gosu::Font.new self, Gosu::default_font_name, 24
     @image = Gosu::Image.new self, media_path("Earth.png"), true
-    @shader = Ashton::Shader.new # Just use default shader for now.
+
+    @sepia = Ashton::Shader.new :fragment => :sepia
+
+    @contrast = Ashton::Shader.new :fragment => :contrast
+
+
+    @mezzotint = Ashton::Shader.new :fragment => :mezzotint
+
+    @fade = Ashton::Shader.new :fragment => :fade
+    @fade.fade = 0.75
+
+    update # Ensure values are set before draw.
+  end
+
+  def update
+    @fade.fade = @fade_fade = Math::sin(Gosu::milliseconds / 1000.0) / 2 + 0.5
+    @contrast.contrast = @contrast_contrast = Math::sin(Gosu::milliseconds / 1000.0) * 2 + 2
+    @mezzotint.t = (Gosu::milliseconds / 100.0).to_i
   end
 
   def draw
-    # draw, with and without colour.
-    @image.draw 10, 10, 0, :shader => @shader
-    @image.draw 10, @image.height + 20, 0, 1, 1, Gosu::Color::RED, :shader => @shader
+    @image.draw 0, 0, 0, width.fdiv(@image.width), height.fdiv(@image.height)
 
-    # draw#rot, with and without colour.
-    @image.draw_rot 280, 0, 0, 10, 0, 0, :shader => @shader
-    @image.draw_rot 280, @image.height + 10, 0, 10, 0, 0, 1, 1, Gosu::Color::RED, :shader => @shader
+    # draw, with and without colour.
+    @image.draw 10, 10, 0, :shader => @sepia
+    @font.draw ":sepia", 10, 150, 0
+
+    @image.draw 10, @image.height + 120, 0, 1, 1, Gosu::Color::RED, :shader => @mezzotint
+    @font.draw ":mezzotint", 10, 400, 0
+
+    # draw_rot, with and without colour.
+    @image.draw_rot 280, 0, 0, 10, 0, 0, :shader => @contrast
+    @font.draw ":contrast #{"%.2f" % @contrast_contrast}", 280, 150, 0
+
+    @image.draw_rot 280, @image.height + 110, 0, 10, 0, 0, 1, 1, Gosu::Color::RED, :shader => @fade
+    @font.draw ":fade #{"%.2f" % @fade_fade}", 280, 400, 0
   end
 
   def button_down(id)
