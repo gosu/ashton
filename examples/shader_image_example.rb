@@ -31,7 +31,7 @@ class GameWindow < Gosu::Window
     @fade = Ashton::Shader.new :fragment => :fade
     @fade.fade = 0.75
 
-    @grey_scale = Ashton::Shader.new :fragment => :grayscale
+    @grayscale = Ashton::Shader.new :fragment => :grayscale
 
     @color_inversion = Ashton::Shader.new :fragment => :color_inversion
 
@@ -62,8 +62,8 @@ class GameWindow < Gosu::Window
     @font.draw ":fade #{"%.2f" % @fade_fade}", 235, 400, 0
 
     # More draws.
-    @image.draw 430, 10, 0, :shader => @grey_scale
-    @font.draw ":grey_scale", 430, 150, 0
+    @image.draw 430, 10, 0, :shader => @grayscale
+    @font.draw ":grayscale", 430, 150, 0
 
     @image.draw 430, @image.height + 110, 0, :shader => @color_inversion
     @font.draw ":color_inversion", 430, 400, 0
