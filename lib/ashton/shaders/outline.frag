@@ -13,7 +13,7 @@ uniform sampler2D in_Texture; // Original texture.
 uniform vec4 in_OutlineColor;
 uniform float in_OutlineWidth; // In pixels.
 
-in vec2 var_TexCoord; // Pixel to process on this pass
+varying vec2 var_TexCoord; // Pixel to process on this pass
 
 void main()
 {
