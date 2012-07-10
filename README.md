@@ -20,9 +20,9 @@ Usage
 Features
 --------
 
-- Gosu::Font
-  * [TODO] #draw - Added :shader hash option to choose optional shader to use.
-  * [TODO] #draw_rel - Added :shader hash option to choose optional shader to use.
+- Gosu::Color
+  * #to_opengl - Converts to [1.0, 1.0, 1.0, 1.0] rgba format (as used by OpenGL).
+  * .from_opengl - Creates new Color from [1.0, 1.0, 1.0, 1.0] rgba format (as used by OpenGL.
 
 - Gosu::Image
   * #draw - Added :shader hash option to choose optional shader to use.
@@ -58,11 +58,12 @@ Similar Libraries
 Credits
 -------
 
-- classicnoise2D.glsl - Classic Perlin noise implementation - Copyright (C) 2011 Ashima Arts - MIT license.
-- classicnoise3D.glsl - Classic Perlin noise implementation - Copyright (C) 2011 Ashima Arts - MIT license.
-- classicnoise4D.glsl - Classic Perlin noise implementation - Copyright (C) 2011 Ashima Arts - MIT license.
-- noise2D.glsl - Simplex noise implementation - Copyright (C) 2011 Ashima Arts - MIT license.
-- noise2D.glsl - Simplex noise implementation - Copyright (C) 2011 Ashima Arts - MIT license.
-- noise2D.glsl - Simplex noise implementation - Copyright (C) 2011 Ashima Arts - MIT license.
+- classicnoise2D.glsl - (2D Classic Perlin noise implementation)[https://github.com/ashima/webgl-noise/] - Copyright (C) 2011 Ashima Arts - MIT license.
+- classicnoise3D.glsl - (3D Classic Perlin noise implementation)[https://github.com/ashima/webgl-noise/] - Copyright (C) 2011 Ashima Arts - MIT license.
+- classicnoise4D.glsl - (4D Classic Perlin noise implementation)[https://github.com/ashima/webgl-noise/] - Copyright (C) 2011 Ashima Arts - MIT license.
+- noise2D.glsl - (2D Simplex noise implementation)[https://github.com/ashima/webgl-noise/] - Copyright (C) 2011 Ashima Arts - MIT license.
+- noise3D.glsl - (3D Simplex noise implementation)[https://github.com/ashima/webgl-noise/] - Copyright (C) 2011 Ashima Arts - MIT license.
+- noise4D.glsl - (4D (Simplex noise implementation)[https://github.com/ashima/webgl-noise/] - Copyright (C) 2011 Ashima Arts - MIT license.
+- bloom.frag - [Bloom filter by myheroics](http://myheroics.wordpress.com/2008/09/04/glsl-bloom-shader/)
 
 
