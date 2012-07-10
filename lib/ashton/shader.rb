@@ -7,22 +7,38 @@ module Ashton
 
     INCLUDE_PATH = File.expand_path "../shaders/include", __FILE__
     SHADER_PATH = File.expand_path "../shaders", __FILE__
-    DEFAULT_VERTEX_SOURCE = File.read File.join(SHADER_PATH, "default.vert")
-    DEFAULT_FRAGMENT_SOURCE = File.read File.join(SHADER_PATH, "default.frag")
 
-    # Todo: Pass in a filename (String) or name of built-in pp shader (Symbol)
+    # Instead of passing in source code, a file-name will be loaded or use a symbol to choose a built-in shader.
     #
-    # @option options [String] :vertex Source code for vertex shader.
-    # @option options [String] :vert equivalent to :vertex
-    # @option options [String] :fragment Source code for fragment shader.
-    # @option options [String] :frag equivalent to :fragment
+    # @option options [String, Symbol] :vertex Source code for vertex shader.
+    # @option options [String, Symbol] :vert equivalent to :vertex
+    # @option options [String, Symbol] :fragment Source code for fragment shader.
+    # @option options [String, Symbol] :frag equivalent to :fragment
     def initialize(options = {})
       unless GL.version_supported? MIN_OPENGL_VERSION
         raise NotSupportedError, "Ashton requires OpenGL #{MIN_OPENGL_VERSION} support to utilise shaders"
       end
 
-      vertex_source = options[:vertex] || options[:vert] || DEFAULT_VERTEX_SOURCE
-      fragment_source = options[:fragment] || options[:frag] || DEFAULT_FRAGMENT_SOURCE
+      vertex = options[:vertex] || options[:vert] || :default
+      fragment = options[:fragment] || options[:frag] || :default
+
+      # Passing in a file-name should load that file.
+      # Passing in a symbol picks a standard shader.
+      @vertex_source = if vertex.is_a? Symbol
+        File.read File.expand_path("#{vertex}.vert", SHADER_PATH)
+      elsif File.exists? vertex
+        File.read vertex
+      else
+        vertex
+      end
+
+      @fragment_source = if fragment.is_a? Symbol
+        File.read File.expand_path("#{fragment}.frag", SHADER_PATH)
+      elsif File.exists? fragment
+        File.read fragment
+      else
+        fragment
+      end
 
       @uniform_locations = {}
       @attribute_locations = {}
@@ -30,12 +46,9 @@ module Ashton
       @image = nil
       @color = [1, 1, 1, 1]
 
-      @vertex_source = vertex_source
-      @fragment_source = fragment_source
-
       # Actually compile and link.
-      @vertex = compile GL_VERTEX_SHADER, vertex_source
-      @fragment = compile GL_FRAGMENT_SHADER, fragment_source
+      @vertex = compile GL_VERTEX_SHADER, @vertex_source
+      @fragment = compile GL_FRAGMENT_SHADER, @fragment_source
       link
 
       # In case we are using '#version 130' or higher, set out own color output.

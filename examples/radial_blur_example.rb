@@ -8,14 +8,12 @@ end
 $LOAD_PATH.unshift File.expand_path('../lib/', File.dirname(__FILE__))
 require "ashton"
 
-def shader(file); File.read File.expand_path("../lib/ashton/shaders/#{file}", File.dirname(__FILE__)) end
-
 class TestWindow < Gosu::Window
   def initialize
     super 640, 480, false
     self.caption = "Post-processing with 'radial_blur' - hold space to disable; 1..9 sets blurriness"
 
-    @blur = Ashton::Shader.new fragment: shader('radial_blur.frag')
+    @blur = Ashton::Shader.new fragment: :radial_blur
     @blur['in_BrightFactor'] = 1.5
     @blur['in_BlurFactor'] = @blur_factor = 2.0
     @blur['in_Passes'] = 20 # Quite a lot of work, but just proves how fast shader are!

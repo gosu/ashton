@@ -8,7 +8,6 @@ end
 $LOAD_PATH.unshift File.expand_path('../lib/', File.dirname(__FILE__))
 require "ashton"
 
-def shader_file(file); File.read File.expand_path("../lib/ashton/shaders/#{file}", File.dirname(__FILE__)) end
 def media_path(file); File.expand_path "media/#{file}", File.dirname(__FILE__) end
 
 class Shockwave
@@ -18,7 +17,7 @@ class Shockwave
   def dead?; age > 3.0 end
 
   def initialize(x, y)
-    @shader = Ashton::Shader.new fragment: shader_file('shockwave2.frag')
+    @shader = Ashton::Shader.new fragment: :shockwave2
     @shader['in_ShockParams'] = [10.0, 0.8, 0.1] # Not entirely sure what these represent!
     @shader['in_Center'] = [x, $window.height - y]
     @start_time = Gosu::milliseconds

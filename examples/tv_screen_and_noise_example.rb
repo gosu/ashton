@@ -8,7 +8,6 @@ end
 $LOAD_PATH.unshift File.expand_path('../lib/', File.dirname(__FILE__))
 require "ashton"
 
-def shader(file); File.read File.expand_path("../lib/ashton/shaders/#{file}", File.dirname(__FILE__)) end
 def media_path(file); File.expand_path "media/#{file}", File.dirname(__FILE__) end
 
 class TestWindow < Gosu::Window
@@ -16,10 +15,10 @@ class TestWindow < Gosu::Window
     super 640, 480, false
     self.caption = "Post-processing with both 'tv_screen.frag' and 'noise.frag'"
 
-    @screen = Ashton::Shader.new fragment: shader('tv_screen.frag')
+    @screen = Ashton::Shader.new fragment: :tv_screen
     @screen['in_ColumnWidth'] = 1.0
 
-    @noise = Ashton::Shader.new fragment: shader('noise.frag')
+    @noise = Ashton::Shader.new fragment: :noise
 
     @font = Gosu::Font.new self, Gosu::default_font_name, 40
     @star = Gosu::Image.new(self, media_path("LargeStar.png"), true)
