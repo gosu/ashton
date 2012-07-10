@@ -40,16 +40,24 @@ Features
   * [TODO] #draw_triangle - Added :shader hash option
 
 - {Ashton::Shader}
+  * Wrapper around a GLSL shader program, which allows for complex, real-time, graphical manipulations.
   * #use {} - Inside the block, all draw operations are affected by the shader.
   * Supports vertex and fragment shaders.
-  * Includes a small library of example shaders (:radial_blur, :pixelate, etc).
+  * Includes a small library of example shaders, which can be used to both affect individual draw actions or post-process the whole screen (:radial_blur, :pixelate, etc).
 
 - {Ashton::Framebuffer}
+  * A relatively low-level graphics buffer that can be drawn onto and drawn onto the Window.
   * #use {} - Inside the block, draw operations go into the framebuffer, rather than onto the window.
   * #to_image - Convert to Gosu::Image. 
   * #draw - Draw directly onto a Gosu::Window (Only accepts x, y coordinate).
   * [TODO] #flip!, #flip - Invert framebuffer's vertical orientation.
-  
+
+Limitations
+-----------
+
+Because of the way that Gosu and Ashton are _currently_ implemented, most Ashton activities will clear the draw buffer.
+Thus, it is a good idea to make all your draws in Z-order yourself, rather than relying on Gosu to order them for you.
+
 Similar Libraries
 -----------------
 
@@ -58,12 +66,17 @@ Similar Libraries
 Credits
 -------
 
-- classicnoise2D.glsl - (2D Classic Perlin noise implementation)[https://github.com/ashima/webgl-noise/] - Copyright (C) 2011 Ashima Arts - MIT license.
-- classicnoise3D.glsl - (3D Classic Perlin noise implementation)[https://github.com/ashima/webgl-noise/] - Copyright (C) 2011 Ashima Arts - MIT license.
-- classicnoise4D.glsl - (4D Classic Perlin noise implementation)[https://github.com/ashima/webgl-noise/] - Copyright (C) 2011 Ashima Arts - MIT license.
-- noise2D.glsl - (2D Simplex noise implementation)[https://github.com/ashima/webgl-noise/] - Copyright (C) 2011 Ashima Arts - MIT license.
-- noise3D.glsl - (3D Simplex noise implementation)[https://github.com/ashima/webgl-noise/] - Copyright (C) 2011 Ashima Arts - MIT license.
-- noise4D.glsl - (4D (Simplex noise implementation)[https://github.com/ashima/webgl-noise/] - Copyright (C) 2011 Ashima Arts - MIT license.
-- bloom.frag - [Bloom filter by myheroics](http://myheroics.wordpress.com/2008/09/04/glsl-bloom-shader/)
+- Various trivial shaders - "randomly found on the Internet" :$
+
+- (Classic and Simplex noise functions)[https://github.com/ashima/webgl-noise/] - Copyright (C) 2011 Ashima Arts - MIT license.
+  * lib/ashton/shaders/include/classicnoise2D.glsl - 2D Classic Perlin noise implementation - `cnoise(vec2)`
+  * lib/ashton/shaders/include/classicnoise3D.glsl - 3D Classic Perlin noise implementation - `cnoise(vec3)`
+  * lib/ashton/shaders/include/classicnoise4D.glsl - 4D Classic Perlin noise implementation - `cnoise(vec4)`
+  * lib/ashton/shaders/include/noise2D.glsl - 2D Simplex noise implementation - `snoise(vec2)`
+  * lib/ashton/shaders/include/noise3D.glsl - 3D Simplex noise implementation - `snoise(vec3)`
+  * lib/ashton/shaders/include/noise4D.glsl - 4D Simplex noise implementation - `snoise(vec4)`
+
+- [Bloom filter by myheroics](http://myheroics.wordpress.com/2008/09/04/glsl-bloom-shader/)
+  * lib/ashton/shaders/include/bloom.frag
 
 
