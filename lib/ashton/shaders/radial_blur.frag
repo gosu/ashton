@@ -1,30 +1,54 @@
-#version 110
+#version 120
+
+// http://www.gamerendering.com/2008/12/20/radial-blur-filter/
 
 uniform sampler2D in_Texture; // Texture to manipulate.
 uniform int in_WindowWidth;
 uniform int in_WindowHeight;
 
-uniform float in_BlurFactor;
-uniform float in_BrightFactor;
-uniform vec2 in_Origin;
-uniform int in_Passes; // Number of passes to make (more is slower)
+uniform float in_Spacing; // good value is 1.0;
+uniform float in_Strength; // good value is 2.2;
 
-varying vec2 var_TexCoord; // Coordinate coming from the default vertex shader.
+varying vec2 var_TexCoord;
 
-void main()
+void main(void)
 {
-	vec2 Origin = vec2(in_Origin.x, 1.0 - in_Origin.y);
+    // some sample positions
+    float samples[10] =
+        float[](-0.08, -0.05, -0.03, -0.02, -0.01, 0.01, 0.02, 0.03, 0.05, 0.08);
 
-	vec2 TexCoord = vec2(var_TexCoord);
+    // 0.5,0.5 is the center of the screen
+    // so substracting uv from it will result in
+    // a vector pointing to the middle of the screen
+    vec2 dir = 0.5 - var_TexCoord;
 
-	vec4 SumColor = vec4(0.0, 0.0, 0.0, 0.0);
-	TexCoord += vec2(1.0 / float(in_WindowWidth), 1.0 / float(in_WindowHeight)) * 0.5 - Origin;
+    // calculate the distance to the center of the screen
+    float dist = sqrt(dir.x * dir.x + dir.y * dir.y);
 
-	for (int i = 0; i < in_Passes; i++)
-	{
-		float Scale = 1.0 - in_BlurFactor * (float(i) / float(in_Passes - 1));
-		SumColor += texture2D(in_Texture, TexCoord * Scale + Origin);
-	}
+    // normalize the direction (reuse the distance)
+    dir /= dist;
 
-	gl_FragColor = SumColor / float(in_Passes) * in_BrightFactor;
+    // this is the original colour of this fragment
+    // using only this would result in a non-blurred version
+    vec4 color = texture2D(in_Texture, var_TexCoord);
+
+    vec4 sum = color;
+
+    // take 10 additional blur samples in the direction towards
+    // the center of the screen
+    for (int i = 0; i < 10; i++)
+    {
+        sum += texture2D(in_Texture, var_TexCoord + dir * samples[i] * in_Spacing);
+    }
+
+    // we have taken eleven samples
+    sum *= 1.0/11.0;
+
+    // weighten the blur effect with the distance to the
+    // center of the screen ( further out is blurred more)
+    float t = dist * in_Strength;
+    t = clamp(t, 0.0, 1.0); //0 &lt;= t &lt;= 1
+
+    // Blend the original color with the averaged pixels
+    gl_FragColor = mix(color, sum, t);
 }

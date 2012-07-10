@@ -82,4 +82,7 @@ Credits
 - [Shockwave by Crystalin](http://empire-defense.crystalin.fr/blog/2d_shock_wave_texture_with_shader)
   * lib/ashton/shaders/include/shockwave.frag
 
+- [Radial Blur by gamerendering.com](http://www.gamerendering.com/2008/12/20/radial-blur-filter/)
+  * lib/ashton/shaders/include/radial_blur.frag
+
 
