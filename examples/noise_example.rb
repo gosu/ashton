@@ -61,12 +61,13 @@ void main()
 
     @font = Gosu::Font.new self, Gosu::default_font_name, 40
     @background = Gosu::Image.new(self, media_path("Earth.png"), true)
+    @start_time = Time.now
 
     update # Ensure the values are initially set.
   end
 
   def update
-    @noise[:in_T] = Gosu::milliseconds / 1000.0
+    @noise[:in_T] = Time.now - @start_time
   end
 
   def draw
