@@ -22,23 +22,24 @@ class TestWindow < Gosu::Window
     @image_emitter = Ashton::ParticleEmitter.new 100, 300, 0,
                                             image: @star,
                                             scale: 0.3,
-                                            speed: 1, time_to_live: 1,
+                                            speed: 1, time_to_live: 5,
                                             acceleration: -2,
-                                            max_particles: 1000,
-                                            interval: 0.0001
+                                            max_particles: 2000,
+                                            interval: 0.01
 
     @shaded_image_emitter = Ashton::ParticleEmitter.new 400, 200, 0,
-                                            image: @star,
-                                            scale: 0.3, shader: @sepia,
-                                            speed: 2, time_to_live: 1,
-                                            interval: 0.0002
+                                            image: @star, friction: 1,
+                                            shader: @sepia,
+                                            speed: 2, time_to_live: 5,
+                                            interval: 0.02, position_offset: 24
 
     @point_emitter = Ashton::ParticleEmitter.new 100, 50, 0,
-                                            scale: 8, color: Gosu::Color::RED,
-                                            speed: 1, time_to_live: 0.4,
-                                            interval: 0.0006,
-                                            max_particles: 1000,
-                                            interval: 0.00003
+                                            scale: 12, color: Gosu::Color::RED,
+                                            speed: 2, time_to_live: 4,
+                                            interval: 0.001,
+                                            max_particles: 3000,
+                                            interval: 0.003,
+                                            color: Gosu::Color.rgba(255, 0, 0, 50)
   end
 
   def update

@@ -49,8 +49,9 @@ module Gosu
     # TODO: Need to use point sprites here, but this is still much faster than individual #draws if using shaders and comparable if not.
     def draw_as_points(points, z, options = {})
       color = options[:color] || Gosu::Color::WHITE
-      scale = options[:scale] || 1.0
+      scale = options[:scale] || 10.0
       shader = options[:shader]
+      mode = options[:mode] || :default
 
       opengl_color = color.is_a?(Gosu::Color) ? color.to_opengl : color
 
@@ -61,12 +62,12 @@ module Gosu
           shader.color = color
 
           points.each do |x, y|
-            draw_rot_without_hash x, y, z, 0, 0.5, 0.5, scale, scale, color
+            draw_rot_without_hash x, y, z, 0, 0.5, 0.5, scale, scale, color, mode
           end
         end
       else
         points.each do |x, y|
-          draw_rot_without_hash x, y, z, 0, 0.5, 0.5, scale, scale, color
+          draw_rot_without_hash x, y, z, 0, 0.5, 0.5, scale, scale, color, mode
         end
       end
     end
