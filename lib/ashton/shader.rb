@@ -50,7 +50,11 @@ module Ashton
       link
 
       # In case we are using '#version 130' or higher, set out own color output.
-      glBindFragDataLocationEXT @program, 0, "out_FragColor"
+      begin
+        glBindFragDataLocationEXT @program, 0, "out_FragColor"
+      rescue NotImplementedError
+        # Might fail on an old system, but they will be fine just running GLSL 1.10
+      end
 
       use do
         # GL_TEXTURE0 will be activated later.

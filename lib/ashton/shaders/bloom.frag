@@ -1,3 +1,5 @@
+#version 110
+
 // Bloom filter
 // http://myheroics.wordpress.com/2008/09/04/glsl-bloom-shader/
 //

@@ -10,6 +10,12 @@ void main()
   vec4 Sepia2 = vec4( 1.0, 0.9, 0.5, 1.0 );
  
   vec4 Color = texture2D(in_Texture, vec2(var_TexCoord));
+
+  if(Color.a == 0.0)
+  {
+    gl_FragColor = Color;
+    return;
+  }
  
   float SepiaMix = dot(vec3(0.3, 0.59, 0.11), vec3(Color));
   Color = mix(Color, vec4(SepiaMix), vec4(0.5));
