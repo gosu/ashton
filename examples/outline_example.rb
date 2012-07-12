@@ -18,12 +18,7 @@ class TestWindow < Gosu::Window
 
     self.caption = "Post-processing with 'outline' - outline is scaled to stay the same width, regardless of zoom"
 
-    @red_outline = Ashton::Shader.new fragment: :outline, uniforms: {
-        outline_color: [1.0, 0.0, 0.0, 1.0],
-    }
-    @white_outline = Ashton::Shader.new fragment: :outline, uniforms: {
-        outline_color: [1.0, 1.0, 1.0, 1.0],
-    }
+    @outline = Ashton::Shader.new fragment: :outline
 
     @font = Gosu::Font.new self, Gosu::default_font_name, 40
     @ship = Gosu::Image.new(self, media_path("Starfighter.png"), true)
@@ -61,20 +56,22 @@ class TestWindow < Gosu::Window
   def draw
     @background.draw 0, 0, 0, width.fdiv(@background.width), height.fdiv(@background.height)
 
-    @white_outline.outline_width = 2.0
-    @buffer.draw 0, 0, 0, shader: @white_outline
+    @outline.outline_width = 2.0
+    @outline.outline_color = Gosu::Color::YELLOW
+    @buffer.draw 0, 0, 0, shader: @outline
 
     # Draw individually, each with their own outline.
     10.downto(1) do |i|
       scale = i / 2.0
       angle = i * 15 + Time.now.to_f * 10
-      shader = [@white_outline, @red_outline][i % 2]
+
+      @outline.outline_color = [Gosu::Color::RED, Gosu::Color::WHITE][i % 2]
 
       # This keeps the outline of constant width on the screen,
       # compared to the sprite pixels. Wouldn't keep updating this in real usage, of course.
-      shader.outline_width = 0.9 / scale
+      @outline.outline_width = 0.9 / scale
 
-      @ship.draw_rot 225 + i * 25, 15 + i * 30, 0, angle, 0.5, 0.5, scale, scale, :shader => shader
+      @ship.draw_rot 225 + i * 25, 15 + i * 30, 0, angle, 0.5, 0.5, scale, scale, :shader => @outline
     end
 
     # Drawing after the effect isn't processed, which is useful for GUI elements.

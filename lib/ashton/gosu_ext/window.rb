@@ -2,8 +2,11 @@
 module Gosu
   class Window
     class << self
-      # Used for post-processing effects.
-      attr_accessor :back_buffer
+      # Used for post-processing effects, but could be used by any
+      # anyone needing to have a temporary, full-window render buffer.
+      def back_buffer
+        @back_buffer ||= Ashton::WindowBuffer.new
+      end
     end
 
     alias_method :ashton_initialize, :initialize
@@ -36,8 +39,6 @@ module Gosu
         return
       end
 
-      Window.back_buffer ||= Ashton::Framebuffer.new width, height
-
       buffer = Window.back_buffer
       buffer.clear
 
@@ -46,21 +47,24 @@ module Gosu
         yield
       end
 
-      # clear screen and set "normal" openGL coordinates.
-      glClear GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT
-      glColor4f 1.0, 1.0, 1.0, 1.0
-      glMatrixMode GL_PROJECTION
-      glLoadIdentity
-      glViewport 0, 0, width, height
-      glOrtho 0, width, height, 0, -1, 1
+      $window.gl do
+        # Clear screen and set "normal" Gosu coordinates.
+        glClear GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT
+        glColor4f 1.0, 1.0, 1.0, 1.0
+        glMatrixMode GL_PROJECTION
+        glLoadIdentity
+        glViewport 0, 0, width, height
+        glOrtho 0, width, height, 0, -1, 1
 
-      # Draw the back-buffer onto the window, utilising the shader.
-      buffer.draw 0, 0, nil, shader: shaders[0]
+        # Draw the back-buffer onto the window, utilising the shader.
+        buffer.draw 0, 0, nil, shader: shaders[0]
 
-      # If using additional shaders, copy the screen out to the buffer and shader it.
-      shaders[1..-1].each do |shader|
-        buffer.capture_window
-        buffer.draw 0, 0, nil, shader: shader
+        # If using additional shaders, copy the screen out to the buffer and shader it.
+        # This is slower, but saves having a second back-buffer.
+        shaders[1..-1].each do |shader|
+          buffer.capture
+          buffer.draw 0, 0, nil, shader: shader
+        end
       end
     end
   end

@@ -1,10 +1,13 @@
 module Ashton
   class Framebuffer
+    DEFAULT_DRAW_COLOR = Gosu::Color::WHITE
+
     attr_reader :width, :height
 
     def initialize(width, height)
       @width, @height = width.to_i, height.to_i
-      @fbo, @texture = init_framebuffer
+      @fbo = create_framebuffer
+      @texture = create_color_buffer
 
       status = glCheckFramebufferStatusEXT GL_FRAMEBUFFER_EXT
       raise unless status == GL_FRAMEBUFFER_COMPLETE_EXT
@@ -12,7 +15,6 @@ module Ashton
       clear
 
       glBindFramebufferEXT GL_FRAMEBUFFER_EXT, 0
-      glBindRenderbufferEXT GL_RENDERBUFFER_EXT, 0
     end
 
     public
@@ -27,14 +29,12 @@ module Ashton
       color = options[:color]
       color = color.to_opengl if color.is_a? Gosu::Color
 
-      $window.gl do
-        glBindFramebufferEXT GL_FRAMEBUFFER_EXT, @fbo
-        glBindRenderbufferEXT GL_RENDERBUFFER_EXT, @texture
+      glBindFramebufferEXT GL_FRAMEBUFFER_EXT, @fbo
 
-        glDisable GL_BLEND # Need to replace the alpha too.
-        glClearColor *color
-        glClear GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT
-      end
+      glDisable GL_BLEND # Need to replace the alpha too.
+      glClearColor *color
+      glClear GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT
+      glEnable GL_BLEND
 
       nil
     end
@@ -79,14 +79,20 @@ module Ashton
     # @param y [Number] Top right corner
     # @option options :shader [Ashton::Shader] Shader to apply to drawing.
     def draw(x, y, z, options = {})
+      options = {
+          color: DEFAULT_DRAW_COLOR,
+      }.merge! options
       shader = options[:shader]
+      color = options[:color]
 
       shader.enable z if shader
 
       $window.gl z do
-        #shader.color = options[:color]
-        location = shader.send :uniform_location, "in_TextureEnabled", required: false
-        shader.send :set_uniform, location, true if location != Shader::INVALID_LOCATION
+        if shader
+          shader.color = color
+          location = shader.send :uniform_location, "in_TextureEnabled", required: false
+          shader.send :set_uniform, location, true if location != Shader::INVALID_LOCATION
+        end
 
         glEnable GL_BLEND
         glEnable GL_TEXTURE_2D
@@ -126,7 +132,11 @@ module Ashton
       rect = options[:rect]
 
       # Draw onto the clean flip buffer, in order to flip before saving.
-      @fbo_flip, @fbo_flip_texture = init_framebuffer unless defined? @fbo_flip
+      # TODO: Just add a second colour buffer, rather than using a second fbo.
+      unless defined? @fbo_flip
+        @fbo_flip = create_framebuffer
+        @fbo_flip_texture = create_color_buffer
+      end
 
       glBindFramebufferEXT GL_FRAMEBUFFER_EXT, @fbo_flip
       glClearColor 0, 0, 0, 0
@@ -151,29 +161,17 @@ module Ashton
 
     end
 
-    public
-    # Copy the window contents into the buffer.
-    def capture_window
-      glBindTexture GL_TEXTURE_2D, @texture
-      glCopyTexImage2D GL_TEXTURE_2D, 0, GL_RGBA8, 0, 0, width, height, 0
-    end
-
     protected
-    # Create an fbo and its texture
-    def init_framebuffer
+    # Create the fbo itself and assign it for rendering.
+    def create_framebuffer
       fbo = glGenFramebuffersEXT(1)[0]
       glBindFramebufferEXT GL_FRAMEBUFFER_EXT, fbo
 
-      texture = init_framebuffer_texture
-
-      glFramebufferTexture2DEXT GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, texture, 0
-
-      [fbo, texture]
+      fbo
     end
 
     protected
-    # Called by init_framebuffer.
-    def init_framebuffer_texture
+    def create_color_buffer
       texture = glGenTextures(1)[0]
       glBindTexture GL_TEXTURE_2D, texture
 
@@ -182,8 +180,11 @@ module Ashton
       glTexParameteri GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST
       glTexParameteri GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST
 
+      # Create an empty texture, that might be filled with junk.
       glTexImage2D GL_TEXTURE_2D, 0, GL_RGBA8, @width, @height,
                    0, GL_RGBA, GL_UNSIGNED_BYTE, nil
+
+      glFramebufferTexture2DEXT GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, texture, 0
 
       glBindTexture GL_TEXTURE_2D, 0 # Unbind the texture
 
@@ -197,8 +198,6 @@ module Ashton
 
       glDeleteFramebuffersEXT @fbo_flip if defined? @fbo_flip
       glDeleteTextures @fbo_flip_texture if defined? @fbo_flip_texture
-
-      glBindFramebufferEXT GL_FRAMEBUFFER_EXT, 0
     end
   end
 end
