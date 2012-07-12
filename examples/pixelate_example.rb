@@ -15,8 +15,9 @@ class TestWindow < Gosu::Window
     super 640, 480, false
     self.caption = "Post-processing with 'pixelate' - 1..9 affect pixel size"
 
-    @pixelate = Ashton::Shader.new fragment: :pixelate
-    @pixelate.pixel_size = @pixel_size = 4
+    @pixelate = Ashton::Shader.new fragment: :pixelate, uniforms: {
+        pixel_size: @pixel_size = 4,
+    }
 
     @font = Gosu::Font.new self, Gosu::default_font_name, 40
     @star = Gosu::Image.new(self, media_path("LargeStar.png"), true)

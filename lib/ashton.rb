@@ -13,6 +13,7 @@ module Ashton
   class ShaderLinkError < ShaderError; end
   class ShaderUniformError < ShaderError; end
   class ShaderAttributeError < ShaderError; end
+  class ShaderLoadError < ShaderError; end
 end
 
 require "ashton/gosu_ext/window"

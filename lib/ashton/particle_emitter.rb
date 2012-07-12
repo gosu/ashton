@@ -84,15 +84,8 @@ module Ashton
     end
 
     def draw
-      if @shader and !empty?
-        $window.flush
-        @shader.use do
-          @image.draw_as_points @points, @z, scale: @scale,
-                                shader: @shader, color: @color
-        end
-      else
-        @image.draw_as_points @points, @z, scale: @scale, color: @color
-      end
+      @image.draw_as_points @points, @z, scale: @scale,
+                            shader: @shader, color: @color
     end
 
     def emit

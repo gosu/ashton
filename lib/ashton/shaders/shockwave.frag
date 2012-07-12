@@ -19,7 +19,9 @@ void main()
 {
   vec2 uv = var_TexCoord;
   vec2 texCoord = uv;
-  float distance = distance(uv, in_Center / vec2(float(in_WindowWidth), float(in_WindowHeight)));
+  float x = in_Center.x / float(in_WindowWidth);
+  float y = (float(in_WindowHeight) - in_Center.y) / float(in_WindowHeight);
+  float distance = distance(uv, vec2(x, y));
 
   if ( (distance <= (in_Time + in_ShockParams.z)) &&
        (distance >= (in_Time - in_ShockParams.z)) )

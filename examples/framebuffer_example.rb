@@ -23,14 +23,16 @@ class GameWindow < Gosu::Window
   def update
     if button_down? Gosu::MsLeft
       # Draw into the framebuffer, rather than onto the screen.
-      @framebuffer.use do
+      @framebuffer.render do
         @star.draw_rot mouse_x, mouse_y, 0, 0, 0.5, 0.5
       end
     end
   end
 
+  def needs_cursor?; true end
+
   def draw
-    @framebuffer.draw 0, 0 # Draws immediately.
+    @framebuffer.draw 0, 0, 0
     @star.draw_rot mouse_x, mouse_y, 0, 0, 0.5, 0.5
 
     @font.draw "FPS: #{Gosu::fps}", 0, 0, 0
@@ -39,7 +41,7 @@ class GameWindow < Gosu::Window
   def button_down(id)
     case id
       when Gosu::KbDelete
-        @framebuffer.clear
+        @framebuffer.clear color: Gosu::Color.rgb(rand() * 255, rand() * 255, rand() * 255)
       when Gosu::KbEscape
         close
     end

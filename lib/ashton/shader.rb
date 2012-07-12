@@ -4,7 +4,7 @@ module Ashton
     MIN_OPENGL_VERSION = 2.0
 
     INCLUDE_PATH = File.expand_path "../shaders/include", __FILE__
-    SHADER_PATH = File.expand_path "../shaders", __FILE__
+    BUILT_IN_SHADER_PATH = File.expand_path "../shaders", __FILE__
     FRAGMENT_EXTENSION = ".frag"
     VERTEX_EXTENSION = ".vert"
 
@@ -16,6 +16,11 @@ module Ashton
 
     attr_reader :vertex_source, :fragment_source
 
+    # Is the shader currently in use?
+    def enabled?; !!@previous_program end
+    # Is this the currently activated shader program?
+    def current?; glGetIntegerv(GL_CURRENT_PROGRAM) == @program end
+
     # Instead of passing in source code, a file-name will be loaded or use a symbol to choose a built-in shader.
     #
     # `#include` will be recursively replaced in the source.
@@ -23,10 +28,11 @@ module Ashton
     # * `#include <noise>` will load the built-in shader function, shaders/include/noise.glsl
     # * `#include "/home/spooner/noise.glsl"` will include that file, relative to the current working directory, NOT the source file.
     #
-    # @option options [String, Symbol] :vertex Source code for vertex shader.
-    # @option options [String, Symbol] :vert equivalent to :vertex
-    # @option options [String, Symbol] :fragment Source code for fragment shader.
-    # @option options [String, Symbol] :frag equivalent to :fragment
+    # @option options :vertex [String, Symbol] (:default) Source code for vertex shader.
+    # @option options :vert [String, Symbol] (:default) Equivalent to :vertex
+    # @option options :fragment [String, Symbol] (:default) Source code for fragment shader.
+    # @option options :frag [String, Symbol] (:default) Equivalent to :fragment
+    # @option options :uniforms [Hash] Sets uniforms, as though calling shader[key] = value for each entry (but faster).
     def initialize(options = {})
       unless GL.version_supported? MIN_OPENGL_VERSION
         raise NotSupportedError, "Ashton requires OpenGL #{MIN_OPENGL_VERSION} support to utilise shaders"
@@ -53,146 +59,205 @@ module Ashton
       begin
         glBindFragDataLocationEXT @program, 0, "out_FragColor"
       rescue NotImplementedError
-        # Might fail on an old system, but they will be fine just running GLSL 1.10
+        # Might fail on an old system, but they will be fine just running GLSL 1.10 or 1.20
       end
 
       use do
         # GL_TEXTURE0 will be activated later.
-        glUniform1i glGetUniformLocation(@program, "in_Texture"), 0
+        set_uniform uniform_location("in_Texture", required: false), 0
 
-        # These are optional, and only really make sense in post-processing shaders.
-        glUniform1i glGetUniformLocation(@program, "in_WindowWidth"), $window.width
-        glUniform1i glGetUniformLocation(@program, "in_WindowHeight"), $window.height
+        # These are optional, and can be used to check pixel size.
+        set_uniform uniform_location("in_WindowWidth", required: false), $window.width
+        set_uniform uniform_location("in_WindowHeight", required: false), $window.height
+
+        # Set uniform values with :uniforms hash.
+        if options.has_key? :uniforms
+          options[:uniforms].each_pair do |uniform, value|
+            self[uniform] = value
+          end
+        end
       end
     end
 
+    protected
+    # Converts :frog_head to "in_FrogHead"
+    def uniform_name_from_symbol(uniform)
+      "in_#{uniform.to_s.split("_").map(&:capitalize).join}"
+    end
+
+    public
     # Creates a copy of the shader program, recompiling the source,
     # but not preserving the uniform values.
     def dup
       self.class.new :vertex => @vertex_source, :fragment => @fragment_source
     end
 
+    public
     # Make this the current shader program.
-    def use
-      previous_program = glGetIntegerv GL_CURRENT_PROGRAM
-      glUseProgram @program
+    def use(z = nil)
+      raise ArgumentError, "Block required (use #enable/#disable without blocks)" unless block_given?
+      raise ShaderError, "Shader already in use." if enabled?
 
-      if block_given?
+      enable z
+
+      result = nil
+      begin
         result = yield self
-        $window.flush # TODO: need to work out how to make shader affect delayed draws.
-        glUseProgram previous_program
+      ensure
+        disable z
       end
 
       result
     end
 
-    # Disable the shader program (not needed in block version of #use).
-    def disable
-      glUseProgram 0 # Disable the shader!
+    # Enable the shader program. Use #use for block version.
+    def enable(z = nil)
+      $window.gl z do
+        raise ShaderError, "This shader already enabled." if enabled?
+        current_shader = glGetIntegerv GL_CURRENT_PROGRAM
+        raise ShaderError, "Another shader already enabled." if current_shader > 0
+
+        @previous_program = current_shader
+        glUseProgram @program
+      end
+
+      nil
     end
 
-    # Is this the current shader program?
-    def current?
-      glGetIntegerv(GL_CURRENT_PROGRAM) == @program
+    # Disable the shader program.
+    def disable(z = nil)
+      $window.gl z do
+        raise ShaderError, "Shader not enabled." unless enabled?
+        glUseProgram @previous_program # Disable the shader!
+        @previous_program = nil
+      end
+
+      nil
     end
 
+    public
     # Allow
     #   `shader.blob_frequency = 5`
     # to map to
-    #   `shader[:in_BlobFrequency] = 5`
+    #   `shader["in_BlobFrequency"] = 5`
     # TODO: define specific methods at compile time, based on parsing the source?
     def method_missing(meth, *args, &block)
       if args.size == 1 and meth =~ /^(.+)=$/
-        uniform_name = "in_#{$1.split("_").map(&:capitalize).join}"
-        self[uniform_name] = args[0]
+        self[$1.to_sym] = args[0]
       else
         super meth, *args, &block
       end
     end
 
+    public
     # Set the value of a uniform.
-    def []=(name, value)
-      name = name.to_sym
+    #
+    # @param [String, Symbol] If a Symbol, :frog_paste is looked up as "in_FrogPaste", otherwise the Sting is used directly.
+    #
+    # @raises ShaderUniformError unless requested uniform is defined in vertex or fragment shaders.
+    def []=(uniform, value)
+      uniform = uniform_name_from_symbol(uniform) if uniform.is_a? Symbol
 
-      use do
-        case value
-          when true, GL_TRUE
-            glUniform1i uniform(name), 1
+      # Ensure that the program is current before setting values.
+      needs_use = !current?
+      enable if needs_use
+      set_uniform uniform_location(uniform), value
+      disable if needs_use
 
-          when false, GL_FALSE
-            glUniform1i uniform(name), 0
-
-          when Float
-            glUniform1f uniform(name), value
-
-          when Integer
-            glUniform1i uniform(name), value
-
-          when Gosu::Color
-            glUniform4f uniform(name), *value.to_opengl
-
-          when Array
-            size = value.size
-
-            raise ArgumentError, "Empty array not supported for uniform data" if size.zero?
-            raise ArgumentError, "Only support uniforms up to 4 elements" if size > 4
-
-            case value[0]
-              when Float
-                GL.send "glUniform#{size}f", uniform(name), *value
-
-              when Integer
-                GL.send "glUniform#{size}i", uniform(name), *value
-
-              else
-                raise ArgumentError, "Uniform data type not supported for element of type: #{value[0].class}"
-            end
-
-          else
-            raise ArgumentError, "Uniform data type not supported for type: #{value.class}"
-        end
-      end
+      value
     end
 
+    protected
+    # Set uniform without trying to force use of the program.
+    def set_uniform(location, value)
+      raise ShaderUniformError unless current?
 
+      return if location == INVALID_LOCATION # Not for end-users :)
 
-    def uniform(name)
+      case value
+        when true, GL_TRUE
+          glUniform1i location, 1
+
+        when false, GL_FALSE
+          glUniform1i location, 0
+
+        when Float
+          glUniform1f location, value
+
+        when Integer
+          glUniform1i location, value
+
+        when Gosu::Color
+          glUniform4f location, *value.to_opengl
+
+        when Array
+          size = value.size
+
+          raise ArgumentError, "Empty array not supported for uniform data" if size.zero?
+          raise ArgumentError, "Only support uniforms up to 4 elements" if size > 4
+
+          case value[0]
+            when Float
+              GL.send "glUniform#{size}f", location, *value
+
+            when Integer
+              GL.send "glUniform#{size}i", location, *value
+
+            else
+              raise ArgumentError, "Uniform data type not supported for element of type: #{value[0].class}"
+          end
+
+        else
+          raise ArgumentError, "Uniform data type not supported for type: #{value.class}"
+      end
+
+      value
+    end
+
+    protected
+    def uniform_location(name, options = {})
+      options = {
+          required: true
+      }.merge! options
+      
       location = @uniform_locations[name]
       if location
         location
       else
         location = glGetUniformLocation @program, name.to_s
-        raise ShaderUniformError, "No #{name} uniform specified in program" if location == INVALID_LOCATION
+        if options[:required] && location == INVALID_LOCATION
+          raise ShaderUniformError, "No #{name.inspect} uniform specified in program"
+        end
         @uniform_locations[name] = location
       end
     end
 
-
-
+    public
     def image=(image)
-      use do
-        if image
-          info = image.gl_tex_info
+      raise ShaderError, "Can't set image unless using shader" unless current?
 
-          # Bind the single texture to 'in_Texture'
-          glActiveTexture GL_TEXTURE0
-          glBindTexture GL_TEXTURE_2D, info.tex_name
-          self[:in_Texture] = 0
-          raise unless glGetIntegerv(GL_ACTIVE_TEXTURE) == GL_TEXTURE0
-        end
+      if image
+        info = image.gl_tex_info
+
+        glActiveTexture GL_TEXTURE0
+        glBindTexture GL_TEXTURE_2D, info.tex_name
       end
 
-      glUniform1i glGetAttribLocation(@program, "in_TextureEnabled"), image ? 1 : 0
+      set_uniform uniform_location("in_TextureEnabled", required: false), !!image
 
       @image = image
     end
 
+    public
     def color=(color)
-      raise unless current?
-
       opengl_color = color.is_a?(Gosu::Color) ? color.to_opengl : color
 
-      #glVertexAttrib4f glGetAttribLocation(@program, "in_Color"), *opengl_color
+      needs_use = !current?
+      enable if needs_use
+      location = glGetAttribLocation @program, "in_Color"
+      glVertexAttrib4f location, *opengl_color unless location == INVALID_LOCATION
+      disable if needs_use
+
       @color = opengl_color
     end
 
@@ -257,7 +322,12 @@ module Ashton
     # TODO: What about line numbers getting messed up by #include?
     def process_source(shader, extension)
       source = if shader.is_a? Symbol
-                 File.read File.expand_path("#{shader}#{extension}", SHADER_PATH)
+                 file = File.expand_path "#{shader}#{extension}", BUILT_IN_SHADER_PATH
+                 unless File.exists? file
+                   raise ShaderLoadError, "Failed to load built-in shader: #{shader.inspect}"
+                 end
+                 File.read file
+
                elsif File.exists? shader
                  File.read shader
                else

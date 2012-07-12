@@ -31,12 +31,6 @@ Features
 
 - {Ashton::Framebuffer} - low-level graphics buffer that can be drawn directly onto and drawn to the Window.
 
-Limitations
------------
-
-Because of the way that Gosu and Ashton are _currently_ implemented, most Ashton activities will clear the draw buffer.
-Thus, it is a good idea to make all your draws in Z-order yourself, rather than relying on Gosu to order them for you.
-
 Similar Libraries
 -----------------
 

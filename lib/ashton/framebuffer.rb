@@ -1,20 +1,6 @@
 module Ashton
   class Framebuffer
-    TEXTURE_COORDINATES = [
-        [0, 1], # TL
-        [0, 0], # BL
-        [1, 0], # TR
-        [1, 1], # BR
-    ]
-
-    TEXTURE_COORDINATES_FLIPPED = [
-        [0, 0], # BL
-        [0, 1], # TL
-        [1, 1], # BR
-        [1, 0], # TR
-    ]
-
-    attr_reader :width, :height, :texture
+    attr_reader :width, :height
 
     def initialize(width, height)
       @width, @height = width.to_i, height.to_i
@@ -29,34 +15,58 @@ module Ashton
       glBindRenderbufferEXT GL_RENDERBUFFER_EXT, 0
     end
 
-    # Clears the buffer to transparent.
+    public
+    # Clears the buffer, optionally to a specific color.
+    #
+    # @option options :color [Gosu::Color, Array<Float>] (transparent)
     def clear(options = {})
       options = {
           color: [0.0, 0.0, 0.0, 0.0],
       }.merge! options
 
-      glBindFramebufferEXT GL_FRAMEBUFFER_EXT, @fbo
+      color = options[:color]
+      color = color.to_opengl if color.is_a? Gosu::Color
 
-      glClearColor *options[:color]
-      glClear GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT
+      $window.gl do
+        glBindFramebufferEXT GL_FRAMEBUFFER_EXT, @fbo
+        glBindRenderbufferEXT GL_RENDERBUFFER_EXT, @texture
 
-      glBindFramebufferEXT GL_FRAMEBUFFER_EXT, 0
+        glDisable GL_BLEND # Need to replace the alpha too.
+        glClearColor *color
+        glClear GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT
+      end
+
+      nil
     end
 
+    public
     # Enable the framebuffer to use (e.g. to draw or convert it).
-    # BUG: This will force all draws performed in, AND BEFORE, the block!
-    def use
-      raise ArgumentError, "block required" unless block_given?
+    def render
+      raise ArgumentError, "block required (use #enable/#disable without blocks)" unless block_given?
 
-      glBindFramebufferEXT GL_FRAMEBUFFER_EXT, @fbo
-      result = yield self
-
-      $window.flush
-      glBindFramebufferEXT GL_FRAMEBUFFER_EXT, 0
+      enable
+      begin
+        result = yield self
+      ensure
+        disable
+      end
 
       result
     end
 
+    public
+    def enable
+      $window.flush # Ensure that any drawing _before_ the render block is drawn to screen, rather than into the buffer.
+      glBindFramebufferEXT GL_FRAMEBUFFER_EXT, @fbo
+    end
+
+    public
+    def disable
+      $window.flush # Force all the drawing to draw now!
+      glBindFramebufferEXT GL_FRAMEBUFFER_EXT, 0
+    end
+
+    public
     # Draw the image, _immediately_ (no z-ordering by Gosu).
     #
     # This is not as versatile as converting the Framebuffer into a Gosu::Image and then
@@ -65,45 +75,48 @@ module Ashton
     #
     # Drawing in Gosu orientation will be flipped in standard OpenGL and visa versa.
     #
-    # @param x [Number]
-    # @param y [Number]
-    # @option options :orientation [:gosu, :opengl] (:gosu)
-    def draw x, y, options = {}
-      options = {
-          :orientation => :gosu,
-      }.merge! options
+    # @param x [Number] Top left corner
+    # @param y [Number] Top right corner
+    # @option options :shader [Ashton::Shader] Shader to apply to drawing.
+    def draw(x, y, z, options = {})
+      shader = options[:shader]
 
-      glEnable GL_TEXTURE_2D
-      glBindTexture GL_TEXTURE_2D, @texture
+      shader.enable z if shader
 
-      coords = case options[:orientation]
-                 when :gosu   then TEXTURE_COORDINATES_FLIPPED
-                 when :opengl then TEXTURE_COORDINATES
-                 else raise ArgumentError, ":orientation option expected to be either :opengl or :gosu"
-               end
+      $window.gl z do
+        #shader.color = options[:color]
+        location = shader.send :uniform_location, "in_TextureEnabled", required: false
+        shader.send :set_uniform, location, true if location != Shader::INVALID_LOCATION
 
-      glBegin GL_QUADS do
-        glTexCoord2d *coords[0]
-        glVertex2d x, y + @height # BL
+        glEnable GL_BLEND
+        glEnable GL_TEXTURE_2D
+        glActiveTexture GL_TEXTURE0
+        glBindTexture GL_TEXTURE_2D, @texture
 
-        glTexCoord2d *coords[1]
-        glVertex2d x, y # TL
+        glBegin GL_QUADS do
+          glTexCoord2d 0, 0
+          glVertex2d x, y + @height # BL
 
-        glTexCoord2d *coords[2]
-        glVertex2d x + @width, y # TR
+          glTexCoord2d 0, 1
+          glVertex2d x, y # TL
 
-        glTexCoord2d *coords[3]
-        glVertex2d x + @width, y + @height # BR
+          glTexCoord2d 1, 1
+          glVertex2d x + @width, y # TR
+
+          glTexCoord2d 1, 0
+          glVertex2d x + @width, y + @height # BR
+        end
       end
 
-      glBindTexture GL_TEXTURE_2D, 0
+      shader.disable z if shader
     end
 
+    public
     # Convert the current contents of the buffer into a Gosu::Image
     #
-    # @option options [Boolean] :caching (true) TexPlay behaviour.
-    # @option options [Boolean] :tileable (false) Standard Gosu behaviour.
-    # @option options [Array<Integer>] :rect ([0, 0, width, height]) Rectangular area of buffer to use to create the image [x, y, w, h]
+    # @option options :caching [Boolean] (true) TexPlay behaviour.
+    # @option options :tileable [Boolean] (false) Standard Gosu behaviour.
+    # @option options :rect [Array<Integer>] ([0, 0, width, height]) Rectangular area of buffer to use to create the image [x, y, w, h]
     def to_image(options = {})
       options = {
         rect: [0, 0, @width, @height],
@@ -118,7 +131,7 @@ module Ashton
       glBindFramebufferEXT GL_FRAMEBUFFER_EXT, @fbo_flip
       glClearColor 0, 0, 0, 0
       glClear GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT
-      draw 0, 0
+      draw 0, 0, nil
 
       # Read the data in the flip-buffer.
       glBindTexture GL_TEXTURE_2D, @fbo_flip_texture
@@ -138,6 +151,14 @@ module Ashton
 
     end
 
+    public
+    # Copy the window contents into the buffer.
+    def capture_window
+      glBindTexture GL_TEXTURE_2D, @texture
+      glCopyTexImage2D GL_TEXTURE_2D, 0, GL_RGBA8, 0, 0, width, height, 0
+    end
+
+    protected
     # Create an fbo and its texture
     def init_framebuffer
       fbo = glGenFramebuffersEXT(1)[0]

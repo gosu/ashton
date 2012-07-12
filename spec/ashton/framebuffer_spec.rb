@@ -23,10 +23,14 @@ describe Ashton::Framebuffer do
     end
   end
 
-  describe "use" do
-    it "should accept a block and run it, passing itself as a parameter" do
+  describe "render" do
+    it "should fail without a block" do
+      ->{ @subject.render }.should raise_error ArgumentError
+    end
+
+    it "should passing itself into the block" do
       buffer = nil
-      @subject.use do |fb|
+      @subject.render do |fb|
         buffer = fb
       end
 
@@ -42,7 +46,7 @@ describe Ashton::Framebuffer do
     end
 
     it "should fail without a block" do
-      lambda { @subject.use }.should raise_error ArgumentError
+      lambda { @subject.render }.should raise_error ArgumentError
     end
   end
 

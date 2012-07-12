@@ -13,7 +13,7 @@ class TestWindow < Gosu::Window
     super 640, 480, false
     self.caption = "Particle emitters"
 
-    @sepia = Ashton::Shader.new fragment: :sepia
+    @grayscale = Ashton::Shader.new fragment: :grayscale
 
     @font = Gosu::Font.new self, Gosu::default_font_name, 24
     @star = Gosu::Image.new self, media_path("SmallStar.png"), true
@@ -29,7 +29,7 @@ class TestWindow < Gosu::Window
 
     @shaded_image_emitter = Ashton::ParticleEmitter.new 400, 200, 0,
                                             image: @star, friction: 1,
-                                            shader: @sepia,
+                                            shader: @grayscale,
                                             speed: 2, time_to_live: 5,
                                             interval: 0.02, position_offset: 24
 

@@ -1,41 +1,54 @@
 module Gosu
   class Image
+    DEFAULT_DRAW_COLOR = Gosu::Color::WHITE
     alias_method :draw_without_hash, :draw
-
+    protected :draw_without_hash
     def draw(*args)
-      if args.last.is_a? Hash
-        shader = args.last[:shader]
-        if shader
-          $window.flush
-          shader.use do
-            shader.image = self
-            shader.color = args[5].is_a?(Color) ? args[5] : [1, 1, 1, 1]
-            draw_without_hash *args[0..-2]
-          end
-        else
-          draw_without_hash *args[0..-2]
+      args, shader = if args.last.is_a?(Hash)
+                       [args[0..-2], args.last[:shader]]
+                     else
+                       [args, nil]
+                     end
+
+      z = args[2]
+
+      if shader
+        shader.enable z
+        $window.gl z do
+          shader.image = self
+          shader.color = args[5].is_a?(Color) ? args[5] : DEFAULT_DRAW_COLOR
         end
-      else
+      end
+
+      begin
         draw_without_hash *args
+      ensure
+        shader.disable z if shader
       end
     end
 
     alias_method :draw_rot_without_hash, :draw_rot
+    protected :draw_rot_without_hash
     def draw_rot(*args)
-      if args.last.is_a? Hash
-        shader = args.last[:shader]
-        if shader
-          $window.flush
-          shader.use do
-            shader.image = self
-            shader.color = args[8].is_a?(Color) ? args[8] : [1, 1, 1, 1]
-            draw_rot_without_hash *args[0..-2]
-          end
-        else
-          draw_rot_without_hash *args[0..-2]
+      args, shader = if args.last.is_a?(Hash)
+                       [args[0..-2], args.last[:shader]]
+                     else
+                       [args, nil]
+                     end
+      z = args[2]
+
+      if shader
+        shader.enable z
+        $window.gl z do
+          shader.image = self
+          shader.color = args[8].is_a?(Color) ? args[8] : DEFAULT_DRAW_COLOR
         end
-      else
+      end
+
+      begin
         draw_rot_without_hash *args
+      ensure
+        shader.disable z if shader
       end
     end
 
@@ -48,27 +61,27 @@ module Gosu
     #
     # TODO: Need to use point sprites here, but this is still much faster than individual #draws if using shaders and comparable if not.
     def draw_as_points(points, z, options = {})
-      color = options[:color] || Gosu::Color::WHITE
-      scale = options[:scale] || 10.0
+      color = options[:color] || DEFAULT_DRAW_COLOR
+      scale = options[:scale] || 1.0
       shader = options[:shader]
       mode = options[:mode] || :default
 
       opengl_color = color.is_a?(Gosu::Color) ? color.to_opengl : color
 
       if shader
-        $window.flush # Ensure that other pending draws don't get shaded.
-        shader.use do
+        shader.enable z
+        $window.gl z do
           shader.image = self
           shader.color = color
-
-          points.each do |x, y|
-            draw_rot_without_hash x, y, z, 0, 0.5, 0.5, scale, scale, color, mode
-          end
         end
-      else
+      end
+
+      begin
         points.each do |x, y|
           draw_rot_without_hash x, y, z, 0, 0.5, 0.5, scale, scale, color, mode
         end
+      ensure
+        shader.disable z if shader
       end
     end
   end

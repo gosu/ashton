@@ -21,19 +21,14 @@ class GameWindow < Gosu::Window
     @font = Gosu::Font.new self, Gosu::default_font_name, 24
     @image = Gosu::Image.new self, media_path("Earth.png"), true
 
-    @sepia = Ashton::Shader.new :fragment => :sepia
-
-    @contrast = Ashton::Shader.new :fragment => :contrast
-
-
-    @mezzotint = Ashton::Shader.new :fragment => :mezzotint
-
-    @fade = Ashton::Shader.new :fragment => :fade
-    @fade.fade = 0.75
-
-    @grayscale = Ashton::Shader.new :fragment => :grayscale
-
-    @color_inversion = Ashton::Shader.new :fragment => :color_inversion
+    @sepia = Ashton::Shader.new fragment: :sepia
+    @contrast = Ashton::Shader.new fragment: :contrast
+    @mezzotint = Ashton::Shader.new fragment: :mezzotint
+    @grayscale = Ashton::Shader.new fragment: :grayscale
+    @color_inversion = Ashton::Shader.new fragment: :color_inversion
+    @fade = Ashton::Shader.new fragment: :fade, uniforms: {
+        fade: 0.75,
+    }
 
     update # Ensure values are set before draw.
   end
