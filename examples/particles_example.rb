@@ -31,7 +31,9 @@ class TestWindow < Gosu::Window
                                                         image: @star, friction: 1,
                                                         shader: @grayscale,
                                                         speed: 2, time_to_live: 5,
-                                                        interval: 0.02, position_offset: 24
+                                                        interval: 0.001,
+                                                        max_particles: 3000,
+                                                        position_offset: 40
 
     @point_emitter = Ashton::ParticleEmitter.new 100, 100, 0,
                                                  scale: 12,
