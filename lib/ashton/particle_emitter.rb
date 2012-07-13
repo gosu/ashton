@@ -1,118 +1,61 @@
 module Ashton
   class ParticleEmitter
-    def empty?; @points.empty? end
-    def size; @points.size end
+    def empty?; count == 0 end
 
     WHITE_PIXEL_BLOB = "\xFF" * 4
     DEFAULT_MAX_PARTICLES = 1000
 
     def initialize(x, y, z, options = {})
-      @x, @y, @z = x, y, z
-
-      initialize_ x, y, z, options
-
       @@pixel ||= Gosu::Image.new $window, Ashton::ImageStub.new(WHITE_PIXEL_BLOB, 1, 1)
 
-      @speed = options[:speed] || 0
-      @image = options[:image] || @@pixel
-      @friction = options[:friction] || 0
-      @color = options[:color] || Gosu::Color::WHITE
-
-      @time_to_live = options[:time_to_live] || Float::INFINITY
-      #@zoom = options[:zoom] || 1.0
-      #@fade = options[:fade] || 1.0
-      @gravity = options[:gravity] || 0
-      @max_particles = options[:max_particles] || Float::INFINITY
-
-      @scale = options[:scale] || 1.0
-      @shader = options[:shader]
-      @interval = options[:interval] || 1.0
+      # I'm MUCH too lazy to implement a huge options hash manager in C, especially on a constructor.
+      options = {
+          image: @@pixel,
+          color: Gosu::Color::WHITE,
+          max_particles: 100,
+          gravity: 0,
+          fade: 0.0,                     fade_deviation: 0.0,
+          friction: 0.0,                 friction_deviation: 0.0,
+          interval: Float::INFINITY,     interval_deviation: 0.0,
+          offset: 0.0,                   offset_deviation: 0.0,
+          scale: 1.0,                    scale_deviation: 0.0,
+          speed: 0.0,                    speed_deviation: 0.0,
+          time_to_live: Float::INFINITY, time_to_live_deviation: 0.0,
+          zoom: 0.0,                     zoom_deviation: 0.0,
+          
+      }.merge! options
       
-      @speed_deviation = options[:speed_deviation] || 0
-      @friction_deviation = options[:friction_deviation] || 0
-      @time_to_live_deviation = options[:time_to_live_deviation] || 0
-      @position_offset = options[:position_offset] || 0
+      @image = options[:image] || @@pixel
+      @color = options[:color] || Color::Gosu::WHITE
+      @shader = options[:shader]
 
-      @points = []
-      @data = []
+      initialize_ x, y, z, options[:max_particles]
 
-      @time_until_emit = @interval
-    end
+      self.gravity = options[:gravity]
 
-    def update
-      elapsed = 0.017
+      self.zoom = options[:fade]
+      self.zoom_deviation = options[:fade_deviation]
 
-      destroyed = 0
+      self.friction = options[:friction]
+      self.friction_deviation = options[:friction_deviation]
 
-      @data.each_with_index do |data|
-        data[:time_to_live] -= elapsed
+      self.interval = options[:interval]
+      self.interval_deviation = options[:interval_deviation]
 
-        if data[:time_to_live] <= 0
-          destroyed += 1
-        else
-          # Physics motion.
-          if data[:friction] != 0
-            data[:velocity_x] *= 1 - (data[:friction] * elapsed)
-            data[:velocity_y] *= 1 - (data[:friction] * elapsed)
-          end
+      self.offset = options[:offset]
+      self.offset_deviation = options[:offset_deviation]
 
-          data[:velocity_y] += @gravity * elapsed
+      self.scale = options[:scale]
+      self.scale_deviation = options[:scale_deviation]
 
-          point = data[:point]
-          point[0] += data[:velocity_x]
-          point[1] += data[:velocity_y]
+      self.speed = options[:speed]
+      self.speed_deviation = options[:speed_deviation]
 
-          #data[:scale] *= data[:zoom] * time
-          #data[:alpha] *= data[:fade] * time
-        end
-      end
+      self.time_to_live = options[:time_to_live]
+      self.time_to_live_deviation = options[:time_to_live_deviation]
 
-      @points.shift destroyed
-      @data.shift destroyed
-
-      if @points.size > @max_particles
-        excess = @points.size - @max_particles
-        @points.shift excess
-        @data.shift excess
-      end
-
-      # Consider emitting one or more particles.
-      @time_until_emit -= elapsed
-      while @time_until_emit <= 0
-        emit
-        @time_until_emit += @interval
-      end
-
-      nil
-    end
-
-    def draw
-      @image.draw_as_points @points, @z, scale: @scale,
-                            shader: @shader, color: @color
-    end
-
-    def emit
-      angle = rand() * 360
-
-      speed = deviate @speed, @speed_deviation
-
-      position_distance = deviate @position_offset / 2.0, 1.0
-      position_angle = rand() * 360
-      x = @x + Gosu::offset_x(position_angle, position_distance)
-      y = @y + Gosu::offset_y(position_angle, position_distance)
-
-      data = {
-          friction:  deviate(@friction, @friction_deviation),
-          velocity_x: Gosu::offset_x(angle, speed),
-          velocity_y: Gosu::offset_y(angle, speed),
-          time_to_live: deviate(@time_to_live, @time_to_live_deviation),
-          point: [x, y],
-      }
-
-      @points << data[:point]
-      @data << data
-
-      nil
+      self.zoom = options[:zoom]
+      self.zoom_deviation = options[:zoom_deviation]
     end
   end
 end

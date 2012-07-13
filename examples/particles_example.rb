@@ -22,18 +22,17 @@ class TestWindow < Gosu::Window
     @image_emitter = Ashton::ParticleEmitter.new 450, 100, 0,
                                                  image: @star,
                                                  scale: 0.3,
-                                                 speed: 1, time_to_live: 5,
+                                                 speed: 1, time_to_live: 10,
                                                  acceleration: -2,
-                                                 max_particles: 2000,
+                                                 max_particles: 3000,
                                                  interval: 0.01
-    p @image_emitter.max_particles
 
     @shaded_image_emitter = Ashton::ParticleEmitter.new 450, 350, 0,
                                                         image: @star, friction: 1,
                                                         shader: @grayscale,
                                                         speed: 2, time_to_live: 5,
                                                         interval: 0.001,
-                                                        max_particles: 3000,
+                                                        max_particles: 5000,
                                                         position_offset: 40
 
     @point_emitter = Ashton::ParticleEmitter.new 100, 100, 0,
@@ -75,7 +74,7 @@ class TestWindow < Gosu::Window
     @image_emitter.draw
     @shaded_image_emitter.draw
 
-    @font.draw "FPS: #{Gosu::fps} Img: #{@image_emitter.size} ShaImg: #{@shaded_image_emitter.size} Pnt: #{@point_emitter.size} ShaPnt: #{@shaded_point_emitter.size}", 0, 0, 0
+    @font.draw "FPS: #{Gosu::fps} Img: #{@image_emitter.count} ShaImg: #{@shaded_image_emitter.count} Pnt: #{@point_emitter.count} ShaPnt: #{@shaded_point_emitter.count}", 0, 0, 0
   end
 end
 

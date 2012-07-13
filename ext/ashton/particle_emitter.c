@@ -1,102 +1,245 @@
 #include "particle_emitter.h"
 
 
+// === GETTERS & SETTERS ===
+GET_SET_EMITTER_DATA(x, rb_float_new, NUM2DBL);
+GET_SET_EMITTER_DATA(y, rb_float_new, NUM2DBL);
+GET_SET_EMITTER_DATA(z, rb_float_new, NUM2DBL);
+GET_SET_EMITTER_DATA(gravity, rb_float_new, NUM2DBL);
+
+GET_SET_EMITTER_DATA_WITH_DEVIATION(fade, rb_float_new, NUM2DBL);
+GET_SET_EMITTER_DATA_WITH_DEVIATION(friction, rb_float_new, NUM2DBL);
+GET_SET_EMITTER_DATA_WITH_DEVIATION(interval, rb_float_new, NUM2DBL);
+GET_SET_EMITTER_DATA_WITH_DEVIATION(offset, rb_float_new, NUM2DBL);
+GET_SET_EMITTER_DATA_WITH_DEVIATION(scale, rb_float_new, NUM2DBL);
+GET_SET_EMITTER_DATA_WITH_DEVIATION(speed, rb_float_new, NUM2DBL);
+GET_SET_EMITTER_DATA_WITH_DEVIATION(time_to_live, rb_float_new, NUM2DBL);
+GET_SET_EMITTER_DATA_WITH_DEVIATION(zoom, rb_float_new, NUM2DBL);
+
+GET_EMITTER_DATA(max_particles, INT2NUM);
+GET_EMITTER_DATA(count, INT2NUM);
+
 void Init_Ashton_ParticleEmitter(VALUE module)
 {
     VALUE rb_cParticleEmitter = rb_define_class_under(module, "ParticleEmitter", rb_cObject);
 
     rb_define_singleton_method(rb_cParticleEmitter, "new", Ashton_ParticleEmitter_singleton_new, -1);
 
-    rb_define_method(rb_cParticleEmitter, "initialize_", Ashton_ParticleEmitter_init, -1);
+    rb_define_method(rb_cParticleEmitter, "initialize_", Ashton_ParticleEmitter_init, 4);
 
-    // Getters/Setters.
-    rb_define_method(rb_cParticleEmitter, "x", Ashton_ParticleEmitter_get_x, 0);
-    rb_define_method(rb_cParticleEmitter, "y", Ashton_ParticleEmitter_get_y, 0);
-    rb_define_method(rb_cParticleEmitter, "z", Ashton_ParticleEmitter_get_z, 0);
+    // Getters & Setters
+    DEFINE_METHOD_GET_SET(x);
+    DEFINE_METHOD_GET_SET(y);
+    DEFINE_METHOD_GET_SET(z);
+    DEFINE_METHOD_GET_SET(gravity);
 
+    DEFINE_METHOD_GET_SET_WITH_DEVIATION(fade);
+    DEFINE_METHOD_GET_SET_WITH_DEVIATION(friction);
+    DEFINE_METHOD_GET_SET_WITH_DEVIATION(interval);
+    DEFINE_METHOD_GET_SET_WITH_DEVIATION(offset);
+    DEFINE_METHOD_GET_SET_WITH_DEVIATION(scale);
+    DEFINE_METHOD_GET_SET_WITH_DEVIATION(speed);
+    DEFINE_METHOD_GET_SET_WITH_DEVIATION(time_to_live);
+    DEFINE_METHOD_GET_SET_WITH_DEVIATION(zoom);
+
+    // Getters
+    rb_define_method(rb_cParticleEmitter, "count", Ashton_ParticleEmitter_get_count, 0);
     rb_define_method(rb_cParticleEmitter, "max_particles", Ashton_ParticleEmitter_get_max_particles, 0);
 
-    rb_define_method(rb_cParticleEmitter, "x=", Ashton_ParticleEmitter_set_x, 1);
-    rb_define_method(rb_cParticleEmitter, "y=", Ashton_ParticleEmitter_set_y, 1);
-    rb_define_method(rb_cParticleEmitter, "z=", Ashton_ParticleEmitter_set_z, 1);
-    //rb_define_method(rb_cParticleEmitter, "max_particles=", Ashton_ParticleEmitter_set_max_particles, 1);
+    // Setters
 
-
-    // Protected.
-    rb_define_protected_method(rb_cParticleEmitter, "deviate", Ashton_ParticleEmitter_deviate, 2);
+    // Public methods.
+    rb_define_method(rb_cParticleEmitter, "draw", Ashton_ParticleEmitter_draw, 0);
+    rb_define_method(rb_cParticleEmitter, "emit", Ashton_ParticleEmitter_emit, 0);
+    rb_define_method(rb_cParticleEmitter, "update", Ashton_ParticleEmitter_update, 0);
 }
 
 // Ashton::ParticleEmitter.new(x, y, z, options = {})
 VALUE Ashton_ParticleEmitter_singleton_new(int argc, VALUE* argv, VALUE klass)
 {
-    VALUE x, y, z, options;
-    rb_scan_args(argc, argv, "31", &x, &y, &z, &options);
-
-    ParticleEmitter* emitter_data;
-    VALUE particle_emitter = Data_Make_Struct(klass, ParticleEmitter, NULL, Ashton_ParticleEmitter_FREE, emitter_data);
+    ParticleEmitter* emitter;
+    VALUE particle_emitter = Data_Make_Struct(klass, ParticleEmitter, NULL, Ashton_ParticleEmitter_FREE, emitter);
 
     rb_obj_call_init(particle_emitter, argc, argv);
 
     return particle_emitter;
 }
 
-// Ashton::ParticleEmitter#initialize(x, y, z, options = {})
-VALUE Ashton_ParticleEmitter_init(int argc, VALUE* argv, VALUE self)
+// Ashton::ParticleEmitter#initialize
+VALUE Ashton_ParticleEmitter_init(VALUE self, VALUE x, VALUE y, VALUE z, VALUE max_particles)
 {
-    VALUE x, y, z, options;
-    rb_scan_args(argc, argv, "31", &x, &y, &z, &options);
+    EMITTER();
 
-    if(NIL_P(options)) { options = rb_hash_new(); }
-    Check_Type(options, T_HASH);
+    emitter->x = NUM2DBL(x);
+    emitter->y = NUM2DBL(y);
+    emitter->z = NUM2DBL(z);
 
-    EMITTER_DATA();
-
-    // max_particles = options[:max_particles] || DEFAULT_MAX_PARTICLES
-//    VALUE max_particles = rb_hash_aref(options, ID2SYM(rb_intern("max_particles")));
-//    if(NIL_P(max_particles))
-//    {
-//        max_particles = rb_const_get(self, rb_intern("DEFAULT_MAX_PARTICLES"));
-//    }
-
-    emitter_data->x = NUM2DBL(x);
-    emitter_data->y = NUM2DBL(y);
-    emitter_data->z = NUM2DBL(z);
-    emitter_data->max_particles = 10; //NUM2INT(max_particles);
-    emitter_data->particles = ALLOC_N(Particle, emitter_data->max_particles);
+    // Create space for all the particles we'll ever need!
+    emitter->max_particles = NUM2DBL(max_particles);
+    emitter->particles = ALLOC_N(Particle, emitter->max_particles);
+    memset(emitter->particles, 0, emitter->max_particles * sizeof(Particle));
 
     return self;
 }
 
 // Deallocate data structure and its contents.
-void Ashton_ParticleEmitter_FREE(ParticleEmitter* emitter_data)
+void Ashton_ParticleEmitter_FREE(ParticleEmitter* emitter)
 {
-    xfree(emitter_data->particles);
-    xfree(emitter_data);
+    xfree(emitter->particles);
+    xfree(emitter);
 }
 
-// Getters/setters.
-GET_EMITTER_DATA(x, rb_float_new);
-GET_EMITTER_DATA(y, rb_float_new);
-GET_EMITTER_DATA(z, rb_float_new);
-GET_EMITTER_DATA(max_particles, INT2NUM);
-
-SET_EMITTER_DATA(x, NUM2DBL);
-SET_EMITTER_DATA(y, NUM2DBL);
-SET_EMITTER_DATA(z, NUM2DBL);
-
+// === HELPERS ===
 // Simple random numbers used by #deviate (0.0 <= randf() < 1.0)
 inline static float randf()
 {
     return (float)rand() / RAND_MAX;
 }
 
-// Ashton::ParticleEmitter#deviate(value, deviation)
-VALUE Ashton_ParticleEmitter_deviate(VALUE self, VALUE value, VALUE deviation)
+// Deviate a value from a mean value.
+inline static float deviate(float value, float deviation)
 {
-  float _value = NUM2DBL(value);
-  float _deviation = NUM2DBL(deviation);
+  return value * (1 + randf() * deviation - randf() * deviation);
+}
 
-  float modification = 1 + randf() * _deviation - randf() * _deviation;
+// === METHODS ===
+VALUE Ashton_ParticleEmitter_draw(VALUE self)
+{
+    EMITTER();
 
-  return rb_float_new(_value * modification);
+    if(emitter->count == 0) return Qnil;
+    VALUE image = rb_iv_get(self, "@image");
+
+    // TODO: should use VBO and direct Opengl.
+    // Create array of points [[x1, y1], ...]
+    VALUE points = rb_ary_new();
+
+    // Ensure that drawing order is correct (or at least mostly)...
+
+    // First, we draw all those from the current, going up to the last one.
+    Particle* particle = &emitter->particles[emitter->next_particle_index];
+    Particle* last = &emitter->particles[emitter->max_particles];
+    for( ; particle < last; particle++)
+    {
+        if(particle->time_to_live > 0)
+        {
+            VALUE point = rb_ary_new();
+
+            rb_ary_push(point, rb_float_new(particle->x));
+            rb_ary_push(point, rb_float_new(particle->y));
+
+            rb_ary_push(points, point);
+        }
+    }
+
+    // Then go from the first to the current.
+    particle = emitter->particles;
+    last = &emitter->particles[emitter->next_particle_index];
+    for( ; particle < last; particle++)
+    {
+        if(particle->time_to_live > 0)
+        {
+            VALUE point = rb_ary_new();
+
+            rb_ary_push(point, rb_float_new(particle->x));
+            rb_ary_push(point, rb_float_new(particle->y));
+
+            rb_ary_push(points, point);
+        }
+    }
+
+    VALUE options = rb_hash_new();
+    rb_hash_aset(options, ID2SYM(rb_intern("scale")), rb_float_new(emitter->scale));
+    rb_hash_aset(options, ID2SYM(rb_intern("shader")), rb_iv_get(self, "@shader"));
+    rb_hash_aset(options, ID2SYM(rb_intern("color")),rb_iv_get(self, "@color") );
+
+    rb_funcall(image, rb_intern("draw_as_points"), 3,
+               points, rb_float_new(emitter->z), options);
+
+    return Qnil;
+}
+
+// Generate a single particle.
+VALUE Ashton_ParticleEmitter_emit(VALUE self)
+{
+    EMITTER();
+
+    float angle = randf() * 360;
+
+    float speed = deviate(emitter->speed, emitter->speed_deviation);
+
+    float offset = deviate(emitter->offset, emitter->offset_deviation);
+    float position_angle = randf() * 360;
+
+    // Find the first dead particle in the heap, or overwrite the oldest one.
+    Particle* particle = &emitter->particles[emitter->next_particle_index];
+
+    // If we are replacing an old one, remove it from the count.
+    if(particle->time_to_live > 0) emitter->count--;
+
+    // Lets move the index onto the next one, or loop around.
+    emitter->next_particle_index = (emitter->next_particle_index + 1) % emitter->max_particles;
+
+    particle->x = emitter->x + sin(position_angle) * offset;
+    particle->y = emitter->y + cos(position_angle) * offset;
+    particle->velocity_x = sin(angle) * speed;
+    particle->velocity_y = cos(angle) * speed;
+
+    particle->fade = deviate(emitter->fade, emitter->fade_deviation);
+    particle->friction = deviate(emitter->friction, emitter->friction_deviation);
+    particle->scale = deviate(emitter->scale, emitter->scale_deviation);
+    particle->time_to_live = deviate(emitter->time_to_live, emitter->time_to_live_deviation);
+    particle->zoom = deviate(emitter->zoom, emitter->zoom_deviation);
+
+    emitter->count++;
+
+    return Qnil;
+}
+
+VALUE Ashton_ParticleEmitter_update(VALUE self)
+{
+    EMITTER();
+
+    float elapsed = 0.017; // TODO: Get this time from somewhere more useful.
+
+    Particle* particle = emitter->particles;
+    Particle* last = &emitter->particles[emitter->max_particles];
+    for(; particle < last; particle++)
+    {
+        // Ignore particles that are already dead.
+        if(particle->time_to_live > 0)
+        {
+            particle->time_to_live -= elapsed;
+
+            if(particle->time_to_live <= 0)
+            {
+                emitter->count -= 1;
+            }
+            else
+            {
+                // Apply friction
+                particle->velocity_x *= 1 - particle->friction * elapsed;
+                particle->velocity_y *= 1 - particle->friction * elapsed;
+
+                // Gravity.
+                particle->velocity_y += emitter->gravity * elapsed;
+
+                particle->x += particle->velocity_x;
+                particle->y += particle->velocity_y;
+
+                particle->scale *= particle->zoom * elapsed;
+                particle->alpha *= particle->fade * elapsed;
+            }
+        }
+    }
+
+    // Time to emit one (or more) new particles?
+    emitter->time_until_emit -= elapsed;
+    while(emitter->time_until_emit <= 0)
+    {
+        rb_funcall(self, rb_intern("emit"), 0);
+        emitter->time_until_emit += deviate(emitter->interval, emitter->interval_deviation);
+    }
+
+    return Qnil;
 }
