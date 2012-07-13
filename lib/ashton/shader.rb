@@ -169,7 +169,7 @@ module Ashton
     protected
     # Set uniform without trying to force use of the program.
     def set_uniform(location, value)
-      raise ShaderUniformError unless current?
+      raise ShaderUniformError, "Shader uniform #{location.inspect} could not be set, since shader is not current" unless current?
 
       return if location == INVALID_LOCATION # Not for end-users :)
 

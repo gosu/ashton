@@ -4,3 +4,7 @@
 /Gemfile.lock
 /.yardoc
 /doc
+/tmp
+/junk
+*.so
+*.o

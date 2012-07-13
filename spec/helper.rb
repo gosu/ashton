@@ -2,6 +2,7 @@ $LOAD_PATH.unshift File.expand_path("../../lib", __FILE__)
 require "ashton"
 
 require "rspec"
+require 'rspec/autorun'
 require "rr"
 require 'texplay'
 

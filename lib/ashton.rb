@@ -1,7 +1,12 @@
 require 'opengl'
 require 'gosu'
 
-
+begin
+  RUBY_VERSION =~ /(\d+.\d+)/
+  require "ashton/#{$1}/ashton.so"
+rescue LoadError
+  require "ashton/ashton.so"
+end
 
 module Ashton
   class Error < RuntimeError; end

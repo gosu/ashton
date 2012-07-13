@@ -26,6 +26,7 @@ class TestWindow < Gosu::Window
                                                  acceleration: -2,
                                                  max_particles: 2000,
                                                  interval: 0.01
+    p @image_emitter.max_particles
 
     @shaded_image_emitter = Ashton::ParticleEmitter.new 450, 350, 0,
                                                         image: @star, friction: 1,

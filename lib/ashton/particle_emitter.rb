@@ -4,9 +4,12 @@ module Ashton
     def size; @points.size end
 
     WHITE_PIXEL_BLOB = "\xFF" * 4
+    DEFAULT_MAX_PARTICLES = 1000
 
     def initialize(x, y, z, options = {})
       @x, @y, @z = x, y, z
+
+      initialize_ x, y, z, options
 
       @@pixel ||= Gosu::Image.new $window, Ashton::ImageStub.new(WHITE_PIXEL_BLOB, 1, 1)
 
@@ -110,11 +113,6 @@ module Ashton
       @data << data
 
       nil
-    end
-
-    protected
-    def deviate(value, deviation)
-      value * (1 + rand() * deviation - rand() * deviation)
     end
   end
 end

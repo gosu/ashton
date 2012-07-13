@@ -12,15 +12,17 @@ Gem::Specification.new do |s|
   END
 
   s.email = %w<bil.bagpuss@gmail.com>
-  s.files = Dir.glob %w<CHANGELOG LICENSE Rakefile README.md lib/**/*.* lib examples/**/*.*>
+  s.files = Dir.glob %w<CHANGELOG LICENSE Rakefile README.md lib/**/*.* lib examples/**/*.* spec/**/*.* ext/**/*.rb ext/**/*.c ext/**/*.h>
+  s.extensions << 'ext/ashton/extconf.rb'
   s.homepage = 'https://github.com/spooner/ashton'
   s.licenses = %w<MIT>
   s.rubyforge_project = 'ashton'
-  s.test_files = []
+  s.test_files = %w<spec/**/*.*>
   s.has_rdoc = 'yard'
 
   s.add_dependency 'opengl', '~> 0.8.0.pre1'
 
+  s.add_development_dependency 'rake-compiler', '~> 0.8.1'
   s.add_development_dependency 'rspec', '~> 2.10.0'
   s.add_development_dependency 'rr', '~> 1.0.4'
   s.add_development_dependency 'launchy', '~> 2.1.0'
