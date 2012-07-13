@@ -96,7 +96,6 @@ module Ashton
     # Make this the current shader program.
     def use(z = nil)
       raise ArgumentError, "Block required (use #enable/#disable without blocks)" unless block_given?
-      raise ShaderError, "Shader already in use." if enabled?
 
       enable z
 

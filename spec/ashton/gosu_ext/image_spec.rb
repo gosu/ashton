@@ -1,8 +1,8 @@
 require File.expand_path("../../../helper.rb", __FILE__)
 
 describe Gosu::Image do
-  before :all do
-    $window ||= Gosu::Window.new 16, 16, false
+  before :each do
+    $window = Gosu::Window.new 16, 16, false
     @subject = described_class.new $window, media_path("LargeStar.png")
   end
 

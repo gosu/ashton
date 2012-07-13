@@ -2,7 +2,9 @@
 require File.expand_path("../../helper.rb", __FILE__)
 
 describe Ashton::Shader do
-  before :each do
+  before :all do
+    $window = Gosu::Window.new 16, 16, false
+
     @subject = described_class.new # Default code.
     @program = @subject.instance_variable_get :@program
   end
