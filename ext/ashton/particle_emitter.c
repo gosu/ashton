@@ -102,19 +102,52 @@ inline static float deviate(float value, float deviation)
   return value * (1 + randf() * deviation - randf() * deviation);
 }
 
+// Draw a single particle.
+static void draw_particle(Particle* particle, VALUE image, VALUE z, VALUE color)
+{
+    VALUE center = rb_float_new(0.5); // TODO: Center should be settable and the basis of angular_velocity
+    VALUE scale = rb_float_new(particle->scale);
+
+    rb_funcall(image, rb_intern("draw_rot_without_hash"), 9,
+               rb_float_new(particle->x), rb_float_new(particle->y), z,
+               rb_float_new(particle->angle), center, center,
+               scale, scale, color);
+}
+
+static VALUE enable_shader_block(VALUE yield_value, VALUE context, int argc, VALUE argv[])
+{
+    VALUE shader = rb_iv_get(context, "@shader");
+
+    rb_funcall(shader, rb_intern("image="), 1, rb_iv_get(context, "@image"));
+    rb_funcall(shader, rb_intern("color="), 1, rb_iv_get(context, "@color"));
+
+    return Qnil;
+}
+
 // === METHODS ===
 VALUE Ashton_ParticleEmitter_draw(VALUE self)
 {
     EMITTER();
 
     if(emitter->count == 0) return Qnil;
+
     VALUE image = rb_iv_get(self, "@image");
+    VALUE color = rb_iv_get(self, "@color");
+    VALUE shader = rb_iv_get(self, "@shader");
+    VALUE z = rb_float_new(emitter->z);
+    VALUE window = rb_gv_get("$window");
 
-    // TODO: should use VBO and direct Opengl.
-    // Create array of points [[x1, y1], ...]
-    VALUE points = rb_ary_new();
+    if(!NIL_P(shader))
+    {
+        rb_funcall(shader, rb_intern("enable"), 1, z);
+        // Setup the shader in another block, just for good luck :)
+        VALUE block_argv[1];
+        block_argv[0] = z;
+        rb_block_call(window, rb_intern("gl"), 1, block_argv,
+                      RUBY_METHOD_FUNC(enable_shader_block), self);
+    }
 
-    // Ensure that drawing order is correct (or at least mostly)...
+    // Ensure that drawing order is correct by drawing in reverse order of creation...
 
     // First, we draw all those from the current, going up to the last one.
     Particle* particle = &emitter->particles[emitter->next_particle_index];
@@ -123,12 +156,7 @@ VALUE Ashton_ParticleEmitter_draw(VALUE self)
     {
         if(particle->time_to_live > 0)
         {
-            VALUE point = rb_ary_new();
-
-            rb_ary_push(point, rb_float_new(particle->x));
-            rb_ary_push(point, rb_float_new(particle->y));
-
-            rb_ary_push(points, point);
+            draw_particle(particle, image, z, color);
         }
     }
 
@@ -139,22 +167,11 @@ VALUE Ashton_ParticleEmitter_draw(VALUE self)
     {
         if(particle->time_to_live > 0)
         {
-            VALUE point = rb_ary_new();
-
-            rb_ary_push(point, rb_float_new(particle->x));
-            rb_ary_push(point, rb_float_new(particle->y));
-
-            rb_ary_push(points, point);
+            draw_particle(particle, image, z, color);
         }
     }
 
-    VALUE options = rb_hash_new();
-    rb_hash_aset(options, ID2SYM(rb_intern("scale")), rb_float_new(emitter->scale));
-    rb_hash_aset(options, ID2SYM(rb_intern("shader")), rb_iv_get(self, "@shader"));
-    rb_hash_aset(options, ID2SYM(rb_intern("color")),rb_iv_get(self, "@color") );
-
-    rb_funcall(image, rb_intern("draw_as_points"), 3,
-               points, rb_float_new(emitter->z), options);
+    if(!NIL_P(shader)) rb_funcall(shader, rb_intern("disable"), 1, z);
 
     return Qnil;
 }
@@ -164,34 +181,42 @@ VALUE Ashton_ParticleEmitter_emit(VALUE self)
 {
     EMITTER();
 
-    float angle = randf() * 360;
-
-    float speed = deviate(emitter->speed, emitter->speed_deviation);
-
-    float offset = deviate(emitter->offset, emitter->offset_deviation);
-    float position_angle = randf() * 360;
-
     // Find the first dead particle in the heap, or overwrite the oldest one.
     Particle* particle = &emitter->particles[emitter->next_particle_index];
 
-    // If we are replacing an old one, remove it from the count.
-    if(particle->time_to_live > 0) emitter->count--;
+    // If we are replacing an old one, remove it from the count and clear it to fresh.
+    if(particle->time_to_live > 0)
+    {
+        // Kill off and replace one with time to live :(
+        memset(particle, 0, sizeof(Particle));
+    }
+    else
+    {
+        emitter->count++; // Dead or never been used.
+    }
 
     // Lets move the index onto the next one, or loop around.
     emitter->next_particle_index = (emitter->next_particle_index + 1) % emitter->max_particles;
 
+    // Which way will the particle move?
+    float movement_angle = randf() * 360;
+    float speed = deviate(emitter->speed, emitter->speed_deviation);
+
+    // How far away from the origin will the particle spawn?
+    float offset = deviate(emitter->offset, emitter->offset_deviation);
+    float position_angle = randf() * 360;
+
+    particle->angle = position_angle; // TODO: Which initial facing?
     particle->x = emitter->x + sin(position_angle) * offset;
     particle->y = emitter->y + cos(position_angle) * offset;
-    particle->velocity_x = sin(angle) * speed;
-    particle->velocity_y = cos(angle) * speed;
+    particle->velocity_x = sin(movement_angle) * speed;
+    particle->velocity_y = cos(movement_angle) * speed;
 
     particle->fade = deviate(emitter->fade, emitter->fade_deviation);
     particle->friction = deviate(emitter->friction, emitter->friction_deviation);
     particle->scale = deviate(emitter->scale, emitter->scale_deviation);
     particle->time_to_live = deviate(emitter->time_to_live, emitter->time_to_live_deviation);
     particle->zoom = deviate(emitter->zoom, emitter->zoom_deviation);
-
-    emitter->count++;
 
     return Qnil;
 }
@@ -227,8 +252,8 @@ VALUE Ashton_ParticleEmitter_update(VALUE self)
                 particle->x += particle->velocity_x;
                 particle->y += particle->velocity_y;
 
-                particle->scale *= particle->zoom * elapsed;
-                particle->alpha *= particle->fade * elapsed;
+                //particle->scale *= 1.0 - (particle->zoom - 1) * elapsed);
+                //particle->alpha *= 1.0 - (particle->fade * elapsed);
             }
         }
     }

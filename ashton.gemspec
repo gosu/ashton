@@ -19,6 +19,7 @@ Gem::Specification.new do |s|
   s.rubyforge_project = 'ashton'
   s.test_files = %w<spec/**/*.*>
   s.has_rdoc = 'yard'
+  s.required_ruby_version = '>= 1.9.2'
 
   s.add_dependency 'opengl', '~> 0.8.0.pre1'
 

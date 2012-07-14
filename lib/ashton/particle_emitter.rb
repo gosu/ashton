@@ -21,7 +21,7 @@ module Ashton
           scale: 1.0,                    scale_deviation: 0.0,
           speed: 0.0,                    speed_deviation: 0.0,
           time_to_live: Float::INFINITY, time_to_live_deviation: 0.0,
-          zoom: 0.0,                     zoom_deviation: 0.0,
+          zoom: 1.0,                     zoom_deviation: 0.0,
           
       }.merge! options
       

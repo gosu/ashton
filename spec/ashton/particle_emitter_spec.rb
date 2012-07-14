@@ -9,7 +9,7 @@ FLOATS_WITH_DEVIATIONS = {
     scale: 1.0,
     speed: 0.0,
     time_to_live: Float::INFINITY,
-    zoom: 0.0,
+    zoom: 1.0,
 }
 
 describe Ashton::ParticleEmitter do
@@ -83,11 +83,10 @@ describe Ashton::ParticleEmitter do
     end
 
     it "should draw all active particles" do
-      mock(@subject.instance_variable_get(:@image)).draw_as_points [[1.0, 2.0]], 3,
-                                                                   scale: 1.0,
-                                                                   shader: nil,
-                                                                   color: Gosu::Color::WHITE
-      @subject.emit
+      image = @subject.instance_variable_get :@image
+      mock(image).draw_rot_without_hash(1.0, 2.0, 3, 0..360, 0.5, 0.5, 1.0, 1.0,
+                                        Gosu::Color::WHITE).times 3
+      3.times { @subject.emit }
       @subject.draw
     end
   end
@@ -97,7 +96,7 @@ describe Ashton::ParticleEmitter do
       ->{ @subject.emit }.should change(@subject, :count).from(0).to(1)
     end
 
-    it "should do nothing if we are already at max particles" do
+    it "should replace a particle if we are already at max particles" do
       (@default_max + 1).times { @subject.emit }
       @subject.count.should eq 100
     end

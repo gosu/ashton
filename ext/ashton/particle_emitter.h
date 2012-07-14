@@ -107,6 +107,9 @@ void Ashton_ParticleEmitter_FREE(ParticleEmitter* emitter);
 // Helpers.
 inline static float randf();
 inline static float deviate(float value, float deviation);
+static void draw_particle(Particle* particle, VALUE image, VALUE z, VALUE color);
+static VALUE enable_shader_block(VALUE yield_value, VALUE self, int argc, VALUE argv[]);
+
 
 // Methods
 VALUE Ashton_ParticleEmitter_draw(VALUE self);
