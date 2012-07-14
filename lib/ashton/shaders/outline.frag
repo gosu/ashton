@@ -22,6 +22,8 @@ void main()
 
     if(color.a < ALPHA_THRESHOLD)
     {
+        gl_FragColor = vec4(0.0); // Fallback, in case there are none adjacent.
+
         for(int i = -1; i < 2; i++)
         {
             for(int j = -1; j < 2; j++)
@@ -33,16 +35,17 @@ void main()
                     if(texture2D(in_Texture, pos).a > ALPHA_THRESHOLD)
                     {
                         gl_FragColor = in_OutlineColor;
-                        return;
+
+                        // Simplified return, since GLSL 1.10 hates `return`.
+                        i = 2;
+                        j = 2;
                     }
                 }
             }
         }
-
-        gl_FragColor = vec4(0.0); // If none adjacent.
     }
     else
     {
-    gl_FragColor = color;
+        gl_FragColor = color;
     }
 }

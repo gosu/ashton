@@ -14,12 +14,13 @@ void main()
   if(Color.a == 0.0)
   {
     gl_FragColor = Color;
-    return;
   }
- 
-  float SepiaMix = dot(vec3(0.3, 0.59, 0.11), vec3(Color));
-  Color = mix(Color, vec4(SepiaMix), vec4(0.5));
-  vec4 Sepia = mix(Sepia1, Sepia2, SepiaMix);
- 
-  gl_FragColor = mix(Color, Sepia, 1.0);
+  else
+  {
+    float SepiaMix = dot(vec3(0.3, 0.59, 0.11), vec3(Color));
+    Color = mix(Color, vec4(SepiaMix), vec4(0.5));
+    vec4 Sepia = mix(Sepia1, Sepia2, SepiaMix);
+
+    gl_FragColor = mix(Color, Sepia, 1.0);
+  }
 }
