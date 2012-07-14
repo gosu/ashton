@@ -2,15 +2,17 @@
 require File.expand_path("../../helper.rb", __FILE__)
 
 # Values and their defaults. The deviations default to 0.
-FLOATS_WITH_DEVIATIONS = {
-    angular_velocity: 0.0,
-    fade: 0.0,
-    friction: 0.0,
-    interval: Float::INFINITY,
-    scale: 1.0,
-    speed: 0.0,
-    time_to_live: Float::INFINITY,
-    zoom: 0.0,
+FLOATS_WITH_RANGE = {
+    angular_velocity: 0.0..0.0,
+    center_x: 0.5..0.5,
+    center_y: 0.5..0.5,
+    fade: 0.0..0.0,
+    friction: 0.0..0.0,
+    interval: Float::INFINITY..Float::INFINITY,
+    scale: 1.0..1.0,
+    speed: 0.0..0.0,
+    time_to_live: Float::INFINITY..Float::INFINITY,
+    zoom: 0.0..0.0,
 }
 
 describe Ashton::ParticleEmitter do
@@ -19,7 +21,7 @@ describe Ashton::ParticleEmitter do
   end
 
   before :each do
-    @default_max = 100
+    @default_max = 1000
     @subject = described_class.new 1, 2, 3
   end
 
@@ -31,15 +33,10 @@ describe Ashton::ParticleEmitter do
       end
     end
 
-    FLOATS_WITH_DEVIATIONS.each_pair do |attr, expected|
+    FLOATS_WITH_RANGE.each_pair do |attr, expected|
       it "should set #{attr}" do
-        @subject.send(attr).should be_kind_of Float
+        @subject.send(attr).should be_kind_of Range
         @subject.send(attr).should eq expected
-      end
-
-      it "should set #{attr}_deviation" do
-        @subject.send("#{attr}_deviation").should be_kind_of Float
-        @subject.send("#{attr}_deviation").should eq 0.0
       end
     end
 
@@ -61,18 +58,16 @@ describe Ashton::ParticleEmitter do
     end
   end
 
-  FLOATS_WITH_DEVIATIONS.keys.each do |attr|
+  FLOATS_WITH_RANGE.keys.each do |attr|
     describe "#{attr}=" do
-      it "should set #{attr}" do
+      it "should set #{attr} with a number" do
         @subject.send("#{attr}=", 42.0).should eq 42.0
-        @subject.send("#{attr}").should eq 42.0
+        @subject.send("#{attr}").should eq 42.0..42.0
       end
-    end
 
-    describe "#{attr}_deviation=" do
-      it "should set #{attr}_deviation" do
-        @subject.send("#{attr}_deviation=", 42.0).should eq 42.0
-        @subject.send("#{attr}_deviation").should eq 42.0
+      it "should set #{attr} with a range" do
+        @subject.send("#{attr}=", 42.0..99.0).should eq 42.0..99.0
+        @subject.send("#{attr}").should eq 42.0..99.0
       end
     end
   end
@@ -85,7 +80,7 @@ describe Ashton::ParticleEmitter do
 
     it "should draw all active particles" do
       image = @subject.instance_variable_get :@image
-      mock(image).draw_rot_without_hash(1.0, 2.0, 3, 0..360, 0.5, 0.5, 1.0, 1.0,
+      mock(image).draw_rot_without_hash(1.0, 2.0, 3.0, 0..360, 0.5, 0.5, 1.0, 1.0,
                                         Gosu::Color::WHITE).times 3
       3.times { @subject.emit }
       @subject.draw
@@ -99,7 +94,7 @@ describe Ashton::ParticleEmitter do
 
     it "should replace a particle if we are already at max particles" do
       (@default_max + 1).times { @subject.emit }
-      @subject.count.should eq 100
+      @subject.count.should eq @default_max
     end
   end
 

@@ -4,26 +4,32 @@ module Ashton
 
     WHITE_PIXEL_BLOB = "\xFF" * 4
     DEFAULT_MAX_PARTICLES = 1000
+    RANGED_ATTRIBUTES = [
+        :angular_velocity, :center_x, :center_y,
+        :fade, :friction, :interval,
+        :offset, :scale, :speed, :time_to_live, :zoom
+    ]
 
     def initialize(x, y, z, options = {})
       @@pixel ||= Gosu::Image.new $window, Ashton::ImageStub.new(WHITE_PIXEL_BLOB, 1, 1)
 
       # I'm MUCH too lazy to implement a huge options hash manager in C, especially on a constructor.
       options = {
+          center_x: 0.5,
+          center_y: 0.5,
           image: @@pixel,
           color: Gosu::Color::WHITE,
-          max_particles: 100,
-          gravity: 0,
-          angular_velocity: 0.0,         angular_velocity_deviation: 0.0,
-          fade: 0.0,                     fade_deviation: 0.0,
-          friction: 0.0,                 friction_deviation: 0.0,
-          interval: Float::INFINITY,     interval_deviation: 0.0,
-          offset: 0.0,                   offset_deviation: 0.0,
-          scale: 1.0,                    scale_deviation: 0.0,
-          speed: 0.0,                    speed_deviation: 0.0,
-          time_to_live: Float::INFINITY, time_to_live_deviation: 0.0,
-          zoom: 0.0,                     zoom_deviation: 0.0,
-          
+          max_particles: DEFAULT_MAX_PARTICLES,
+          gravity: 0.0,
+          angular_velocity: 0.0,
+          fade: 0.0,
+          friction: 0.0,
+          interval: Float::INFINITY, # Never create any, but can still use #emit manually.
+          offset: 0.0,
+          scale: 1.0,
+          speed: 0.0,
+          time_to_live: Float::INFINITY,
+          zoom: 0.0,
       }.merge! options
       
       @image = options[:image] || @@pixel
@@ -35,31 +41,40 @@ module Ashton
       self.gravity = options[:gravity]
 
       self.angular_velocity = options[:angular_velocity]
-      self.angular_velocity_deviation = options[:angular_velocity_deviation]
-
+      self.center_x = options[:center_x]
+      self.center_y = options[:center_y]
       self.fade = options[:fade]
-      self.fade_deviation = options[:fade_deviation]
-
       self.friction = options[:friction]
-      self.friction_deviation = options[:friction_deviation]
-
       self.interval = options[:interval]
-      self.interval_deviation = options[:interval_deviation]
-
       self.offset = options[:offset]
-      self.offset_deviation = options[:offset_deviation]
-
       self.scale = options[:scale]
-      self.scale_deviation = options[:scale_deviation]
-
       self.speed = options[:speed]
-      self.speed_deviation = options[:speed_deviation]
-
       self.time_to_live = options[:time_to_live]
-      self.time_to_live_deviation = options[:time_to_live_deviation]
-
       self.zoom = options[:zoom]
-      self.zoom_deviation = options[:zoom_deviation]
+    end
+
+    RANGED_ATTRIBUTES.each do |attr|
+      # Returns a Range.
+      define_method attr do
+        send("#{attr}_min")..send("#{attr}_max")
+      end
+
+      # Can be set as a Range or as a single number.
+      define_method "#{attr}=" do |value|
+        min, max = case value
+                     when Numeric
+                       [value, value]
+                     when Range
+                       [value.min, value.max]
+                     else
+                       raise TypeError
+                   end
+
+        send "#{attr}_min=", min
+        send "#{attr}_max=", max
+
+        value
+      end
     end
   end
 end

@@ -7,18 +7,21 @@ GET_SET_EMITTER_DATA(y, rb_float_new, NUM2DBL);
 GET_SET_EMITTER_DATA(z, rb_float_new, NUM2DBL);
 GET_SET_EMITTER_DATA(gravity, rb_float_new, NUM2DBL);
 
-GET_SET_EMITTER_DATA_WITH_DEVIATION(angular_velocity, rb_float_new, NUM2DBL);
-GET_SET_EMITTER_DATA_WITH_DEVIATION(fade, rb_float_new, NUM2DBL);
-GET_SET_EMITTER_DATA_WITH_DEVIATION(friction, rb_float_new, NUM2DBL);
-GET_SET_EMITTER_DATA_WITH_DEVIATION(interval, rb_float_new, NUM2DBL);
-GET_SET_EMITTER_DATA_WITH_DEVIATION(offset, rb_float_new, NUM2DBL);
-GET_SET_EMITTER_DATA_WITH_DEVIATION(scale, rb_float_new, NUM2DBL);
-GET_SET_EMITTER_DATA_WITH_DEVIATION(speed, rb_float_new, NUM2DBL);
-GET_SET_EMITTER_DATA_WITH_DEVIATION(time_to_live, rb_float_new, NUM2DBL);
-GET_SET_EMITTER_DATA_WITH_DEVIATION(zoom, rb_float_new, NUM2DBL);
+GET_SET_EMITTER_DATA_RANGE(center_x, rb_float_new, NUM2DBL);
+GET_SET_EMITTER_DATA_RANGE(center_y, rb_float_new, NUM2DBL);
 
-GET_EMITTER_DATA(max_particles, INT2NUM);
-GET_EMITTER_DATA(count, INT2NUM);
+GET_SET_EMITTER_DATA_RANGE(angular_velocity, rb_float_new, NUM2DBL);
+GET_SET_EMITTER_DATA_RANGE(fade, rb_float_new, NUM2DBL);
+GET_SET_EMITTER_DATA_RANGE(friction, rb_float_new, NUM2DBL);
+GET_SET_EMITTER_DATA_RANGE(interval, rb_float_new, NUM2DBL);
+GET_SET_EMITTER_DATA_RANGE(offset, rb_float_new, NUM2DBL);
+GET_SET_EMITTER_DATA_RANGE(scale, rb_float_new, NUM2DBL);
+GET_SET_EMITTER_DATA_RANGE(speed, rb_float_new, NUM2DBL);
+GET_SET_EMITTER_DATA_RANGE(time_to_live, rb_float_new, NUM2DBL);
+GET_SET_EMITTER_DATA_RANGE(zoom, rb_float_new, NUM2DBL);
+
+GET_EMITTER_DATA(max_particles, max_particles, INT2NUM);
+GET_EMITTER_DATA(count, count, INT2NUM);
 
 void Init_Ashton_ParticleEmitter(VALUE module)
 {
@@ -34,15 +37,17 @@ void Init_Ashton_ParticleEmitter(VALUE module)
     DEFINE_METHOD_GET_SET(z);
     DEFINE_METHOD_GET_SET(gravity);
 
-    DEFINE_METHOD_GET_SET_WITH_DEVIATION(angular_velocity);
-    DEFINE_METHOD_GET_SET_WITH_DEVIATION(fade);
-    DEFINE_METHOD_GET_SET_WITH_DEVIATION(friction);
-    DEFINE_METHOD_GET_SET_WITH_DEVIATION(interval);
-    DEFINE_METHOD_GET_SET_WITH_DEVIATION(offset);
-    DEFINE_METHOD_GET_SET_WITH_DEVIATION(scale);
-    DEFINE_METHOD_GET_SET_WITH_DEVIATION(speed);
-    DEFINE_METHOD_GET_SET_WITH_DEVIATION(time_to_live);
-    DEFINE_METHOD_GET_SET_WITH_DEVIATION(zoom);
+    DEFINE_METHOD_GET_SET_RANGE(angular_velocity);
+    DEFINE_METHOD_GET_SET_RANGE(center_x);
+    DEFINE_METHOD_GET_SET_RANGE(center_y);
+    DEFINE_METHOD_GET_SET_RANGE(fade);
+    DEFINE_METHOD_GET_SET_RANGE(friction);
+    DEFINE_METHOD_GET_SET_RANGE(interval);
+    DEFINE_METHOD_GET_SET_RANGE(offset);
+    DEFINE_METHOD_GET_SET_RANGE(scale);
+    DEFINE_METHOD_GET_SET_RANGE(speed);
+    DEFINE_METHOD_GET_SET_RANGE(time_to_live);
+    DEFINE_METHOD_GET_SET_RANGE(zoom);
 
     // Getters
     rb_define_method(rb_cParticleEmitter, "count", Ashton_ParticleEmitter_get_count, 0);
@@ -98,21 +103,22 @@ inline static float randf()
     return (float)rand() / RAND_MAX;
 }
 
-// Deviate a value from a mean value.
-inline static float deviate(float value, float deviation)
+// Deviate a value from a median value within a range.
+inline static float deviate(Range * range)
 {
-  return value * (1 + randf() * deviation - randf() * deviation);
+  float deviation = (range->max - range->min) / 2.0;
+  return range->min + deviation + randf() * deviation - randf() * deviation;
 }
 
 // Draw a single particle.
 static void draw_particle(Particle* particle, VALUE image, VALUE z, VALUE color)
 {
-    VALUE center = rb_float_new(0.5); // TODO: Center should be settable and the basis of angular_velocity
     VALUE scale = rb_float_new(particle->scale);
 
     rb_funcall(image, rb_intern("draw_rot_without_hash"), 9,
                rb_float_new(particle->x), rb_float_new(particle->y), z,
-               rb_float_new(particle->angle), center, center,
+               rb_float_new(particle->angle),
+               rb_float_new(particle->center_x), rb_float_new(particle->center_y),
                scale, scale, color);
 }
 
@@ -202,10 +208,10 @@ VALUE Ashton_ParticleEmitter_emit(VALUE self)
 
     // Which way will the particle move?
     float movement_angle = randf() * 360;
-    float speed = deviate(emitter->speed, emitter->speed_deviation);
+    float speed = deviate(&emitter->speed);
 
     // How far away from the origin will the particle spawn?
-    float offset = deviate(emitter->offset, emitter->offset_deviation);
+    float offset = deviate(&emitter->offset);
     float position_angle = randf() * 360;
 
     particle->angle = position_angle; // TODO: Which initial facing?
@@ -214,12 +220,14 @@ VALUE Ashton_ParticleEmitter_emit(VALUE self)
     particle->velocity_x = sin(movement_angle) * speed;
     particle->velocity_y = cos(movement_angle) * speed;
 
-    particle->angular_velocity = deviate(emitter->angular_velocity, emitter->angular_velocity_deviation);
-    particle->fade = deviate(emitter->fade, emitter->fade_deviation);
-    particle->friction = deviate(emitter->friction, emitter->friction_deviation);
-    particle->scale = deviate(emitter->scale, emitter->scale_deviation);
-    particle->time_to_live = deviate(emitter->time_to_live, emitter->time_to_live_deviation);
-    particle->zoom = deviate(emitter->zoom, emitter->zoom_deviation);
+    particle->angular_velocity = deviate(&emitter->angular_velocity);
+    particle->center_x = deviate(&emitter->center_x);
+    particle->center_y = deviate(&emitter->center_y);
+    particle->fade = deviate(&emitter->fade);
+    particle->friction = deviate(&emitter->friction);
+    particle->scale = deviate(&emitter->scale);
+    particle->time_to_live = deviate(&emitter->time_to_live);
+    particle->zoom = deviate(&emitter->zoom);
 
     return Qnil;
 }
@@ -237,31 +245,33 @@ VALUE Ashton_ParticleEmitter_update(VALUE self)
         // Ignore particles that are already dead.
         if(particle->time_to_live > 0)
         {
+            // Apply friction
+            particle->velocity_x *= 1.0 - particle->friction * elapsed;
+            particle->velocity_y *= 1.0 - particle->friction * elapsed;
+
+            // Gravity.
+            particle->velocity_y += emitter->gravity * elapsed;
+
+            // Move
+            particle->x += particle->velocity_x * elapsed;
+            particle->y += particle->velocity_y * elapsed;
+
+            // Rotate.
+            particle->angle += particle->angular_velocity * elapsed;
+            // Resize.
+            particle->scale *= 1.0 + (particle->zoom * elapsed);
+            // Fade out.
+            particle->alpha *= 1.0 - (particle->fade * elapsed);
+
             particle->time_to_live -= elapsed;
 
-            if(particle->time_to_live <= 0)
+            // Die if out of time, invisible or shrunk to nothing.
+            if((particle->time_to_live <= 0) ||
+                    (particle->alpha < 0) ||
+                    (particle->scale < 0))
             {
+                particle->time_to_live = 0;
                 emitter->count -= 1;
-            }
-            else
-            {
-                // Apply friction
-                particle->velocity_x *= 1.0 - particle->friction * elapsed;
-                particle->velocity_y *= 1.0 - particle->friction * elapsed;
-
-                // Gravity.
-                particle->velocity_y += emitter->gravity * elapsed;
-
-                // Move
-                particle->x += particle->velocity_x * elapsed;
-                particle->y += particle->velocity_y * elapsed;
-
-                // Rotate.
-                particle->angle += particle->angular_velocity * elapsed;
-                // Resize.
-                particle->scale *= 1.0 + (particle->zoom * elapsed);
-                // Fade out.
-                particle->alpha *= 1.0 - (particle->fade * elapsed);
             }
         }
     }
@@ -271,7 +281,7 @@ VALUE Ashton_ParticleEmitter_update(VALUE self)
     while(emitter->time_until_emit <= 0)
     {
         rb_funcall(self, rb_intern("emit"), 0);
-        emitter->time_until_emit += deviate(emitter->interval, emitter->interval_deviation);
+        emitter->time_until_emit += deviate(&emitter->interval);
     }
 
     return Qnil;

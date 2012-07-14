@@ -15,19 +15,26 @@ typedef struct _particle
 {
     // State.
     float x, y;
+    float center_x, center_y;
     float velocity_x, velocity_y;
     float alpha;
     float angular_velocity;
 
-    // Change
+    // Rate of change
     float fade;
     float scale;
     float zoom;
     float friction;
     float angle;
+
+    // Time to die.
     float time_to_live;
 } Particle;
 
+typedef struct _range
+{
+    float min, max;
+} Range;
 
 // The Ashton::ParticleEmitter's own data, including particles.
 typedef struct _particle_emitter
@@ -37,17 +44,18 @@ typedef struct _particle_emitter
     float gravity;
 
     // Generating particles.
-    float angular_velocity, angular_velocity_deviation;
-    float fade, fade_deviation;
-    float friction, friction_deviation;
-    float offset, offset_deviation; // Distance from origin to spawn.
-    float scale, scale_deviation;
-    float speed, speed_deviation;
-    float time_to_live, time_to_live_deviation;
-    float zoom, zoom_deviation;
+    Range angular_velocity;
+    Range center_x, center_y;
+    Range fade;
+    Range friction;
+    Range offset; // Distance from origin to spawn.
+    Range scale;
+    Range speed;
+    Range time_to_live;
+    Range zoom;
 
     // When to emit.
-    float interval, interval_deviation;
+    Range interval;
     float time_until_emit;
 
     // Managing the particles themselves.
@@ -73,15 +81,15 @@ void Ashton_ParticleEmitter_FREE(ParticleEmitter* emitter);
 
 
 // Implementation of get/set functions .
-#define GET_EMITTER_DATA(ATTRIBUTE, CAST) \
-    VALUE Ashton_ParticleEmitter_get_##ATTRIBUTE(VALUE self) \
+#define GET_EMITTER_DATA(ATTRIBUTE_NAME, ATTRIBUTE, CAST) \
+    VALUE Ashton_ParticleEmitter_get_##ATTRIBUTE_NAME(VALUE self) \
     { \
        EMITTER(); \
        return CAST(emitter->ATTRIBUTE); \
     }
 
-#define SET_EMITTER_DATA(ATTRIBUTE, CAST) \
-    VALUE Ashton_ParticleEmitter_set_##ATTRIBUTE(VALUE self, VALUE value) \
+#define SET_EMITTER_DATA(ATTRIBUTE_NAME, ATTRIBUTE, CAST) \
+    VALUE Ashton_ParticleEmitter_set_##ATTRIBUTE_NAME(VALUE self, VALUE value) \
     { \
        EMITTER(); \
        emitter->ATTRIBUTE = CAST(value); \
@@ -89,25 +97,30 @@ void Ashton_ParticleEmitter_FREE(ParticleEmitter* emitter);
     }
 
 #define GET_SET_EMITTER_DATA(ATTRIBUTE, CAST_TO_RUBY, CAST_TO_C) \
-    GET_EMITTER_DATA(ATTRIBUTE, CAST_TO_RUBY) \
-    SET_EMITTER_DATA(ATTRIBUTE, CAST_TO_C)
+    GET_EMITTER_DATA(ATTRIBUTE, ATTRIBUTE, CAST_TO_RUBY) \
+    SET_EMITTER_DATA(ATTRIBUTE, ATTRIBUTE, CAST_TO_C)
 
-#define GET_SET_EMITTER_DATA_WITH_DEVIATION(ATTRIBUTE, CAST_TO_RUBY, CAST_TO_C) \
-    GET_SET_EMITTER_DATA(ATTRIBUTE, CAST_TO_RUBY, CAST_TO_C) \
-    GET_SET_EMITTER_DATA(ATTRIBUTE##_deviation, CAST_TO_RUBY, CAST_TO_C)
+#define GET_SET_EMITTER_DATA_RANGE(ATTRIBUTE, CAST_TO_RUBY, CAST_TO_C) \
+    GET_EMITTER_DATA(ATTRIBUTE##_min, ATTRIBUTE.min, CAST_TO_RUBY) \
+    SET_EMITTER_DATA(ATTRIBUTE##_min, ATTRIBUTE.min, CAST_TO_C)  \
+    GET_EMITTER_DATA(ATTRIBUTE##_max, ATTRIBUTE.max, CAST_TO_RUBY) \
+    SET_EMITTER_DATA(ATTRIBUTE##_max, ATTRIBUTE.max, CAST_TO_C)
+
+
+// Define minimum and maximum get/set functions as methods.
 
 // Define get/set functions as methods.
 #define DEFINE_METHOD_GET_SET(ATTRIBUTE) \
     rb_define_method(rb_cParticleEmitter, #ATTRIBUTE, Ashton_ParticleEmitter_get_##ATTRIBUTE, 0); \
     rb_define_method(rb_cParticleEmitter, #ATTRIBUTE "=", Ashton_ParticleEmitter_set_##ATTRIBUTE, 1);
 
-#define DEFINE_METHOD_GET_SET_WITH_DEVIATION(ATTRIBUTE) \
-    DEFINE_METHOD_GET_SET(ATTRIBUTE); \
-    DEFINE_METHOD_GET_SET(ATTRIBUTE##_deviation);
+#define DEFINE_METHOD_GET_SET_RANGE(ATTRIBUTE) \
+    DEFINE_METHOD_GET_SET(ATTRIBUTE##_min); \
+    DEFINE_METHOD_GET_SET(ATTRIBUTE##_max);
 
 // Helpers.
 inline static float randf();
-inline static float deviate(float value, float deviation);
+inline static float deviate(Range * range);
 static void draw_particle(Particle* particle, VALUE image, VALUE z, VALUE color);
 static VALUE enable_shader_block(VALUE yield_value, VALUE self, int argc, VALUE argv[]);
 

@@ -17,45 +17,48 @@ class TestWindow < Gosu::Window
 
     @font = Gosu::Font.new self, Gosu::default_font_name, 24
     @star = Gosu::Image.new self, media_path("SmallStar.png"), true
-    @background = Gosu::Image.new self, media_path("Earth.png"), true
 
     @image_emitter = Ashton::ParticleEmitter.new 450, 100, 0,
                                                  image: @star,
-                                                 scale: 0.3,
-                                                 speed: 100, time_to_live: 10,
+                                                 scale: 0.2,
+                                                 speed: 20, time_to_live: 15,
                                                  acceleration: -2,
                                                  max_particles: 3000,
-                                                 interval: 0.01,
+                                                 interval: 0.005,
                                                  fade: 0.5,
-                                                 angular_velocity: 200, angular_velocity_deviation: 0
+                                                 angular_velocity: -50..50
 
     @shaded_image_emitter = Ashton::ParticleEmitter.new 450, 350, 0,
-                                                        image: @star, friction: 2,
+                                                        image: @star, time_to_live: 15,
                                                         shader: @grayscale,
-                                                        speed: 200, time_to_live: 5,
-                                                        interval: 0.001,
-                                                        max_particles: 5000,
-                                                        offset: 25, offset_deviation: 1,
+                                                        interval: 0.005,
+                                                        offset: 0..10,
+                                                        max_particles: 3000,
+                                                        angular_velocity: 20..50,
+                                                        center_x: 3..5, center_y: 3..5,
                                                         zoom: -0.5
 
     @point_emitter = Ashton::ParticleEmitter.new 100, 100, 0,
-                                                 scale: 12,
-                                                 speed: 200, time_to_live: 4,
-                                                 interval: 0.001,
+                                                 scale: 10,
+                                                 speed: 200, time_to_live: 15,
+                                                 interval: 0.0002,
                                                  max_particles: 3000,
                                                  interval: 0.003,
-                                                 color: Gosu::Color.rgba(255, 0, 0, 50)
+                                                 color: Gosu::Color.rgba(255, 0, 0, 150),
+                                                 fade: 0.8,
+                                                 zoom: 0.6
 
     @shaded_point_emitter = Ashton::ParticleEmitter.new 100, 300, 0,
-                                                        scale: 12, scale_deviation: 0.8,
+                                                        scale: 4..10,
                                                         shader: @grayscale,
-                                                        speed: 200, speed_deviation: 0.5,
-                                                        time_to_live: 4,
+                                                        speed: 25..40,
+                                                        offset: 0..5,
+                                                        time_to_live: 12,
                                                         interval: 0.001,
                                                         max_particles: 3000,
                                                         interval: 0.003,
                                                         color: Gosu::Color.rgba(255, 0, 0, 255),
-                                                        gravity: 2
+                                                        gravity: 5
   end
 
   def update
@@ -72,14 +75,12 @@ class TestWindow < Gosu::Window
   end
 
   def draw
-    @background.draw 0, 0, 0, width.fdiv(@background.width), height.fdiv(@background.height), Gosu::Color.rgba(255, 255, 255, 175)
-
+    @point_emitter.draw
     @shaded_image_emitter.draw
     @shaded_point_emitter.draw
-    @point_emitter.draw
     @image_emitter.draw
 
-    @font.draw "FPS: #{Gosu::fps} Img: #{@image_emitter.count} ShaImg: #{@shaded_image_emitter.count} Pnt: #{@point_emitter.count} ShaPnt: #{@shaded_point_emitter.count}", 0, 0, 0
+    @font.draw "FPS: #{Gosu::fps} Pnt: #{@point_emitter.count} ShaPnt: #{@shaded_point_emitter.count} Img: #{@image_emitter.count} ShaImg: #{@shaded_image_emitter.count}", 0, 0, 0
   end
 end
 
