@@ -22,23 +22,25 @@ class TestWindow < Gosu::Window
     @image_emitter = Ashton::ParticleEmitter.new 450, 100, 0,
                                                  image: @star,
                                                  scale: 0.3,
-                                                 speed: 1, time_to_live: 10,
+                                                 speed: 100, time_to_live: 10,
                                                  acceleration: -2,
                                                  max_particles: 3000,
-                                                 interval: 0.01
+                                                 interval: 0.01,
+                                                 fade: 0.5,
+                                                 angular_velocity: 200, angular_velocity_deviation: 0
 
     @shaded_image_emitter = Ashton::ParticleEmitter.new 450, 350, 0,
                                                         image: @star, friction: 2,
                                                         shader: @grayscale,
-                                                        speed: 2, time_to_live: 5,
+                                                        speed: 200, time_to_live: 5,
                                                         interval: 0.001,
                                                         max_particles: 5000,
-                                                        offset: 100, offset_deviation: 1,
-                                                        zoom: 10
+                                                        offset: 25, offset_deviation: 1,
+                                                        zoom: -0.5
 
     @point_emitter = Ashton::ParticleEmitter.new 100, 100, 0,
                                                  scale: 12,
-                                                 speed: 2, time_to_live: 4,
+                                                 speed: 200, time_to_live: 4,
                                                  interval: 0.001,
                                                  max_particles: 3000,
                                                  interval: 0.003,
@@ -47,7 +49,7 @@ class TestWindow < Gosu::Window
     @shaded_point_emitter = Ashton::ParticleEmitter.new 100, 300, 0,
                                                         scale: 12, scale_deviation: 0.8,
                                                         shader: @grayscale,
-                                                        speed: 2, speed_deviation: 0.5,
+                                                        speed: 200, speed_deviation: 0.5,
                                                         time_to_live: 4,
                                                         interval: 0.001,
                                                         max_particles: 3000,

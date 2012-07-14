@@ -14,6 +14,7 @@ module Ashton
           color: Gosu::Color::WHITE,
           max_particles: 100,
           gravity: 0,
+          angular_velocity: 0.0,         angular_velocity_deviation: 0.0,
           fade: 0.0,                     fade_deviation: 0.0,
           friction: 0.0,                 friction_deviation: 0.0,
           interval: Float::INFINITY,     interval_deviation: 0.0,
@@ -21,7 +22,7 @@ module Ashton
           scale: 1.0,                    scale_deviation: 0.0,
           speed: 0.0,                    speed_deviation: 0.0,
           time_to_live: Float::INFINITY, time_to_live_deviation: 0.0,
-          zoom: 1.0,                     zoom_deviation: 0.0,
+          zoom: 0.0,                     zoom_deviation: 0.0,
           
       }.merge! options
       
@@ -33,8 +34,11 @@ module Ashton
 
       self.gravity = options[:gravity]
 
-      self.zoom = options[:fade]
-      self.zoom_deviation = options[:fade_deviation]
+      self.angular_velocity = options[:angular_velocity]
+      self.angular_velocity_deviation = options[:angular_velocity_deviation]
+
+      self.fade = options[:fade]
+      self.fade_deviation = options[:fade_deviation]
 
       self.friction = options[:friction]
       self.friction_deviation = options[:friction_deviation]

@@ -7,6 +7,7 @@ GET_SET_EMITTER_DATA(y, rb_float_new, NUM2DBL);
 GET_SET_EMITTER_DATA(z, rb_float_new, NUM2DBL);
 GET_SET_EMITTER_DATA(gravity, rb_float_new, NUM2DBL);
 
+GET_SET_EMITTER_DATA_WITH_DEVIATION(angular_velocity, rb_float_new, NUM2DBL);
 GET_SET_EMITTER_DATA_WITH_DEVIATION(fade, rb_float_new, NUM2DBL);
 GET_SET_EMITTER_DATA_WITH_DEVIATION(friction, rb_float_new, NUM2DBL);
 GET_SET_EMITTER_DATA_WITH_DEVIATION(interval, rb_float_new, NUM2DBL);
@@ -33,6 +34,7 @@ void Init_Ashton_ParticleEmitter(VALUE module)
     DEFINE_METHOD_GET_SET(z);
     DEFINE_METHOD_GET_SET(gravity);
 
+    DEFINE_METHOD_GET_SET_WITH_DEVIATION(angular_velocity);
     DEFINE_METHOD_GET_SET_WITH_DEVIATION(fade);
     DEFINE_METHOD_GET_SET_WITH_DEVIATION(friction);
     DEFINE_METHOD_GET_SET_WITH_DEVIATION(interval);
@@ -212,6 +214,7 @@ VALUE Ashton_ParticleEmitter_emit(VALUE self)
     particle->velocity_x = sin(movement_angle) * speed;
     particle->velocity_y = cos(movement_angle) * speed;
 
+    particle->angular_velocity = deviate(emitter->angular_velocity, emitter->angular_velocity_deviation);
     particle->fade = deviate(emitter->fade, emitter->fade_deviation);
     particle->friction = deviate(emitter->friction, emitter->friction_deviation);
     particle->scale = deviate(emitter->scale, emitter->scale_deviation);
@@ -243,17 +246,22 @@ VALUE Ashton_ParticleEmitter_update(VALUE self)
             else
             {
                 // Apply friction
-                particle->velocity_x *= 1 - particle->friction * elapsed;
-                particle->velocity_y *= 1 - particle->friction * elapsed;
+                particle->velocity_x *= 1.0 - particle->friction * elapsed;
+                particle->velocity_y *= 1.0 - particle->friction * elapsed;
 
                 // Gravity.
                 particle->velocity_y += emitter->gravity * elapsed;
 
-                particle->x += particle->velocity_x;
-                particle->y += particle->velocity_y;
+                // Move
+                particle->x += particle->velocity_x * elapsed;
+                particle->y += particle->velocity_y * elapsed;
 
-                //particle->scale *= 1.0 - (particle->zoom - 1) * elapsed);
-                //particle->alpha *= 1.0 - (particle->fade * elapsed);
+                // Rotate.
+                particle->angle += particle->angular_velocity * elapsed;
+                // Resize.
+                particle->scale *= 1.0 + (particle->zoom * elapsed);
+                // Fade out.
+                particle->alpha *= 1.0 - (particle->fade * elapsed);
             }
         }
     }

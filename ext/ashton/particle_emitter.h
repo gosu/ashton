@@ -17,7 +17,7 @@ typedef struct _particle
     float x, y;
     float velocity_x, velocity_y;
     float alpha;
-    //float angular_velocity;
+    float angular_velocity;
 
     // Change
     float fade;
@@ -37,6 +37,7 @@ typedef struct _particle_emitter
     float gravity;
 
     // Generating particles.
+    float angular_velocity, angular_velocity_deviation;
     float fade, fade_deviation;
     float friction, friction_deviation;
     float offset, offset_deviation; // Distance from origin to spawn.

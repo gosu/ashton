@@ -3,13 +3,14 @@ require File.expand_path("../../helper.rb", __FILE__)
 
 # Values and their defaults. The deviations default to 0.
 FLOATS_WITH_DEVIATIONS = {
+    angular_velocity: 0.0,
     fade: 0.0,
     friction: 0.0,
     interval: Float::INFINITY,
     scale: 1.0,
     speed: 0.0,
     time_to_live: Float::INFINITY,
-    zoom: 1.0,
+    zoom: 0.0,
 }
 
 describe Ashton::ParticleEmitter do
