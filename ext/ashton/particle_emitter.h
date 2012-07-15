@@ -10,6 +10,14 @@
 #include <ruby.h>
 #include <math.h>
 
+typedef unsigned int uint;
+typedef unsigned long ulong;
+
+typedef struct _color
+{
+    float red, green, blue, alpha; // 0.0..1.0
+} Color;
+
 // A single particle.
 typedef struct _particle
 {
@@ -17,8 +25,9 @@ typedef struct _particle
     float x, y;
     float center_x, center_y;
     float velocity_x, velocity_y;
-    float alpha;
     float angular_velocity;
+
+    Color color;
 
     // Rate of change
     float fade;
@@ -46,6 +55,7 @@ typedef struct _particle_emitter
     // Generating particles.
     Range angular_velocity;
     Range center_x, center_y;
+    Color color;
     Range fade;
     Range friction;
     Range offset; // Distance from origin to spawn.
@@ -59,9 +69,9 @@ typedef struct _particle_emitter
     float time_until_emit;
 
     // Managing the particles themselves.
-    int count; // Current number of active particles.
-    int max_particles; // No more will be created if max hit.
-    int next_particle_index; // Next place to create a new particle (either dead or oldest living).
+    uint count; // Current number of active particles.
+    uint max_particles; // No more will be created if max hit.
+    uint next_particle_index; // Next place to create a new particle (either dead or oldest living).
     Particle* particles;
 } ParticleEmitter;
 
@@ -69,7 +79,7 @@ typedef struct _particle_emitter
 void Init_Ashton_ParticleEmitter(VALUE module);
 
 // Initialization
-VALUE Ashton_ParticleEmitter_singleton_new(int argc, VALUE* argv, VALUE klass);
+VALUE Ashton_ParticleEmitter_singleton_new(int argc, VALUE argv[], VALUE klass);
 VALUE Ashton_ParticleEmitter_init(VALUE self, VALUE x, VALUE y, VALUE z, VALUE max_particles);
 
 void Ashton_ParticleEmitter_FREE(ParticleEmitter* emitter);
@@ -88,6 +98,8 @@ void Ashton_ParticleEmitter_FREE(ParticleEmitter* emitter);
        return CAST(emitter->ATTRIBUTE); \
     }
 
+#include "limits.h"
+// BUG: Passing in Infinity seems to convert it to NaN!
 #define SET_EMITTER_DATA(ATTRIBUTE_NAME, ATTRIBUTE, CAST) \
     VALUE Ashton_ParticleEmitter_set_##ATTRIBUTE_NAME(VALUE self, VALUE value) \
     { \
@@ -118,12 +130,16 @@ void Ashton_ParticleEmitter_FREE(ParticleEmitter* emitter);
     DEFINE_METHOD_GET_SET(ATTRIBUTE##_min); \
     DEFINE_METHOD_GET_SET(ATTRIBUTE##_max);
 
+
+VALUE Ashton_ParticleEmitter_get_color_argb(VALUE self);
+VALUE Ashton_ParticleEmitter_set_color_argb(VALUE self, VALUE color);
+
 // Helpers.
 inline static float randf();
 inline static float deviate(Range * range);
-static void draw_particle(Particle* particle, VALUE image, VALUE z, VALUE color);
+static void draw_particle(Particle* particle, VALUE image, VALUE z);
 static VALUE enable_shader_block(VALUE yield_value, VALUE self, int argc, VALUE argv[]);
-
+static uint color_to_argb(Color* color);
 
 // Methods
 VALUE Ashton_ParticleEmitter_draw(VALUE self);

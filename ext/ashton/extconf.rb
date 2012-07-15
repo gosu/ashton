@@ -11,6 +11,9 @@ $CFLAGS += ' -DRUBY_19' if RUBY_VERSION =~ /^1.9/
 # let's use a nicer C (rather than C90)
 $CFLAGS += " -std=gnu99"
 
+# Make it possible to use a debugger.
+#$CFLAGS += " -g -O0"
+
 # Stop getting annoying warnings for valid C99 code.
 $warnflags.gsub!('-Wdeclaration-after-statement', '') if $warnflags
 

@@ -48,6 +48,10 @@ describe Ashton::ParticleEmitter do
     it "should not have any particles" do
       @subject.count.should eq 0
     end
+
+    it "should have color set to white" do
+      @subject.color.should eq Gosu::Color::WHITE
+    end
   end
 
   [:x, :y, :z].each.with_index(1) do |attr, value|
@@ -72,6 +76,13 @@ describe Ashton::ParticleEmitter do
     end
   end
 
+  describe "color=" do
+    it "should set color" do
+      (@subject.color = Gosu::Color::BLACK).should eq Gosu::Color::BLACK
+      @subject.color.should eq Gosu::Color::BLACK
+    end
+  end
+
   describe "draw" do
     it "should not draw anything if there aren't any particles'" do
       dont_allow(@subject.instance_variable_get(:@image)).draw_as_points
@@ -81,7 +92,7 @@ describe Ashton::ParticleEmitter do
     it "should draw all active particles" do
       image = @subject.instance_variable_get :@image
       mock(image).draw_rot_without_hash(1.0, 2.0, 3.0, 0..360, 0.5, 0.5, 1.0, 1.0,
-                                        Gosu::Color::WHITE).times 3
+                                        Gosu::Color::WHITE.to_i).times 3
       3.times { @subject.emit }
       @subject.draw
     end

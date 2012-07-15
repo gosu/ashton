@@ -25,4 +25,10 @@ describe Gosu::Color do
       end
     end
   end
+
+  describe "to_i" do
+    it "should convert to an ARGB8 value" do
+      Gosu::Color.new(0x01234567).to_i.should eq 0x01234567
+    end
+  end
 end

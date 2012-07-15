@@ -21,44 +21,43 @@ class TestWindow < Gosu::Window
     @image_emitter = Ashton::ParticleEmitter.new 450, 100, 0,
                                                  image: @star,
                                                  scale: 0.2,
-                                                 speed: 20, time_to_live: 15,
+                                                 speed: 20,
                                                  acceleration: -2,
                                                  max_particles: 3000,
                                                  interval: 0.005,
-                                                 fade: 0.5,
+                                                 fade: 25, # loses 25 alpha/s
                                                  angular_velocity: -50..50
 
     @shaded_image_emitter = Ashton::ParticleEmitter.new 450, 350, 0,
-                                                        image: @star, time_to_live: 15,
+                                                        image: @star,
                                                         shader: @grayscale,
-                                                        interval: 0.005,
+                                                        interval: 0.001,
                                                         offset: 0..10,
                                                         max_particles: 3000,
                                                         angular_velocity: 20..50,
-                                                        center_x: 3..5, center_y: 3..5,
-                                                        zoom: -0.5
+                                                        center_x: 3..8, center_y: 3..8,
+                                                        zoom: -0.5 # Shrinks, so doesn't need TTL.
 
-    @point_emitter = Ashton::ParticleEmitter.new 100, 100, 0,
+    @point_emitter = Ashton::ParticleEmitter.new 100, 100, 1,
                                                  scale: 10,
-                                                 speed: 200, time_to_live: 15,
+                                                 speed: 200,
                                                  interval: 0.0002,
                                                  max_particles: 3000,
                                                  interval: 0.003,
                                                  color: Gosu::Color.rgba(255, 0, 0, 150),
-                                                 fade: 0.8,
+                                                 fade: 100, # loses 100 alpha/s
                                                  zoom: 0.6
 
-    @shaded_point_emitter = Ashton::ParticleEmitter.new 100, 300, 0,
+    @shaded_point_emitter = Ashton::ParticleEmitter.new 100, 300, 2,
                                                         scale: 4..10,
                                                         shader: @grayscale,
-                                                        speed: 25..40,
-                                                        offset: 0..5,
+                                                        speed: 25..80,
+                                                        offset: 0..10,
                                                         time_to_live: 12,
                                                         interval: 0.001,
                                                         max_particles: 3000,
-                                                        interval: 0.003,
                                                         color: Gosu::Color.rgba(255, 0, 0, 255),
-                                                        gravity: 5
+                                                        gravity: 30 # pixels/s*s
   end
 
   def update

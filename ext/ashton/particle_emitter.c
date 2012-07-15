@@ -20,8 +20,8 @@ GET_SET_EMITTER_DATA_RANGE(speed, rb_float_new, NUM2DBL);
 GET_SET_EMITTER_DATA_RANGE(time_to_live, rb_float_new, NUM2DBL);
 GET_SET_EMITTER_DATA_RANGE(zoom, rb_float_new, NUM2DBL);
 
-GET_EMITTER_DATA(max_particles, max_particles, INT2NUM);
-GET_EMITTER_DATA(count, count, INT2NUM);
+GET_EMITTER_DATA(max_particles, max_particles, UINT2NUM);
+GET_EMITTER_DATA(count, count, UINT2NUM);
 
 void Init_Ashton_ParticleEmitter(VALUE module)
 {
@@ -52,8 +52,10 @@ void Init_Ashton_ParticleEmitter(VALUE module)
     // Getters
     rb_define_method(rb_cParticleEmitter, "count", Ashton_ParticleEmitter_get_count, 0);
     rb_define_method(rb_cParticleEmitter, "max_particles", Ashton_ParticleEmitter_get_max_particles, 0);
+    rb_define_method(rb_cParticleEmitter, "color_argb", Ashton_ParticleEmitter_get_color_argb, 0);
 
     // Setters
+    rb_define_method(rb_cParticleEmitter, "color_argb=", Ashton_ParticleEmitter_set_color_argb, 1);
 
     // Public methods.
     rb_define_method(rb_cParticleEmitter, "draw", Ashton_ParticleEmitter_draw, 0);
@@ -82,7 +84,7 @@ VALUE Ashton_ParticleEmitter_init(VALUE self, VALUE x, VALUE y, VALUE z, VALUE m
     emitter->z = NUM2DBL(z);
 
     // Create space for all the particles we'll ever need!
-    emitter->max_particles = NUM2DBL(max_particles);
+    emitter->max_particles = NUM2UINT(max_particles);
     emitter->particles = ALLOC_N(Particle, emitter->max_particles);
     memset(emitter->particles, 0, emitter->max_particles * sizeof(Particle));
 
@@ -111,25 +113,62 @@ inline static float deviate(Range * range)
 }
 
 // Draw a single particle.
-static void draw_particle(Particle* particle, VALUE image, VALUE z, VALUE color)
+static void draw_particle(Particle* particle, VALUE image, VALUE z)
 {
     VALUE scale = rb_float_new(particle->scale);
+    uint color = color_to_argb(&particle->color);
 
     rb_funcall(image, rb_intern("draw_rot_without_hash"), 9,
                rb_float_new(particle->x), rb_float_new(particle->y), z,
                rb_float_new(particle->angle),
                rb_float_new(particle->center_x), rb_float_new(particle->center_y),
-               scale, scale, color);
+               scale, scale, UINT2NUM(color));
 }
 
-static VALUE enable_shader_block(VALUE yield_value, VALUE context, int argc, VALUE argv[])
+static VALUE enable_shader_block(VALUE yield_value, VALUE self, int argc, VALUE argv[])
 {
-    VALUE shader = rb_iv_get(context, "@shader");
+    EMITTER();
 
-    rb_funcall(shader, rb_intern("image="), 1, rb_iv_get(context, "@image"));
-    rb_funcall(shader, rb_intern("color="), 1, rb_iv_get(context, "@color"));
+    VALUE shader = rb_iv_get(self, "@shader");
+
+    rb_funcall(shader, rb_intern("image="), 1, rb_iv_get(self, "@image"));
+    rb_funcall(shader, rb_intern("color="), 1, UINT2NUM(color_to_argb(&emitter->color)));
 
     return Qnil;
+}
+
+// Convert Color structure into 0xAARRGGBB value.
+static uint color_to_argb(Color* color)
+{
+    uint argb = ((((uint)(color->alpha * 255.0)) & 0xff) << 24) +
+                ((((uint)(color->red   * 255.0)) & 0xff) << 16) +
+                ((((uint)(color->green * 255.0)) & 0xff) <<  8) +
+                 (((uint)(color->blue  * 255.0)) & 0xff);
+
+    return argb;
+}
+
+VALUE Ashton_ParticleEmitter_get_color_argb(VALUE self)
+{
+    EMITTER();
+
+    uint color = color_to_argb(&emitter->color);
+
+    return UINT2NUM(color);
+}
+
+VALUE Ashton_ParticleEmitter_set_color_argb(VALUE self, VALUE color)
+{
+    EMITTER();
+
+    uint argb = NUM2UINT(color);
+
+    emitter->color.alpha = ((argb >> 24) & 0xff) / 255.0;
+    emitter->color.red   = ((argb >> 16) & 0xff) / 255.0;
+    emitter->color.green = ((argb >>  8) & 0xff) / 255.0;
+    emitter->color.blue  =  (argb        & 0xff) / 255.0;
+
+    return color;
 }
 
 // === METHODS ===
@@ -140,7 +179,6 @@ VALUE Ashton_ParticleEmitter_draw(VALUE self)
     if(emitter->count == 0) return Qnil;
 
     VALUE image = rb_iv_get(self, "@image");
-    VALUE color = rb_iv_get(self, "@color");
     VALUE shader = rb_iv_get(self, "@shader");
     VALUE z = rb_float_new(emitter->z);
     VALUE window = rb_gv_get("$window");
@@ -164,7 +202,7 @@ VALUE Ashton_ParticleEmitter_draw(VALUE self)
     {
         if(particle->time_to_live > 0)
         {
-            draw_particle(particle, image, z, color);
+            draw_particle(particle, image, z);
         }
     }
 
@@ -175,7 +213,7 @@ VALUE Ashton_ParticleEmitter_draw(VALUE self)
     {
         if(particle->time_to_live > 0)
         {
-            draw_particle(particle, image, z, color);
+            draw_particle(particle, image, z);
         }
     }
 
@@ -220,6 +258,8 @@ VALUE Ashton_ParticleEmitter_emit(VALUE self)
     particle->velocity_x = sin(movement_angle) * speed;
     particle->velocity_y = cos(movement_angle) * speed;
 
+    particle->color = emitter->color;
+
     particle->angular_velocity = deviate(&emitter->angular_velocity);
     particle->center_x = deviate(&emitter->center_x);
     particle->center_y = deviate(&emitter->center_y);
@@ -259,15 +299,16 @@ VALUE Ashton_ParticleEmitter_update(VALUE self)
             // Rotate.
             particle->angle += particle->angular_velocity * elapsed;
             // Resize.
-            particle->scale *= 1.0 + (particle->zoom * elapsed);
+            particle->scale += particle->zoom * elapsed;
+
             // Fade out.
-            particle->alpha *= 1.0 - (particle->fade * elapsed);
+            particle->color.alpha *= 1 - (particle->fade * elapsed) / 255.0;
 
             particle->time_to_live -= elapsed;
 
             // Die if out of time, invisible or shrunk to nothing.
             if((particle->time_to_live <= 0) ||
-                    (particle->alpha < 0) ||
+                    (particle->color.alpha < 0) ||
                     (particle->scale < 0))
             {
                 particle->time_to_live = 0;

@@ -4,6 +4,7 @@ module Ashton
 
     WHITE_PIXEL_BLOB = "\xFF" * 4
     DEFAULT_MAX_PARTICLES = 1000
+    DEFAULT_COLOR = Gosu::Color::WHITE
     RANGED_ATTRIBUTES = [
         :angular_velocity, :center_x, :center_y,
         :fade, :friction, :interval,
@@ -18,27 +19,28 @@ module Ashton
           center_x: 0.5,
           center_y: 0.5,
           image: @@pixel,
-          color: Gosu::Color::WHITE,
+          color: DEFAULT_COLOR,
           max_particles: DEFAULT_MAX_PARTICLES,
           gravity: 0.0,
           angular_velocity: 0.0,
           fade: 0.0,
           friction: 0.0,
-          interval: Float::INFINITY, # Never create any, but can still use #emit manually.
+          interval: 1_000_000_000, #Float::INFINITY, # BUG: INFINITY => NaN in C
           offset: 0.0,
           scale: 1.0,
           speed: 0.0,
-          time_to_live: Float::INFINITY,
+          time_to_live: 1_000_000_000, #Float::INFINITY,  # BUG: INFINITY => NaN in C
           zoom: 0.0,
       }.merge! options
       
       @image = options[:image] || @@pixel
-      @color = options[:color] || Color::Gosu::WHITE
+
       @shader = options[:shader]
 
       initialize_ x, y, z, options[:max_particles]
 
       self.gravity = options[:gravity]
+      self.color = options[:color]
 
       self.angular_velocity = options[:angular_velocity]
       self.center_x = options[:center_x]
@@ -51,6 +53,27 @@ module Ashton
       self.speed = options[:speed]
       self.time_to_live = options[:time_to_live]
       self.zoom = options[:zoom]
+    end
+
+    # Gosu::Color
+    def color
+      Gosu::Color.new color_argb
+    end
+
+    # [Gosu::Color, Integer, Array<Float>]
+    def color=(value)
+      case value
+        when Integer
+          self.color_argb = value
+        when Gosu::Color
+          self.color_argb = value.to_i
+        when Array
+          self.color_argb = Gosu::Color.from_opengl value
+        else
+          raise TypeError, "Expected argb integer, rgba opengl float array or Gosu::Color"
+      end
+
+      value
     end
 
     RANGED_ATTRIBUTES.each do |attr|

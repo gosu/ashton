@@ -249,7 +249,16 @@ module Ashton
 
     public
     def color=(color)
-      opengl_color = color.is_a?(Gosu::Color) ? color.to_opengl : color
+      opengl_color = case color
+                       when Gosu::Color
+                         color.to_opengl
+                       when Integer
+                         Gosu::Color.new(color).to_opengl
+                       when Array
+                         color
+                       else
+                         raise TypeError, "Expected Gosu::Color, Integer or opengl float array for color"
+                     end
 
       needs_use = !current?
       enable if needs_use
