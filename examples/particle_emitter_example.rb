@@ -23,7 +23,7 @@ class TestWindow < Gosu::Window
                                                  scale: 0.2,
                                                  speed: 20,
                                                  acceleration: -2,
-                                                 max_particles: 3000,
+                                                 max_particles: 5000,
                                                  interval: 0.005,
                                                  fade: 25, # loses 25 alpha/s
                                                  angular_velocity: -50..50
@@ -33,20 +33,19 @@ class TestWindow < Gosu::Window
                                                         shader: @grayscale,
                                                         interval: 0.001,
                                                         offset: 0..10,
-                                                        max_particles: 3000,
+                                                        max_particles: 5000,
                                                         angular_velocity: 20..50,
                                                         center_x: 3..8, center_y: 3..8,
-                                                        zoom: -0.5 # Shrinks, so doesn't need TTL.
+                                                        zoom: -0.3 # Shrinks, so doesn't need TTL.
 
     @point_emitter = Ashton::ParticleEmitter.new 100, 100, 1,
                                                  scale: 10,
                                                  speed: 200,
                                                  interval: 0.0002,
-                                                 max_particles: 3000,
+                                                 max_particles: 5000,
                                                  interval: 0.003,
                                                  color: Gosu::Color.rgba(255, 0, 0, 150),
-                                                 fade: 100, # loses 100 alpha/s
-                                                 zoom: 0.6
+                                                 fade: 100 # loses 100 alpha/s
 
     @shaded_point_emitter = Ashton::ParticleEmitter.new 100, 300, 2,
                                                         scale: 4..10,
@@ -55,7 +54,7 @@ class TestWindow < Gosu::Window
                                                         offset: 0..10,
                                                         time_to_live: 12,
                                                         interval: 0.001,
-                                                        max_particles: 3000,
+                                                        max_particles: 5000,
                                                         color: Gosu::Color.rgba(255, 0, 0, 255),
                                                         gravity: 30 # pixels/s*s
   end

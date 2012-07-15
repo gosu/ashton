@@ -23,6 +23,7 @@ GET_SET_EMITTER_DATA_RANGE(zoom, rb_float_new, NUM2DBL);
 GET_EMITTER_DATA(max_particles, max_particles, UINT2NUM);
 GET_EMITTER_DATA(count, count, UINT2NUM);
 
+// ----------------------------------------
 void Init_Ashton_ParticleEmitter(VALUE module)
 {
     VALUE rb_cParticleEmitter = rb_define_class_under(module, "ParticleEmitter", rb_cObject);
@@ -63,6 +64,7 @@ void Init_Ashton_ParticleEmitter(VALUE module)
     rb_define_method(rb_cParticleEmitter, "update", Ashton_ParticleEmitter_update, 0);
 }
 
+// ----------------------------------------
 // Ashton::ParticleEmitter.new(x, y, z, options = {})
 VALUE Ashton_ParticleEmitter_singleton_new(int argc, VALUE* argv, VALUE klass)
 {
@@ -74,6 +76,7 @@ VALUE Ashton_ParticleEmitter_singleton_new(int argc, VALUE* argv, VALUE klass)
     return particle_emitter;
 }
 
+// ----------------------------------------
 // Ashton::ParticleEmitter#initialize
 VALUE Ashton_ParticleEmitter_init(VALUE self, VALUE x, VALUE y, VALUE z, VALUE max_particles)
 {
@@ -91,6 +94,7 @@ VALUE Ashton_ParticleEmitter_init(VALUE self, VALUE x, VALUE y, VALUE z, VALUE m
     return self;
 }
 
+// ----------------------------------------
 // Deallocate data structure and its contents.
 void Ashton_ParticleEmitter_FREE(ParticleEmitter* emitter)
 {
@@ -99,12 +103,15 @@ void Ashton_ParticleEmitter_FREE(ParticleEmitter* emitter)
 }
 
 // === HELPERS ===
+
+// ----------------------------------------
 // Simple random numbers used by #deviate (0.0 <= randf() < 1.0)
 inline static float randf()
 {
     return (float)rand() / RAND_MAX;
 }
 
+// ----------------------------------------
 // Deviate a value from a median value within a range.
 inline static float deviate(Range * range)
 {
@@ -112,19 +119,72 @@ inline static float deviate(Range * range)
   return range->min + deviation + randf() * deviation - randf() * deviation;
 }
 
+// ----------------------------------------
 // Draw a single particle.
-static void draw_particle(Particle* particle, VALUE image, VALUE z)
+// TODO: Move this into Image#draw_rot ???
+static void draw_particle(Particle* particle,
+                          const uint width, const uint height,
+                          const float tex_left, const float tex_top,
+                          const float tex_right, const float tex_bottom)
 {
-    VALUE scale = rb_float_new(particle->scale);
-    uint color = color_to_argb(&particle->color);
+    // Set the particle's color.
+    Color* color = &particle->color;
+    glColor4f(color->red, color->green, color->blue, color->alpha);
 
-    rb_funcall(image, rb_intern("draw_rot_without_hash"), 9,
-               rb_float_new(particle->x), rb_float_new(particle->y), z,
-               rb_float_new(particle->angle),
-               rb_float_new(particle->center_x), rb_float_new(particle->center_y),
-               scale, scale, UINT2NUM(color));
+    // Splodge the particle quad onto the screen; you know, how you do?
+    float scaled_width  = width  * particle->scale;
+    float scaled_height = height * particle->scale;
+
+    float left   = - scaled_width * 0.5f;
+    float right  = + scaled_width * 0.5f;
+    float bottom = - scaled_height * 0.5f;
+    float top    = + scaled_height * 0.5f;
+
+    // TODO: Manipulate the coordinates direcly, to avoid matrix transform?
+    glPushMatrix();
+        glTranslatef(particle->x, particle->y, 0.0f);
+        glRotatef(particle->angle, 0.0f, 0.0f, 1.0f);
+        glTranslatef(particle->center_x * scaled_width,
+                     particle->center_y * scaled_height,
+                     0.0f);
+
+        glBegin(GL_QUADS);
+            glTexCoord2d(tex_left, tex_bottom);
+            glVertex2d(left, bottom); // BL
+
+            glTexCoord2d(tex_left, tex_top);
+            glVertex2d(left, top); // TL
+
+            glTexCoord2d(tex_right, tex_top);
+            glVertex2d(right, top); // TR
+
+            glTexCoord2d(tex_right, tex_bottom);
+            glVertex2d(right, bottom); // BR
+        glEnd();
+    glPopMatrix();
 }
 
+// ----------------------------------------
+// Draw all particles from first to last (inclusive).
+static void draw_particles(Particle* first, Particle* last,
+                           const uint width, const uint height,
+                           const float tex_left, const float tex_top,
+                           const float tex_right, const float tex_bottom)
+{
+    Particle* particle = first;
+
+    for( ; particle <= last; particle++)
+    {
+        if(particle->time_to_live > 0)
+        {
+            draw_particle(particle, width, height, tex_left, tex_top, tex_right, tex_bottom);
+        }
+    }
+
+    return;
+}
+
+// ----------------------------------------
 static VALUE enable_shader_block(VALUE yield_value, VALUE self, int argc, VALUE argv[])
 {
     EMITTER();
@@ -137,6 +197,52 @@ static VALUE enable_shader_block(VALUE yield_value, VALUE self, int argc, VALUE 
     return Qnil;
 }
 
+// ----------------------------------------
+static VALUE draw_block(VALUE yield_value, VALUE self, int argc, VALUE argv[])
+{
+    EMITTER();
+
+    VALUE image = rb_iv_get(self, "@image");
+    VALUE window = rb_gv_get("$window");
+
+    // Bind the image that we will be using throughout and get its coordinates.
+    VALUE tex_info = rb_funcall(image, rb_intern("gl_tex_info"), 0);
+    int tex_id = NUM2INT(rb_funcall(tex_info, rb_intern("tex_name"), 0));
+    float tex_left   = NUM2DBL(rb_funcall(tex_info, rb_intern("left"), 0));
+    float tex_right  = NUM2DBL(rb_funcall(tex_info, rb_intern("right"), 0));
+    float tex_top    = NUM2DBL(rb_funcall(tex_info, rb_intern("top"), 0));
+    float tex_bottom = NUM2DBL(rb_funcall(tex_info, rb_intern("bottom"), 0));
+
+    // Pixel size of image.
+    uint width  = NUM2UINT(rb_funcall(image, rb_intern("width"), 0));
+    uint height = NUM2UINT(rb_funcall(image, rb_intern("height"), 0));
+
+    // Get ready to draw!
+    glEnable(GL_BLEND);
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, tex_id);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+    // TODO: Work out whether it should be GL_LINEAR or GL_NEAREST.
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+    // Ensure that drawing order is correct by drawing in reverse order of creation...
+
+    // First, we draw all those from the current, going up to the last one.
+    Particle* first = &emitter->particles[emitter->next_particle_index];
+    Particle* last = &emitter->particles[emitter->max_particles - 1];
+    draw_particles(first, last, width, height, tex_left, tex_top, tex_right, tex_bottom);
+
+    // Then go from the first to the current.
+    first = emitter->particles;
+    last = &emitter->particles[emitter->next_particle_index - 1];
+    draw_particles(first, last, width, height, tex_left, tex_top, tex_right, tex_bottom);
+
+    return Qnil;
+}
+
+// ----------------------------------------
 // Convert Color structure into 0xAARRGGBB value.
 static uint color_to_argb(Color* color)
 {
@@ -148,6 +254,10 @@ static uint color_to_argb(Color* color)
     return argb;
 }
 
+// === Getters & setters ===
+
+// ----------------------------------------
+// #color
 VALUE Ashton_ParticleEmitter_get_color_argb(VALUE self)
 {
     EMITTER();
@@ -157,6 +267,8 @@ VALUE Ashton_ParticleEmitter_get_color_argb(VALUE self)
     return UINT2NUM(color);
 }
 
+// ----------------------------------------
+// #color=
 VALUE Ashton_ParticleEmitter_set_color_argb(VALUE self, VALUE color)
 {
     EMITTER();
@@ -172,56 +284,43 @@ VALUE Ashton_ParticleEmitter_set_color_argb(VALUE self, VALUE color)
 }
 
 // === METHODS ===
+
+// ----------------------------------------
+// #draw
 VALUE Ashton_ParticleEmitter_draw(VALUE self)
 {
     EMITTER();
 
     if(emitter->count == 0) return Qnil;
 
-    VALUE image = rb_iv_get(self, "@image");
+    VALUE window = rb_gv_get("$window");
     VALUE shader = rb_iv_get(self, "@shader");
     VALUE z = rb_float_new(emitter->z);
-    VALUE window = rb_gv_get("$window");
 
+    VALUE block_argv[1];
+    block_argv[0] = z;
+
+    // Enable the shader, if provided.
     if(!NIL_P(shader))
     {
         rb_funcall(shader, rb_intern("enable"), 1, z);
         // Setup the shader in another block, just for good luck :)
-        VALUE block_argv[1];
-        block_argv[0] = z;
+
         rb_block_call(window, rb_intern("gl"), 1, block_argv,
                       RUBY_METHOD_FUNC(enable_shader_block), self);
     }
 
-    // Ensure that drawing order is correct by drawing in reverse order of creation...
+    rb_block_call(window, rb_intern("gl"), 1, block_argv,
+                  RUBY_METHOD_FUNC(draw_block), self);
 
-    // First, we draw all those from the current, going up to the last one.
-    Particle* particle = &emitter->particles[emitter->next_particle_index];
-    Particle* last = &emitter->particles[emitter->max_particles];
-    for( ; particle < last; particle++)
-    {
-        if(particle->time_to_live > 0)
-        {
-            draw_particle(particle, image, z);
-        }
-    }
-
-    // Then go from the first to the current.
-    particle = emitter->particles;
-    last = &emitter->particles[emitter->next_particle_index];
-    for( ; particle < last; particle++)
-    {
-        if(particle->time_to_live > 0)
-        {
-            draw_particle(particle, image, z);
-        }
-    }
-
+    // Disable the shader, if provided.
     if(!NIL_P(shader)) rb_funcall(shader, rb_intern("disable"), 1, z);
 
     return Qnil;
 }
 
+// ----------------------------------------
+// #emit
 // Generate a single particle.
 VALUE Ashton_ParticleEmitter_emit(VALUE self)
 {
@@ -272,6 +371,8 @@ VALUE Ashton_ParticleEmitter_emit(VALUE self)
     return Qnil;
 }
 
+// ----------------------------------------
+// #update
 VALUE Ashton_ParticleEmitter_update(VALUE self)
 {
     EMITTER();

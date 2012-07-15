@@ -31,13 +31,20 @@ Features
 
 - {Ashton::Framebuffer} - low-level graphics buffer that can be drawn directly onto and drawn to the Window.
 
+Requirements
+------------
+
+* OSX/Linux: Requires OpenGL library be installed.
+
 Similar Libraries
 -----------------
 
 - [TexPlay](https://github.com/banister/texplay) - Deals with Gosu::Image manipulation, such as per-pixel editing and drawing. It is compatible with, and complementary to, this gem.
 
-Credits
--------
+Third party
+-----------
+
+- OpenGL static library (in Windows binary gem) and headers.
 
 - Various trivial shaders - "randomly found on the Internet" :$
 

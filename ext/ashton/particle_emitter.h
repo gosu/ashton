@@ -10,6 +10,8 @@
 #include <ruby.h>
 #include <math.h>
 
+#include "GL/GL.H"
+
 typedef unsigned int uint;
 typedef unsigned long ulong;
 
@@ -137,7 +139,15 @@ VALUE Ashton_ParticleEmitter_set_color_argb(VALUE self, VALUE color);
 // Helpers.
 inline static float randf();
 inline static float deviate(Range * range);
-static void draw_particle(Particle* particle, VALUE image, VALUE z);
+static void draw_particle(Particle* particle,
+                          const uint width, const uint height,
+                          const float left, const float top,
+                          const float right, const float bottom);
+static void draw_particles(Particle* first, Particle* last,
+                           const uint width, const uint height,
+                           const float tex_left, const float tex_top,
+                           const float tex_right, const float tex_bottom);
+
 static VALUE enable_shader_block(VALUE yield_value, VALUE self, int argc, VALUE argv[]);
 static uint color_to_argb(Color* color);
 
