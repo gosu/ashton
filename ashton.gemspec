@@ -13,6 +13,12 @@ Gem::Specification.new do |s|
 
   s.email = %w<bil.bagpuss@gmail.com>
   s.files = Dir.glob %w<CHANGELOG LICENSE Rakefile README.md lib/**/*.* lib examples/**/*.* spec/**/*.* ext/**/*.rb ext/**/*.c ext/**/*.h>
+  
+  # Only uncomment this when building a (hacky method) fat Windows gem on Windows.
+  # Before doing so, ensure you've run `pik run rake clean && rake native gem` and the
+  #  x86 gem created will have both SO's in it. Comment out again when creating the source gem though!
+  ### s.files << Dir["lib/**/*.so"]
+  
   s.extensions << 'ext/ashton/extconf.rb'
   s.homepage = 'https://github.com/spooner/ashton'
   s.licenses = %w<MIT>
