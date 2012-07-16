@@ -8,7 +8,7 @@
 #ifndef GOSU_WINDOW_H
 #define GOSU_WINDOW_H
 
-#include <ruby.h>
+#include "common.h"
 
 void Init_Gosu_Window(VALUE module);
 

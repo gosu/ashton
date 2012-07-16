@@ -14,6 +14,9 @@
 
 static VALUE rb_mAshton;
 
+#include "common.h"
+
+
 #include "gosu.h"
 
 #include "framebuffer.h"

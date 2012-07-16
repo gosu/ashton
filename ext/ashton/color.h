@@ -8,11 +8,9 @@
 #ifndef GOSU_COLOR_H
 #define GOSU_COLOR_H
 
-#include <ruby.h>
 #include <math.h>
 
-typedef unsigned int uint;
-typedef unsigned long ulong;
+#include "common.h"
 
 void Init_Gosu_Color(VALUE module);
 

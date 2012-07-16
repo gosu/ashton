@@ -8,7 +8,7 @@
 #ifndef GOSU_FONT_H
 #define GOSU_FONT_H
 
-#include <ruby.h>
+#include "common.h"
 
 void Init_Gosu_Font(VALUE module);
 

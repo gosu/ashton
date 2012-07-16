@@ -7,7 +7,7 @@
 #ifndef GOSU_H
 #define GOSU_H
 
-#include <ruby.h>
+#include "common.h"
 
 static VALUE rb_mGosu;
 

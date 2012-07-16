@@ -8,7 +8,7 @@
 #ifndef ASHTON_SHADER_H
 #define ASHTON_SHADER_H
 
-#include <ruby.h>
+#include "common.h"
 
 void Init_Ashton_Shader(VALUE module);
 

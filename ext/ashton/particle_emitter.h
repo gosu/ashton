@@ -7,13 +7,9 @@
 #ifndef ASHTON_PARTICLE_EMITTER_H
 #define ASHTON_PARTICLE_EMITTER_H
 
-#include <ruby.h>
 #include <math.h>
 
-#include "GL/GL.H"
-
-typedef unsigned int uint;
-typedef unsigned long ulong;
+#include "common.h"
 
 typedef struct _color
 {
