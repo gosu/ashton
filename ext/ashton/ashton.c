@@ -9,15 +9,15 @@
 
 void Init_ashton()
 {
-    m_ashton = rb_define_module("Ashton");
-
-    VALUE rb_cFramebuffer = rb_define_class_under(m_ashton, "FrameBuffer", rb_cObject);
-    VALUE rb_cShader = rb_define_class_under(m_ashton, "Shader", rb_cObject);
-    //VALUE rb_cWindowBuffer = rb_define_class_under(m_ashton, "WindowBuffer", rb_cFramebuffer);
+    rb_mAshton = rb_define_module("Ashton");
 
     srand(time(NULL));
 
-    //Init_Gosu();
-    Init_Ashton_ParticleEmitter(m_ashton);
+    Init_Gosu();
+
+    Init_Ashton_Framebuffer(rb_mAshton);
+    Init_Ashton_ParticleEmitter(rb_mAshton);
+    Init_Ashton_Shader(rb_mAshton);
+    //Init_Ashton_WindowBuffer(rb_mAshton);
 }
 

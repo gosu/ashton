@@ -12,7 +12,7 @@ Gem::Specification.new do |s|
   END
 
   s.email = %w<bil.bagpuss@gmail.com>
-  s.files = Dir.glob %w<CHANGELOG LICENSE Rakefile README.md lib/**/*.* lib examples/**/*.* spec/**/*.* ext/**/*.rb ext/**/*.c ext/**/*.h>
+  s.files = Dir.glob %w<CHANGELOG LICENSE Rakefile README.md lib/**/*.* lib examples/**/*.* spec/**/*.* ext/**/*.{c,h,rb}>
   
   # Only uncomment this when building a (hacky method) fat Windows gem on Windows.
   # Before doing so, ensure you've run `pik run rake clean && rake native gem` and the

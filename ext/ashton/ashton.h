@@ -12,14 +12,16 @@
 #include <ruby.h>
 #include <time.h>
 
-static VALUE m_ashton;
+static VALUE rb_mAshton;
 
-#include "gosu_ext/gosu.h"
+#include "gosu.h"
 
-//#include "framebuffer.h"
+#include "framebuffer.h"
 #include "particle_emitter.h"
-//#include "shader.h"
+#include "shader.h"
 //#include "window_buffer.h"
+
+void Init_ashton();
 
 #endif // ASHTON_H
 
