@@ -11,8 +11,8 @@ case RUBY_PLATFORM
     $CFLAGS << " -framework OpenGL"
 
   when /win32|mingw/
-    gl_path = File.expand_path "../vendor/gl/lib", __FILE__
-    $LDFLAGS <<  " -I#{File.join gl_path, "lib"}"
+    gl_path = File.expand_path "../vendor/gl", __FILE__
+    $LDFLAGS <<  " -l#{File.join gl_path, "lib"}"
     $CFLAGS << " -I#{File.join gl_path, "include"}"
 
   else
