@@ -16,7 +16,7 @@ class TestWindow < Gosu::Window
 
     Gosu::enable_undocumented_retrofication
 
-    self.caption = "Post-processing with 'outline' - outline is scaled to stay the same width, regardless of zoom"
+    self.caption = "Image, font and buffer composition drawn with 'outline' shader"
 
     @outline = Ashton::Shader.new fragment: :outline
 
@@ -74,8 +74,11 @@ class TestWindow < Gosu::Window
       @ship.draw_rot 225 + i * 25, 15 + i * 30, 0, angle, 0.5, 0.5, scale, scale, :shader => @outline
     end
 
-    # Drawing after the effect isn't processed, which is useful for GUI elements.
-    @font.draw "FPS: #{Gosu::fps}", 0, 0, 0
+    # Guitastic!
+    @outline.outline_width = 2.0
+    @outline.outline_color = Gosu::Color::BLACK
+    @font.draw "FPS:", 0, 0, 0, 1, 1, Gosu::Color::BLUE, shader: @outline
+    @font.draw_rel "#{Gosu::fps}", 150, 0, 0, 1, 0, 1, 1, Gosu::Color::GREEN, shader: @outline
   end
 end
 

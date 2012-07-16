@@ -23,6 +23,8 @@ Features
 
 - {Gosu::Color} - Converting to and from opengl values.
 
+- {Gosu::Font} - Apply shader to draw operations.
+
 - {Gosu::Image} - Apply shader to each draw operation or group of draws. Manipulation, such as flipping and scaling.
 
 - {Gosu::Window} - Post-processing with shaders. Converting to image.

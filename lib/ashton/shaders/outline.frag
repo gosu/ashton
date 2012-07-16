@@ -1,6 +1,6 @@
 #version 110
 
-#define ALPHA_THRESHOLD 0.7
+#define ALPHA_THRESHOLD 0.5
 #define NUM_ADJACENT 8
 
 const ivec2 TextureSize = ivec2(1024, 1024); // Gosu-specific!
@@ -14,13 +14,14 @@ uniform vec4 in_OutlineColor;
 uniform float in_OutlineWidth; // In pixels.
 
 varying vec2 var_TexCoord; // Pixel to process on this pass
+varying vec4 var_Color;
 
 void main()
 {
     vec2 PixelSize = 1.0 / vec2(TextureSize.xy);
-    vec4 color = texture2D(in_Texture, var_TexCoord);
+    gl_FragColor = texture2D(in_Texture, var_TexCoord) * var_Color;
 
-    if(color.a < ALPHA_THRESHOLD)
+    if(gl_FragColor.a < ALPHA_THRESHOLD)
     {
         gl_FragColor = vec4(0.0); // Fallback, in case there are none adjacent.
 
@@ -43,9 +44,5 @@ void main()
                 }
             }
         }
-    }
-    else
-    {
-        gl_FragColor = color;
     }
 }

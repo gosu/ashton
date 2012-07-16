@@ -22,6 +22,7 @@ module Ashton
 end
 
 require "ashton/gosu_ext/window"
+require "ashton/gosu_ext/font"
 require "ashton/gosu_ext/image"
 require "ashton/gosu_ext/color"
 
