@@ -1,17 +1,25 @@
 module Gosu
   class Color
-    # Convert into an array of floats in range 0.0 to 1.0.
-    def self.from_opengl(array)
-      rgba *array.map {|c| (c * 255).to_i }
-    end
+    # @!method self.from_opengl(rgba_array)
+    #   Convert into an array of floats in range 0.0 to 1.0.
+    #
+    #   @param rgba_array [Array<Float>]
+    #   @return [Gosu::Color]
 
-    # Convert to length 4 array of floats in range 0.0 to 1.0
-    def to_opengl
-      [red / 255.0, green / 255.0, blue / 255.0, alpha / 255.0]
-    end
 
-    def to_i
-      (alpha << 24) + (red << 16) + (green << 8) + blue
-    end
+    # @!method to_opengl
+    #   Convert into a length 4 array of floats in range 0.0 to 1.0, which
+    #   can then be passed into OpenGL ruby methods.
+    #
+    #   @example
+    #     color = Gosu::Color.rgba 128, 0, 0, 255 # => [0.502, 0.0, 0.0, 1.0]
+    #     glColor4f *color.to_opengl
+    #
+    #   @return [Array<Float>]
+
+
+    # @!method to_i
+    #   Convert to Gosu-compatible ARGB value (0xAARRGGBB)
+    #   @return [Integer]
   end
 end

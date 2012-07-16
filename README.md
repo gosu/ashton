@@ -21,17 +21,23 @@ Usage
 Features
 --------
 
-- {Gosu::Color} - Converting to and from opengl values.
+* Gosu extensions
+    - {Gosu::Color} - Converting to and from opengl values.
 
-- {Gosu::Font} - Apply shader to draw operations.
+    - {Gosu::Font} - Apply shader to draw operations.
 
-- {Gosu::Image} - Apply shader to each draw operation or group of draws. Manipulation, such as flipping and scaling.
+    - {Gosu::Image} - Apply shader to each draw operation or group of draws. Manipulation, such as flipping and scaling.
 
-- {Gosu::Window} - Post-processing with shaders. Converting to image.
+    - {Gosu::Window} - Post-processing with shaders. Converting to image.
 
-- {Ashton::Shader} -  Wrapper around a GLSL shaders, Supports vertex and fragment shaders. Small shader/function library.
+* Ashton
+    - {Ashton::Framebuffer} - low-level graphics buffer that can be drawn directly onto and drawn to the Window.
 
-- {Ashton::Framebuffer} - low-level graphics buffer that can be drawn directly onto and drawn to the Window.
+    - {Ashton::ParticleEmitter} - Generates, manages and displays particles.
+
+    - {Ashton::Shader} -  Wrapper around a GLSL shaders, Supports vertex and fragment shaders. Small shader/function library.
+
+    - {Ashton::WindowBuffer} - Framebuffer that is the same size as the Gosu Window.
 
 Requirements
 ------------
