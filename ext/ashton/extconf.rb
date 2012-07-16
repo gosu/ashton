@@ -5,13 +5,25 @@ extension_name = "ashton/#{$1}/ashton"
 
 dir_config(extension_name)
 
+case RUBY_PLATFORM
+  when /darwin/
+    $LDFLAGS <<  " -framework OpenGL"
+    $CFLAGS << " -framework OpenGL"
+
+  when /win32|mingw/
+    gl_path = File.expand_path "../vendor/gl/lib", __FILE__
+    $LDFLAGS <<  " -I#{File.join gl_path, "lib"}"
+    $CFLAGS << " -I#{File.join gl_path, "include"}"
+
+  else
+    # You are on Linux, so everything is hunky dory!
+end
+
 # 1.9 compatibility
 $CFLAGS << ' -DRUBY_19' if RUBY_VERSION =~ /^1.9/
 
 # let's use a nicer C (rather than C90)
 $CFLAGS << " -std=gnu99"
-
-$CFLAGS << " -I#{File.expand_path "../vendor/gl/include", __FILE__}"
 
 # Make it possible to use a debugger.
 #$CFLAGS << " -g -O0"
