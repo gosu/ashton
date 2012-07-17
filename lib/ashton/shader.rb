@@ -353,11 +353,11 @@ module Ashton
     #
     # @return [String] Source code that has been expanded.
     def replace_include(source)
-      source.gsub! /^#include\s+<(.+)?>\s+$/ do
+      source.gsub! /^#include\s+<([^>]*)>/ do
         replace_include File.read(File.expand_path("#{$1}.glsl", INCLUDE_PATH))
       end
 
-      source.gsub /^#include\s+"(\w+)"\s+$/ do
+      source.gsub /^#include\s+"([^"]*)"/ do
         replace_include File.read($1)
       end
     end
