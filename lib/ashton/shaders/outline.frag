@@ -1,9 +1,9 @@
 #version 110
 
-#define ALPHA_THRESHOLD 0.5
-#define NUM_ADJACENT 8
+const float ALPHA_THRESHOLD = 0.5;
 
-const ivec2 TextureSize = ivec2(1024, 1024); // Gosu-specific!
+const vec2 TextureSize = vec2(1024.0, 1024.0); // Gosu-specific!
+const vec2 PixelSize = 1.0 / TextureSize;
 
 // Automatically set by Ray (actually passed from the vertex shader).
 uniform sampler2D in_Texture; // Original texture.
@@ -18,13 +18,10 @@ varying vec4 var_Color;
 
 void main()
 {
-    vec2 PixelSize = 1.0 / vec2(TextureSize.xy);
-    gl_FragColor = texture2D(in_Texture, var_TexCoord) * var_Color;
+    gl_FragColor = texture2D(in_Texture, var_TexCoord); // * var_Color;
 
     if(gl_FragColor.a < ALPHA_THRESHOLD)
     {
-        gl_FragColor = vec4(0.0); // Fallback, in case there are none adjacent.
-
         for(int i = -1; i < 2; i++)
         {
             for(int j = -1; j < 2; j++)
