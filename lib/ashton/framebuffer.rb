@@ -167,8 +167,9 @@ module Ashton
         glColor4f 1.0, 1.0, 1.0, 1.0
         glMatrixMode GL_PROJECTION
         glLoadIdentity
-        glViewport 0, 0, width, height
-        glOrtho 0, width, height, 0, -1, 1
+        glViewport 0, 0, $window.width, $window.height
+        glOrtho 0, $window.width, $window.height, 0, -1, 1
+        glTranslate 0, $window.height - height, 0
 
         glClearColor 0, 0, 0, 0
         glClear GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT
@@ -190,7 +191,6 @@ module Ashton
       else
         Gosu::Image.new $window, stub, options[:tileable]
       end
-
     end
 
     protected
