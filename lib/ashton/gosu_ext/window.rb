@@ -2,12 +2,20 @@
 module Gosu
   class Window
     class << self
+      WHITE_PIXEL_BLOB = "\xFF" * 4
+
       # Used for post-processing effects, but could be used by any
       # anyone needing to have a temporary, full-window render buffer.
       def back_buffer
         @back_buffer ||= Ashton::WindowBuffer.new
       end
+
+      def pixel
+        @pixel ||= Gosu::Image.new $window, Ashton::ImageStub.new(WHITE_PIXEL_BLOB, 1, 1)
+      end
     end
+
+    def pixel; Window.pixel; end
 
     alias_method :ashton_initialize, :initialize
     def initialize(*args, &block)

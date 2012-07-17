@@ -2,7 +2,6 @@ module Ashton
   class ParticleEmitter
     def empty?; count == 0 end
 
-    WHITE_PIXEL_BLOB = "\xFF" * 4
     DEFAULT_MAX_PARTICLES = 1000
     DEFAULT_COLOR = Gosu::Color::WHITE
     RANGED_ATTRIBUTES = [
@@ -12,13 +11,12 @@ module Ashton
     ]
 
     def initialize(x, y, z, options = {})
-      @@pixel ||= Gosu::Image.new $window, Ashton::ImageStub.new(WHITE_PIXEL_BLOB, 1, 1)
 
       # I'm MUCH too lazy to implement a huge options hash manager in C, especially on a constructor.
       options = {
           center_x: 0.5,
           center_y: 0.5,
-          image: @@pixel,
+          image: $window.pixel,
           color: DEFAULT_COLOR,
           max_particles: DEFAULT_MAX_PARTICLES,
           gravity: 0.0,
@@ -33,7 +31,7 @@ module Ashton
           zoom: 0.0,
       }.merge! options
       
-      @image = options[:image] || @@pixel
+      @image = options[:image] || $window.pixel
 
       @shader = options[:shader]
 
