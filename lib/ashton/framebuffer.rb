@@ -3,11 +3,13 @@ module Ashton
     DEFAULT_DRAW_COLOR = Gosu::Color::WHITE
 
     attr_reader :width, :height
+    def rendering?; @rendering end
 
     def initialize(width, height)
       @width, @height = width.to_i, height.to_i
       @fbo = create_framebuffer
       @texture = create_color_buffer
+      @rendering = false
 
       status = glCheckFramebufferStatusEXT GL_FRAMEBUFFER_EXT
       raise unless status == GL_FRAMEBUFFER_COMPLETE_EXT
@@ -29,12 +31,14 @@ module Ashton
       color = options[:color]
       color = color.to_opengl if color.is_a? Gosu::Color
 
-      glBindFramebufferEXT GL_FRAMEBUFFER_EXT, @fbo
+      glBindFramebufferEXT GL_FRAMEBUFFER_EXT, @fbo unless rendering?
 
       glDisable GL_BLEND # Need to replace the alpha too.
       glClearColor *color
       glClear GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT
       glEnable GL_BLEND
+
+      glBindFramebufferEXT GL_FRAMEBUFFER_EXT, 0 unless rendering?
 
       nil
     end
@@ -56,14 +60,30 @@ module Ashton
 
     public
     def enable
+      raise AshtonError if rendering?
+
+      # Reset the projection matrix so that drawing into the buffer is zeroed.
+      glPushMatrix
+      glMatrixMode GL_PROJECTION
+      glLoadIdentity
+      glViewport 0, 0, $window.width, $window.height
+      glOrtho 0, $window.width, $window.height, 0, -1, 1
+      glTranslate 0, $window.height - height, 0
+
       $window.flush # Ensure that any drawing _before_ the render block is drawn to screen, rather than into the buffer.
       glBindFramebufferEXT GL_FRAMEBUFFER_EXT, @fbo
+      @rendering = true
     end
 
     public
     def disable
+      raise AshtonError unless rendering?
+
       $window.flush # Force all the drawing to draw now!
       glBindFramebufferEXT GL_FRAMEBUFFER_EXT, 0
+
+      glPopMatrix
+      @rendering = false
     end
 
     public
@@ -78,6 +98,7 @@ module Ashton
     # @param x [Number] Top left corner
     # @param y [Number] Top right corner
     # @option options :shader [Ashton::Shader] Shader to apply to drawing.
+    # @option options :color [Gosu::Color] Color to apply to the drawing.
     def draw(x, y, z, options = {})
       options = {
           color: DEFAULT_DRAW_COLOR,
@@ -92,6 +113,8 @@ module Ashton
           shader.color = color
           location = shader.send :uniform_location, "in_TextureEnabled", required: false
           shader.send :set_uniform, location, true if location != Shader::INVALID_LOCATION
+        else
+          glColor4f *color.to_opengl
         end
 
         glEnable GL_BLEND
@@ -139,9 +162,18 @@ module Ashton
       end
 
       glBindFramebufferEXT GL_FRAMEBUFFER_EXT, @fbo_flip
-      glClearColor 0, 0, 0, 0
-      glClear GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT
-      draw 0, 0, nil
+
+      $window.gl do
+        glColor4f 1.0, 1.0, 1.0, 1.0
+        glMatrixMode GL_PROJECTION
+        glLoadIdentity
+        glViewport 0, 0, width, height
+        glOrtho 0, width, height, 0, -1, 1
+
+        glClearColor 0, 0, 0, 0
+        glClear GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT
+        draw 0, 0, nil
+      end
 
       # Read the data in the flip-buffer.
       glBindTexture GL_TEXTURE_2D, @fbo_flip_texture
