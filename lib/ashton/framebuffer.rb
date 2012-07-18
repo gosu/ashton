@@ -99,11 +99,11 @@ module Ashton
     # @param y [Number] Top right corner
     # @option options :shader [Ashton::Shader] Shader to apply to drawing.
     # @option options :color [Gosu::Color] Color to apply to the drawing.
-    # @option options :mode [Symbol] (:default) :default, :add or :multiply
+    # @option options :blend [Symbol] (:alpha) :alpha, :replace, :additive or :multiplicative
     def draw(x, y, z, options = {})
       options = {
           color: DEFAULT_DRAW_COLOR,
-          mode: :default,
+          blend: :alpha,
       }.merge! options
       shader = options[:shader]
       color = options[:color]
@@ -125,13 +125,15 @@ module Ashton
         glBindTexture GL_TEXTURE_2D, @texture
 
         # Set blending mode.
-        case options[:mode]
-          when :default
+        case options[:blend]
+          when :default, :alpha
             glBlendFunc GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA
           when :additive, :add
             glBlendFunc GL_ONE, GL_ONE
           when :multiplicative, :multiply
             glBlendFunc GL_DST_COLOR, GL_ZERO
+          when :replace
+            glBlendFunc GL_ONE, GL_ZERO
           else
             raise options[:mode].to_s
         end

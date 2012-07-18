@@ -29,8 +29,7 @@ class TestWindow < Gosu::Window
     @distortion_fb = Ashton::Framebuffer.new @size, @size
     @shadow_map_fb = Ashton::Framebuffer.new 2, @size
     @shadows_fb = Ashton::Framebuffer.new @size, @size
-    @blurred_horizontally_fb = Ashton::Framebuffer.new @size, @size
-    @blurred_vertically_fb = Ashton::Framebuffer.new @size, @size
+    @blurred_fb = Ashton::Framebuffer.new @size, @size
     @window_shadows = Ashton::Framebuffer.new width, height
 
     # This will be the shadow map texture passed into @draw_shadows
@@ -48,7 +47,7 @@ class TestWindow < Gosu::Window
                                   }
 
     @reduction = Ashton::Shader.new fragment: :shadow_horizontal_reduction,
-                                    vertex: :shadow,
+                                    vertex: :shadow_horizontal_reduction,
                                     uniforms: {
                                         texture_width: @size,
                                     }
@@ -60,17 +59,11 @@ class TestWindow < Gosu::Window
                                            texture_width: @size,
                                        }
 
-    @blur_horizontally = Ashton::Shader.new fragment: :shadow_blur_horizontally,
-                                            vertex: :shadow,
-                                            uniforms: {
-                                                texture_width: @size,
-                                            }
-
-    @blur_vertically = Ashton::Shader.new fragment: :shadow_blur_vertically,
-                                            vertex: :shadow,
-                                            uniforms: {
-                                                texture_width: @size,
-                                            }
+    @blur = Ashton::Shader.new fragment: :shadow_blur,
+                               vertex: :shadow,
+                               uniforms: {
+                                   texture_width: @size,
+                               }
 
     render_shadows
 
@@ -79,8 +72,7 @@ class TestWindow < Gosu::Window
     @distortion_fb.to_image.save "output/distortion.png"
     @shadow_map_fb.to_image.save "output/shadow_map.png"
     @shadows_fb.to_image.save "output/shadows.png"
-    @blurred_horizontally_fb.to_image.save "output/blurred_horizontally.png"
-    @blurred_vertically_fb.to_image.save "output/blurred_vertically.png"
+    @blurred_fb.to_image.save "output/blurred.png"
   end
 
   def place_shadow_casters
@@ -102,7 +94,7 @@ class TestWindow < Gosu::Window
     end
 
     @shadow_map_fb.render do
-      scale @shadow_map_fb.width.fdiv(@distortion_fb.width), 1, 0, 0 do
+      scale 2.0 / @size, 1 do
         @distortion_fb.draw 0, 0, 0, shader: @reduction
       end
     end
@@ -111,19 +103,13 @@ class TestWindow < Gosu::Window
       @shadow_casters_fb.draw 0, 0, 0, shader: @draw_shadows
     end
 
-    @blurred_horizontally_fb.render do
-      @shadows_fb.draw 0, 0, 0, shader: @blur_horizontally
-    end
-
-    @blurred_vertically_fb.render do
-      @blurred_horizontally_fb.draw 0, 0, 0, shader: @blur_vertically
+    @blurred_fb.render do
+      @shadows_fb.draw 0, 0, 0, shader: @blur
     end
 
     @window_shadows.render do |buffer|
       buffer.clear color: Gosu::Color::BLACK
-      glDisable GL_BLEND
-      @blurred_vertically_fb.draw 0, 0, 0
-      glEnable GL_BLEND
+      @blurred_fb.draw 0, 0, 0
     end
   end
 
@@ -144,13 +130,14 @@ class TestWindow < Gosu::Window
     @background.draw 0, 0, 0, width.fdiv(@background.width), height.fdiv(@background.height)
     flush # seem to need to flush to get :multiply to work!
 
-    @window_shadows.draw 0, 0, 0, mode: :multiply
+    @window_shadows.draw 0, 0, 0, blend: :multiply
     @shadow_casters_fb.draw 0, 0, 0
 
     pixel.draw_rot @size / 2, @size / 2, 0, 0, 0.5, 0.5, 10, 10
 
-    draw_line 0, 0, Gosu::Color::WHITE, @size, @size, Gosu::Color::WHITE, 0
-    draw_line 0, @size, Gosu::Color::WHITE, @size, 0, Gosu::Color::WHITE, 0
+    trace_color = Gosu::Color.rgba 255, 255, 255, 50
+    draw_line 0, 0, trace_color, @size, @size, trace_color, 0
+    draw_line 0, @size, trace_color, @size, 0, trace_color, 0
 
     # Drawing after the effect isn't processed, which is useful for GUI elements.
     @font.draw "FPS: #{Gosu::fps}", 0, 0, 0

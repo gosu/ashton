@@ -7,6 +7,8 @@ varying vec2 var_TexCoord; // Pixel to process on this pass.
 
 void main()
 {
+    vec2 coord = var_TexCoord;
+
     float pixel_width = 1.0 / float(in_TextureWidth);
     int half_width = in_TextureWidth / 2;
 
