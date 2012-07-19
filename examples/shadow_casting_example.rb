@@ -37,9 +37,9 @@ class TestWindow < Gosu::Window
     @light_manager = Ashton::LightManager.new
 
     # Add some lights (various methods)
-    @light_manager.create_light 240, 240, 0, height / 2, color: Gosu::Color::RED
+    @light_manager.create_light 240, 240, 0, height / 3, color: Gosu::Color::RED
 
-    light =  Ashton::LightSource.new 400, 150, 0, height / 4, color: Gosu::Color::GREEN
+    light =  Ashton::LightSource.new 400, 150, 0, height / 5, color: Gosu::Color::GREEN
     @light_manager << light
 
     @light_mouse = @light_manager.create_light mouse_x, mouse_y, 0, height / 2, color: Gosu::Color::GRAY
@@ -80,8 +80,8 @@ class TestWindow < Gosu::Window
         place_shadow_casters
 
       when Gosu::MsLeft
-        color = Gosu::Color.rgba(rand() * 255, rand() * 255, rand() * 255, 255)
-        @light_manager.create_light mouse_x, mouse_y, 0, height / 2, color: color
+        color = Gosu::Color.rgba rand(255), rand(255), rand(255), 127 + rand(128)
+        @light_manager.create_light mouse_x, mouse_y, 0, height / 16 + rand(height / 2), color: color
 
       when Gosu::KbD
         @debug = !@debug
@@ -94,7 +94,10 @@ class TestWindow < Gosu::Window
   def draw
     @background.draw 0, 0, 0, width.fdiv(@background.width), height.fdiv(@background.height)
 
+    # ... would draw player and other objects here ...
+
     @light_manager.draw
+
     draw_shadow_casters
 
     # Draw the light itself - this isn't managed by the manager.

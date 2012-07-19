@@ -74,8 +74,8 @@ module Ashton
       glPushMatrix
       glMatrixMode GL_PROJECTION
       glLoadIdentity
-      glViewport 0, 0, $window.width, $window.height
-      glOrtho 0,  $window.width, $window.height, 0, -1, 1
+      glViewport 0, 0, width, height
+      glOrtho 0,  width, height, 0, -1, 1
 
       @rendering = true
     end
