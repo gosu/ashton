@@ -4,11 +4,6 @@ const float minBlur = 0.0;
 const float maxBlur = 5.0; // TODO: Make this a uniform?
 const int blurSamples = 13;
 
-float saturate(in float x)
-{
-    return min(max(x, 0.0), 1.0);
-}
-
 uniform sampler2D in_Texture; // Original texture.
 uniform int in_TextureWidth;
 
@@ -55,7 +50,7 @@ void main()
 
     // Light is brighter at the center.
     float d = 2.0 * length(var_TexCoord - 0.5);
-    float attenuation = saturate(1.0 - d);
+    float attenuation = clamp(1.0 - d, 0.0, 1.0);
 
     gl_FragColor = vec4(vec3(sum * attenuation), 1.0);
 }
