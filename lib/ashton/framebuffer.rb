@@ -67,15 +67,16 @@ module Ashton
     def enable
       raise AshtonError if rendering?
 
+      $window.flush # Ensure that any drawing _before_ the render block is drawn to screen, rather than into the buffer.
+
       # Reset the projection matrix so that drawing into the buffer is zeroed.
+      glBindFramebufferEXT GL_FRAMEBUFFER_EXT, @fbo
       glPushMatrix
       glMatrixMode GL_PROJECTION
       glLoadIdentity
-      glViewport 0, 0, width, height
-      glOrtho 0, width, height, 0, -1, 1
+      glViewport 0, 0, $window.width, $window.height
+      glOrtho 0,  $window.width, $window.height, 0, -1, 1
 
-      $window.flush # Ensure that any drawing _before_ the render block is drawn to screen, rather than into the buffer.
-      glBindFramebufferEXT GL_FRAMEBUFFER_EXT, @fbo
       @rendering = true
     end
 
@@ -84,9 +85,9 @@ module Ashton
       raise AshtonError unless rendering?
 
       $window.flush # Force all the drawing to draw now!
+      glPopMatrix
       glBindFramebufferEXT GL_FRAMEBUFFER_EXT, 0
 
-      glPopMatrix
       @rendering = false
     end
 
@@ -187,8 +188,8 @@ module Ashton
         glColor4f 1.0, 1.0, 1.0, 1.0
         glMatrixMode GL_PROJECTION
         glLoadIdentity
-        glViewport 0, 0, width, height
-        glOrtho 0, width, 0, height, -1, 1 # Invert screen!
+        glViewport 0, 0, $window.width, $window.height
+        glOrtho 0, $window.width, 0, $window.height, -1, 1 # Invert screen!
 
         glClearColor 0, 0, 0, 0
         glClear GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT
