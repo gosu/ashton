@@ -1,11 +1,16 @@
 module Ashton
   class Framebuffer
+    include Mixins::VersionChecking
+
     DEFAULT_DRAW_COLOR = Gosu::Color::WHITE
+    FRAMEBUFFER_EXTENSION = "GL_EXT_framebuffer_object"
 
     attr_reader :width, :height
     def rendering?; @rendering end
 
     def initialize(width, height)
+      check_opengl_extension FRAMEBUFFER_EXTENSION
+
       @width, @height = width.to_i, height.to_i
       @fbo = create_framebuffer
       @texture = create_color_buffer

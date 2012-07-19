@@ -1,9 +1,9 @@
 module Ashton
   class Shader
-    include Mixins::Utilities
+    include Mixins::VersionChecking
 
     INVALID_LOCATION = -1
-    MIN_OPENGL_VERSION = 2.0
+    MIN_OPENGL_VERSION = 2.0 # For GLSL 1.10
 
     INCLUDE_PATH = File.expand_path "../shaders/include", __FILE__
     BUILT_IN_SHADER_PATH = File.expand_path "../shaders", __FILE__
@@ -36,7 +36,7 @@ module Ashton
     # @option options :frag [String, Symbol] (:default) Equivalent to :fragment
     # @option options :uniforms [Hash] Sets uniforms, as though calling shader[key] = value for each entry (but faster).
     def initialize(options = {})
-      check_opengl MIN_OPENGL_VERSION
+      check_opengl_version MIN_OPENGL_VERSION
 
       vertex = options[:vertex] || options[:vert] || :default
       fragment = options[:fragment] || options[:frag] || :default

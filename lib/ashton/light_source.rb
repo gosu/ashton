@@ -1,8 +1,8 @@
 module Ashton
   class LightSource
-    include Mixins::Utilities
+    include Mixins::VersionChecking
 
-    MIN_OPENGL_VERSION = 9.1
+    # PIXEL_BUFFER_EXTENSION = "GL_EXT_pixel_buffer_object"
 
     attr_reader :radius
     attr_accessor :x, :y, :z, :color
@@ -11,7 +11,7 @@ module Ashton
     def height; @radius * 2 end
 
     def initialize(x, y, z, radius, options = {})
-      check_opengl MIN_OPENGL_VERSION
+      #check_opengl_extension PIXEL_BUFFER_EXTENSION
 
       @x, @y, @z, @radius = x, y, z, radius.to_i
       @color = options[:color] || Gosu::Color::WHITE
@@ -21,7 +21,7 @@ module Ashton
       @shadow_map_fb = Ashton::Framebuffer.new 2, height
       @shadows_fb = Ashton::Framebuffer.new width, height
       @blurred_fb = Ashton::Framebuffer.new width, height
-      @window_shadows = Ashton::Framebuffer.new width, height
+      @window_shadows = Ashton::Framebuffer.new width, heigh
 
       load_shaders
     end

@@ -26,7 +26,7 @@ require "ashton/gosu_ext/font"
 require "ashton/gosu_ext/image"
 require "ashton/gosu_ext/color"
 
-require "ashton/mixins/utilities"
+require "ashton/mixins/version_checking"
 
 require "ashton/version"
 require "ashton/shader"
