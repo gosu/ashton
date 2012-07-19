@@ -34,7 +34,7 @@ module Ashton
       # Get a copy of the shadow-casting objects in out light-zone.
       @shadow_casters_fb.render do |buffer|
         buffer.clear
-        $window.translate @radius - x, @radius - y do
+        $window.translate @radius - @x, @radius - @y do
           yield
         end
       end
