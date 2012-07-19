@@ -42,7 +42,7 @@ class TestWindow < Gosu::Window
     light =  Ashton::LightSource.new 400, 150, 0, height / 4, color: Gosu::Color::GREEN
     @light_manager << light
 
-    @light_mouse = @light_manager.create_light mouse_x, mouse_y, 0, height / 2, color: Gosu::Color::CYAN
+    @light_mouse = @light_manager.create_light mouse_x, mouse_y, 0, height / 2, color: Gosu::Color::GRAY
   end
 
   # Creates a new set of objects that cast shadows.

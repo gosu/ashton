@@ -17,11 +17,9 @@ module Ashton
       @color = options[:color] || Gosu::Color::WHITE
 
       @shadow_casters_fb = Ashton::Framebuffer.new width, height
-      @distortion_fb = Ashton::Framebuffer.new width, height
       @shadow_map_fb = Ashton::Framebuffer.new 2, height
       @shadows_fb = Ashton::Framebuffer.new width, height
       @blurred_fb = Ashton::Framebuffer.new width, height
-      @window_shadows = Ashton::Framebuffer.new width, height
 
       load_shaders
     end
@@ -39,15 +37,10 @@ module Ashton
         end
       end
 
-      # Distort the shadow casters.
-      @distortion_fb.render do
-        @shadow_casters_fb.draw 0, 0, 0, shader: @distort
-      end
-
-      # Create a 2-pixel wide shadow-map of the blockages.
+      # Distort the shadow casters and reduce into a a 2-pixel wide shadow-map of the blockages.
       @shadow_map_fb.render do
         $window.scale 1.0 / radius, 1 do
-          @distortion_fb.draw 0, 0, 0, shader: @reduction
+          @shadow_casters_fb.draw 0, 0, 0, shader: @distort
         end
       end
 
@@ -69,16 +62,15 @@ module Ashton
         @shadows_fb.draw 0, 0, 0, shader: @blur
       end
 
-      #unless defined? @saved
-      #  @saved = true
-      #  return unless @x == 240 or @x == 400
-      #  # Only save once. for purposes of this example only.
-      #  @shadow_casters_fb.to_image.save "output/shadow_casters_#{x}.png"
-      #  @distortion_fb.to_image.save "output/distortion_#{x}.png"
-      #  @shadow_map_fb.to_image.save "output/shadow_map_#{x}.png"
-      #  @shadows_fb.to_image.save "output/shadows_#{x}.png"
-      #  @blurred_fb.to_image.save "output/blurred_#{x}.png"
-      #end
+      unless defined? @saved
+        @saved = true
+        return unless @x == 240 or @x == 400
+        # Only save once. for purposes of this example only.
+        @shadow_casters_fb.to_image.save "output/shadow_casters_#{x}.png"
+        @shadow_map_fb.to_image.save "output/shadow_map_#{x}.png"
+        @shadows_fb.to_image.save "output/shadows_#{x}.png"
+        @blurred_fb.to_image.save "output/blurred_#{x}.png"
+      end
 
       nil
     end
@@ -114,12 +106,10 @@ module Ashton
 
     protected
     def load_shaders
-      @distort = Ashton::Shader.new fragment: :shadow_distort
-
-      @reduction = Ashton::Shader.new fragment: :shadow_horizontal_reduction,
-                                      uniforms: {
-                                          texture_width: width,
-                                      }
+      @distort = Ashton::Shader.new fragment: :shadow_distort,
+                                    uniforms: {
+                                        texture_width: width,
+                                    }
 
       @draw_shadows = Ashton::Shader.new fragment: :shadow_draw_shadows,
                                          uniforms: {
