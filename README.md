@@ -33,6 +33,10 @@ Features
 * Ashton
     - {Ashton::Framebuffer} - low-level graphics buffer that can be drawn directly onto and drawn to the Window.
 
+    - {Ashton::LightManager} -  Manages and combines the lighting from {Ashton::LightSource} objects.
+
+    - {Ashton::LightSource} -  A single light-source that illuminates and whose can be blocked by shadow-casting objects.
+
     - {Ashton::ParticleEmitter} - Generates, manages and displays particles.
 
     - {Ashton::Shader} -  Wrapper around a GLSL shaders, Supports vertex and fragment shaders. Small shader/function library.
@@ -43,6 +47,8 @@ Requirements
 ------------
 
 * OSX/Linux: Requires OpenGL library be installed.
+
+* {Ashton::Shader} and {Ashton::LightSource} or anything else using shaders, require OpenGL 2.0.
 
 Similar Libraries
 -----------------
