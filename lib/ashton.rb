@@ -26,9 +26,13 @@ require "ashton/gosu_ext/font"
 require "ashton/gosu_ext/image"
 require "ashton/gosu_ext/color"
 
+require "ashton/mixins/utilities"
+
 require "ashton/version"
 require "ashton/shader"
 require "ashton/framebuffer"
+require "ashton/light_source"
+require "ashton/light_manager"
 require "ashton/window_buffer"
 require "ashton/image_stub"
 require "ashton/particle_emitter"

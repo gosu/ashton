@@ -66,9 +66,8 @@ module Ashton
       glPushMatrix
       glMatrixMode GL_PROJECTION
       glLoadIdentity
-      glViewport 0, 0, $window.width, $window.height
-      glOrtho 0, $window.width, $window.height, 0, -1, 1
-      glTranslate 0, $window.height - height, 0
+      glViewport 0, 0, width, height
+      glOrtho 0, width, height, 0, -1, 1
 
       $window.flush # Ensure that any drawing _before_ the render block is drawn to screen, rather than into the buffer.
       glBindFramebufferEXT GL_FRAMEBUFFER_EXT, @fbo
@@ -99,7 +98,7 @@ module Ashton
     # @param y [Number] Top right corner
     # @option options :shader [Ashton::Shader] Shader to apply to drawing.
     # @option options :color [Gosu::Color] Color to apply to the drawing.
-    # @option options :blend [Symbol] (:alpha) :alpha, :replace, :additive or :multiplicative
+    # @option options :blend [Symbol] (:alpha) :alpha, :copy, :additive or :multiplicative
     def draw(x, y, z, options = {})
       options = {
           color: DEFAULT_DRAW_COLOR,
@@ -132,7 +131,7 @@ module Ashton
             glBlendFunc GL_ONE, GL_ONE
           when :multiplicative, :multiply
             glBlendFunc GL_DST_COLOR, GL_ZERO
-          when :replace
+          when :copy
             glBlendFunc GL_ONE, GL_ZERO
           else
             raise options[:mode].to_s
@@ -183,21 +182,16 @@ module Ashton
         glColor4f 1.0, 1.0, 1.0, 1.0
         glMatrixMode GL_PROJECTION
         glLoadIdentity
-        glViewport 0, 0, $window.width, $window.height
-        glOrtho 0, $window.width, $window.height, 0, -1, 1
-        glTranslate 0, $window.height - height, 0
+        glViewport 0, 0, width, height
+        glOrtho 0, width, 0, height, -1, 1 # Invert screen!
 
         glClearColor 0, 0, 0, 0
         glClear GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT
         draw 0, 0, nil
       end
 
-      # Read the data in the flip-buffer.
-      glBindTexture GL_TEXTURE_2D, @fbo_flip_texture
       blob = glReadPixels *rect, GL_RGBA, GL_UNSIGNED_BYTE
 
-      # Clean up.
-      glBindTexture GL_TEXTURE_2D, 0
       glBindFramebufferEXT GL_FRAMEBUFFER_EXT, 0
 
       # Create a new Image from the flipped pixel data.

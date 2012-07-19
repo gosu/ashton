@@ -13,103 +13,57 @@ def media_path(file); File.expand_path "media/#{file}", File.dirname(__FILE__) e
 class TestWindow < Gosu::Window
   def initialize
     super 640, 480, false
-    self.caption = "Shadow-casting - <space> to create a new layout of shadow-casters"
+    self.caption = "Shadow-casting - <space> new layout; <LMB> place light; <D> toggle debug"
 
-    @font = Gosu::Font.new self, Gosu::default_font_name, 40
+    @font = Gosu::Font.new self, Gosu::default_font_name, 32
     @background = Gosu::Image.new(self, media_path("Earth.png"), true)
 
     @star = Gosu::Image.new(self, media_path("LargeStar.png"), true)
 
-    @size = 480 # Must be divisible by two.
-
-    # Shadow casters are any object that casts a shadow.
-    @shadow_casters_fb = Ashton::Framebuffer.new @size, @size
+    # Input: Shadow casters are any object that casts a shadow.
     place_shadow_casters
 
-    @distortion_fb = Ashton::Framebuffer.new @size, @size
-    @shadow_map_fb = Ashton::Framebuffer.new 2, @size
-    @shadows_fb = Ashton::Framebuffer.new @size, @size
-    @blurred_fb = Ashton::Framebuffer.new @size, @size
-    @window_shadows = Ashton::Framebuffer.new width, height
+    setup_lighting
 
-    # This will be the shadow map texture passed into @draw_shadows
-    glActiveTexture GL_TEXTURE1
-    raise unless glGetIntegerv(GL_ACTIVE_TEXTURE) == GL_TEXTURE1
-    glBindTexture GL_TEXTURE_2D, @shadow_map_fb.instance_variable_get(:@texture)
+    # Perform the initial rendering into the light manager.
+    @light_manager.update_shadow_casters do
+      draw_shadow_casters
+    end
 
-    # And go back to the default texture for general work.
-    glActiveTexture GL_TEXTURE0
-
-    @distort = Ashton::Shader.new fragment: :shadow_distort,
-                                  vertex: :shadow,
-                                  uniforms: {
-                                      texture_width: @size,
-                                  }
-
-    @reduction = Ashton::Shader.new fragment: :shadow_horizontal_reduction,
-                                    vertex: :shadow_horizontal_reduction,
-                                    uniforms: {
-                                        texture_width: @size,
-                                    }
-
-    @draw_shadows = Ashton::Shader.new fragment: :shadow_draw_shadows,
-                                       vertex: :shadow,
-                                       uniforms: {
-                                           shadow_map_texture: 1,
-                                           texture_width: @size,
-                                       }
-
-    @blur = Ashton::Shader.new fragment: :shadow_blur,
-                               vertex: :shadow,
-                               uniforms: {
-                                   texture_width: @size,
-                               }
-
-    render_shadows
-
-    # Only save once. for purposes of this example only.
-    @shadow_casters_fb.to_image.save "output/shadow_casters.png"
-    @distortion_fb.to_image.save "output/distortion.png"
-    @shadow_map_fb.to_image.save "output/shadow_map.png"
-    @shadows_fb.to_image.save "output/shadows.png"
-    @blurred_fb.to_image.save "output/blurred.png"
+    @debug = true
   end
 
+  def setup_lighting
+    @light_manager = Ashton::LightManager.new
+
+    # Add some lights (various methods)
+    @light_manager.create_light 240, 240, 0, height / 2, color: Gosu::Color::RED
+
+    light =  Ashton::LightSource.new 400, 150, 0, height / 4, color: Gosu::Color::GREEN
+    @light_manager << light
+
+    @light_mouse = @light_manager.create_light mouse_x, mouse_y, 0, height / 2, color: Gosu::Color::CYAN
+  end
+
+  # Creates a new set of objects that cast shadows.
   def place_shadow_casters
-    @shadow_casters_fb.render do |buffer|
-      buffer.clear
-      8.times do
-        @star.draw_rot rand() * @size, rand() * @size, 0, rand() * 360, 0.5, 0.5, 0.125, 0.125
-      end
+    @shadow_casters = Array.new 12 do
+      { x: rand() * width, y: rand() * height, angle: rand() * 360 }
     end
   end
 
   def update
-    20.times { render_shadows }
+    @light_mouse.x, @light_mouse.y = mouse_x, mouse_y
+
+    @light_manager.update_shadow_casters do
+      draw_shadow_casters
+    end
   end
 
-  def render_shadows
-    @distortion_fb.render do
-      @shadow_casters_fb.draw 0, 0, 0, shader: @distort
-    end
-
-    @shadow_map_fb.render do
-      scale 2.0 / @size, 1 do
-        @distortion_fb.draw 0, 0, 0, shader: @reduction
-      end
-    end
-
-    @shadows_fb.render do
-      @shadow_casters_fb.draw 0, 0, 0, shader: @draw_shadows
-    end
-
-    @blurred_fb.render do
-      @shadows_fb.draw 0, 0, 0, shader: @blur
-    end
-
-    @window_shadows.render do |buffer|
-      buffer.clear color: Gosu::Color::BLACK
-      @blurred_fb.draw 0, 0, 0
+  def draw_shadow_casters
+    @font.draw "Hello world! Time to get a grip, eh?", 0, 150, 0, 1, 1, Gosu::Color::RED
+    @shadow_casters.each do |star|
+      @star.draw_rot star[:x], star[:y], 0, star[:angle], 0.5, 0.5, 0.125, 0.125
     end
   end
 
@@ -121,26 +75,33 @@ class TestWindow < Gosu::Window
     case id
       when Gosu::KbEscape
         close
+
       when Gosu::KbSpace
         place_shadow_casters
+
+      when Gosu::MsLeft
+        color = Gosu::Color.rgba(rand() * 255, rand() * 255, rand() * 255, 255)
+        @light_manager.create_light mouse_x, mouse_y, 0, height / 2, color: color
+
+      when Gosu::KbD
+        @debug = !@debug
     end
   end
 
   def draw
     @background.draw 0, 0, 0, width.fdiv(@background.width), height.fdiv(@background.height)
-    flush # seem to need to flush to get :multiply to work!
 
-    @window_shadows.draw 0, 0, 0, blend: :multiply
-    @shadow_casters_fb.draw 0, 0, 0
+    @light_manager.draw
+    draw_shadow_casters
 
-    pixel.draw_rot @size / 2, @size / 2, 0, 0, 0.5, 0.5, 10, 10
-
-    trace_color = Gosu::Color.rgba 255, 255, 255, 50
-    draw_line 0, 0, trace_color, @size, @size, trace_color, 0
-    draw_line 0, @size, trace_color, @size, 0, trace_color, 0
+    # Draw the light itself - this isn't managed by the manager.
+    @light_manager.each do |light|
+      pixel.draw_rot light.x, light.y, 0, 0, 0.5, 0.5, 15, 15, light.color
+      light.draw_debug if @debug
+    end
 
     # Drawing after the effect isn't processed, which is useful for GUI elements.
-    @font.draw "FPS: #{Gosu::fps}", 0, 0, 0
+    @font.draw "FPS: #{Gosu::fps} (for #{@light_manager.size} lights)", 0, 0, 0
   end
 end
 

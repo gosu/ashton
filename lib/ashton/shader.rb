@@ -1,5 +1,7 @@
 module Ashton
   class Shader
+    include Mixins::Utilities
+
     INVALID_LOCATION = -1
     MIN_OPENGL_VERSION = 2.0
 
@@ -34,9 +36,7 @@ module Ashton
     # @option options :frag [String, Symbol] (:default) Equivalent to :fragment
     # @option options :uniforms [Hash] Sets uniforms, as though calling shader[key] = value for each entry (but faster).
     def initialize(options = {})
-      unless GL.version_supported? MIN_OPENGL_VERSION
-        raise NotSupportedError, "Ashton requires OpenGL #{MIN_OPENGL_VERSION} support to utilise shaders"
-      end
+      check_opengl MIN_OPENGL_VERSION
 
       vertex = options[:vertex] || options[:vert] || :default
       fragment = options[:fragment] || options[:frag] || :default
