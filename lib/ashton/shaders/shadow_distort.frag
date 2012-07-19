@@ -1,6 +1,6 @@
 #version 110
 
-// Distort the input texture (square) into sight-lines, then reduce horizontally into a 2-pixel wide shadow-map texture.
+// Distort the input (square) texture into sight-lines, then reduce horizontally into a 2-pixel wide shadow-map texture.
 
 const float MIN_ALPHA_TO_CAST_SHADOW = 0.3; // Ignore mostly transparent pixels.
 

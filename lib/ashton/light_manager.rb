@@ -40,14 +40,25 @@ module Ashton
       @shadows.draw 0, 0, 0, options
     end
 
-    def update_shadow_casters
+    def update_shadow_casters(&block)
       raise ArgumentError, "Requires block" unless block_given?
 
       # TODO: Need to only render to lights that are on-screen.
       @lights.each do |light|
-        light.render_shadows do
-          yield
-        end
+        light.send :render_shadow_casters, &block
+      end
+
+      # Use each shader on every light, to save setting and un-setting shaders (a bit faster, depending on number of light sources).
+      LightSource.distort_shader.use do
+        @lights.each {|light| light.send :distort }
+      end
+
+      LightSource.draw_shadows_shader.use do
+        @lights.each {|light| light.send :draw_shadows }
+      end
+
+      LightSource.blur_shader.use do
+        @lights.each {|light| light.send :blur }
       end
 
       @shadows.render do |buffer|

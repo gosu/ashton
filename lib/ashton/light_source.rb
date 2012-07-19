@@ -4,6 +4,10 @@ module Ashton
 
     # PIXEL_BUFFER_EXTENSION = "GL_EXT_pixel_buffer_object"
 
+    class << self
+      attr_accessor :distort_shader, :draw_shadows_shader, :blur_shader
+    end
+
     attr_reader :radius
     attr_accessor :x, :y, :z, :color
 
@@ -26,41 +30,19 @@ module Ashton
 
     public
     # Only need to render shadows again if anything has actually changed!
-    def render_shadows
+    def render_shadows(&block)
       raise "block required" unless block_given?
 
-      # Get a copy of the shadow-casting objects in out light-zone.
-      @shadow_casters_fb.render do |buffer|
-        buffer.clear
-        $window.translate @radius - @x, @radius - @y do
-          yield
-        end
-      end
+      render_shadow_casters &block
 
       # Distort the shadow casters and reduce into a a 2-pixel wide shadow-map of the blockages.
-      @shadow_map_fb.render do
-        $window.scale 1.0 / radius, 1 do
-          @shadow_casters_fb.draw 0, 0, 0, shader: @distort
-        end
-      end
-
-      # This will be the shadow map texture passed into @draw_shadows
-      glActiveTexture GL_TEXTURE1
-      raise unless glGetIntegerv(GL_ACTIVE_TEXTURE) == GL_TEXTURE1
-      glBindTexture GL_TEXTURE_2D, @shadow_map_fb.instance_variable_get(:@texture)
-
-      # And go back to the default texture for general work.
-      glActiveTexture GL_TEXTURE0
+      LightSource.distort_shader.use { distort }
 
       # Render the shadows themselves, before blurring.
-      @shadows_fb.render do
-        @shadow_casters_fb.draw 0, 0, 0, shader: @draw_shadows
-      end
+      LightSource.draw_shadows_shader.use { draw_shadows }
 
       # Finally blur it up and apply the radial lighting.
-      @blurred_fb.render do
-        @shadows_fb.draw 0, 0, 0, shader: @blur
-      end
+      LightSource.blur_shader.use { blur }
 
       unless defined? @saved
         @saved = true
@@ -73,6 +55,52 @@ module Ashton
       end
 
       nil
+    end
+
+    protected
+    def render_shadow_casters
+      raise "block required" unless block_given?
+      # Get a copy of the shadow-casting objects in out light-zone.
+      @shadow_casters_fb.render do |buffer|
+        buffer.clear
+        $window.translate @radius - @x, @radius - @y do
+          yield
+        end
+      end
+    end
+
+    protected
+    def distort
+      LightSource.distort_shader.texture_width = width
+      @shadow_map_fb.render do
+        $window.scale 1.0 / radius, 1 do
+          @shadow_casters_fb.draw 0, 0, 0
+        end
+      end
+    end
+
+    protected
+    def draw_shadows
+      # This will be the shadow map texture passed into @draw_shadows
+      glActiveTexture GL_TEXTURE1
+      raise unless glGetIntegerv(GL_ACTIVE_TEXTURE) == GL_TEXTURE1
+      glBindTexture GL_TEXTURE_2D, @shadow_map_fb.instance_variable_get(:@texture)
+
+      # And go back to the default texture for general work.
+      glActiveTexture GL_TEXTURE0
+
+      LightSource.draw_shadows_shader.texture_width = width
+      @shadows_fb.render do
+        @shadow_casters_fb.draw 0, 0, 0
+      end
+    end
+
+    protected
+    def blur
+      LightSource.blur_shader.texture_width = width
+      @blurred_fb.render do
+        @shadows_fb.draw 0, 0, 0
+      end
     end
 
     public
@@ -106,21 +134,14 @@ module Ashton
 
     protected
     def load_shaders
-      @distort = Ashton::Shader.new fragment: :shadow_distort,
-                                    uniforms: {
-                                        texture_width: width,
-                                    }
+      LightSource.distort_shader ||= Ashton::Shader.new fragment: :shadow_distort
 
-      @draw_shadows = Ashton::Shader.new fragment: :shadow_draw_shadows,
+      LightSource.draw_shadows_shader ||= Ashton::Shader.new fragment: :shadow_draw_shadows,
                                          uniforms: {
                                              shadow_map_texture: 1,
-                                             texture_width: width,
                                          }
 
-      @blur = Ashton::Shader.new fragment: :shadow_blur,
-                                 uniforms: {
-                                     texture_width: width,
-                                 }
+      LightSource.blur_shader ||= Ashton::Shader.new fragment: :shadow_blur
 
       nil
     end
