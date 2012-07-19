@@ -30,7 +30,7 @@ class TestWindow < Gosu::Window
       draw_shadow_casters
     end
 
-    @debug = true
+    @debug = false
   end
 
   def setup_lighting
@@ -85,6 +85,9 @@ class TestWindow < Gosu::Window
 
       when Gosu::KbD
         @debug = !@debug
+
+      when Gosu::KbS
+        @light_manager.each {|light| light.send :save_buffers }
     end
   end
 

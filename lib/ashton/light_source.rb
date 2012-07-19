@@ -44,16 +44,6 @@ module Ashton
       # Finally blur it up and apply the radial lighting.
       LightSource.blur_shader.use { blur }
 
-      unless defined? @saved
-        @saved = true
-        return unless @x == 240 or @x == 400
-        # Only save once. for purposes of this example only.
-        @shadow_casters_fb.to_image.save "output/shadow_casters_#{x}.png"
-        @shadow_map_fb.to_image.save "output/shadow_map_#{x}.png"
-        @shadows_fb.to_image.save "output/shadows_#{x}.png"
-        @blurred_fb.to_image.save "output/blurred_#{x}.png"
-      end
-
       nil
     end
 
@@ -144,6 +134,16 @@ module Ashton
       LightSource.blur_shader ||= Ashton::Shader.new fragment: :shadow_blur
 
       nil
+    end
+
+    protected
+    # Used for debugging purposes only.
+    def save_buffers
+      # Only save once. for purposes of this example only.
+      @shadow_casters_fb.to_image.save "output/shadow_casters_#{x}_#{y}.png"
+      @shadow_map_fb.to_image.save "output/shadow_map_#{x}_#{y}.png"
+      @shadows_fb.to_image.save "output/shadows_#{x}_#{y}.png"
+      @blurred_fb.to_image.save "output/blurred_#{x}_#{y}.png"
     end
   end
 end
