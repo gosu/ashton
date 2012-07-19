@@ -102,7 +102,7 @@ class TestWindow < Gosu::Window
 
     # Draw the light itself - this isn't managed by the manager.
     @light_manager.each do |light|
-      pixel.draw_rot light.x, light.y, 0, 0, 0.5, 0.5, 15, 15, light.color
+      pixel.draw_rot light.x, light.y, 0, 0, 0.5, 0.5, 15, 15, light.color, :add
       light.draw_debug if @debug
     end
 

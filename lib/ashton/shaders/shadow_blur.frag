@@ -1,5 +1,9 @@
 #version 110
 
+// Based on Catalin Zima's shader based dynamic shadows system.
+// http://www.catalinzima.com/2010/07/my-technique-for-the-shader-based-dynamic-2d-shadows/
+
+
 const float minBlur = 0.0;
 const float maxBlur = 5.0; // TODO: Make this a uniform?
 const int blurSamples = 13;

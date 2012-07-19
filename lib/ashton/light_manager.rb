@@ -1,4 +1,6 @@
 module Ashton
+  # Based on Catalin Zima's shader based dynamic shadows system.
+  # http://www.catalinzima.com/2010/07/my-technique-for-the-shader-based-dynamic-2d-shadows/
   class LightManager
     include Enumerable
 

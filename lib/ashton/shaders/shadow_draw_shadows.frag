@@ -1,9 +1,9 @@
 #version 110
 
+// Based on Catalin Zima's shader based dynamic shadows system.
 // http://www.catalinzima.com/2010/07/my-technique-for-the-shader-based-dynamic-2d-shadows/
 
-uniform sampler2D in_Texture; // Original texture.
-uniform sampler2D in_ShadowMapTexture;
+uniform sampler2D in_Texture; // Shadow map texture.
 
 uniform int in_TextureWidth;
 
@@ -22,7 +22,7 @@ float GetShadowDistanceH()
 		vec2 newCoords = vec2(var_TexCoord.x, v0);
 		
 		//horizontal info was stored in the Red component
-		return texture2D(in_ShadowMapTexture, newCoords).r;
+		return texture2D(in_Texture, newCoords).r;
 }
 
 float GetShadowDistanceV()
@@ -38,7 +38,7 @@ float GetShadowDistanceV()
 		vec2 newCoords = vec2(var_TexCoord.y, v0);
 		
 		//vertical info was stored in the Green component
-		return texture2D(in_ShadowMapTexture, newCoords).g;
+		return texture2D(in_Texture, newCoords).g;
 }
 
 void main()

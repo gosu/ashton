@@ -79,4 +79,12 @@ Third party
 - [Radial Blur by gamerendering.com](http://www.gamerendering.com/2008/12/20/radial-blur-filter/)
   * radial_blur.frag
 
+- Lighting based on, but much optimised from, Catalin Zima's shader based dynamic shadows system.
+  * http://www.catalinzima.com/2010/07/my-technique-for-the-shader-based-dynamic-2d-shadows/
+  * {Ashton::LightSource} and {Aston::LightingManager} classes.
+  * shadow_blur.frag
+  * shadow_distory.frag
+  * shadow_draw_shadows.frag
+
+
 

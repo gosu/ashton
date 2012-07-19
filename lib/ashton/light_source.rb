@@ -1,4 +1,6 @@
 module Ashton
+  # Based on Catalin Zima's shader based dynamic shadows system.
+  # http://www.catalinzima.com/2010/07/my-technique-for-the-shader-based-dynamic-2d-shadows/
   class LightSource
     include Mixins::VersionChecking
 
@@ -71,17 +73,13 @@ module Ashton
 
     protected
     def draw_shadows
-      # This will be the shadow map texture passed into @draw_shadows
-      glActiveTexture GL_TEXTURE1
-      raise unless glGetIntegerv(GL_ACTIVE_TEXTURE) == GL_TEXTURE1
-      glBindTexture GL_TEXTURE_2D, @shadow_map_fb.instance_variable_get(:@texture)
-
-      # And go back to the default texture for general work.
-      glActiveTexture GL_TEXTURE0
-
       LightSource.draw_shadows_shader.texture_width = width
       @shadows_fb.render do
-        @shadow_casters_fb.draw 0, 0, 0
+        # Not actually drawing anything from the shadow map buffer.
+        # It is just a data input to what will be drawn.
+        $window.scale radius, 1 do
+          @shadow_map_fb.draw 0, 0, 0
+        end
       end
     end
 
@@ -126,10 +124,7 @@ module Ashton
     def load_shaders
       LightSource.distort_shader ||= Ashton::Shader.new fragment: :shadow_distort
 
-      LightSource.draw_shadows_shader ||= Ashton::Shader.new fragment: :shadow_draw_shadows,
-                                         uniforms: {
-                                             shadow_map_texture: 1,
-                                         }
+      LightSource.draw_shadows_shader ||= Ashton::Shader.new fragment: :shadow_draw_shadows
 
       LightSource.blur_shader ||= Ashton::Shader.new fragment: :shadow_blur
 

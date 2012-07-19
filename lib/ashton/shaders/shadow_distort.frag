@@ -1,5 +1,8 @@
 #version 110
 
+// Based on Catalin Zima's shader based dynamic shadows system.
+// http://www.catalinzima.com/2010/07/my-technique-for-the-shader-based-dynamic-2d-shadows/
+
 // Distort the input (square) texture into sight-lines, then reduce horizontally into a 2-pixel wide shadow-map texture.
 
 const float MIN_ALPHA_TO_CAST_SHADOW = 0.3; // Ignore mostly transparent pixels.
