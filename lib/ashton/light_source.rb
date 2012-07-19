@@ -21,7 +21,7 @@ module Ashton
       @shadow_map_fb = Ashton::Framebuffer.new 2, height
       @shadows_fb = Ashton::Framebuffer.new width, height
       @blurred_fb = Ashton::Framebuffer.new width, height
-      @window_shadows = Ashton::Framebuffer.new width, heigh
+      @window_shadows = Ashton::Framebuffer.new width, height
 
       load_shaders
     end
