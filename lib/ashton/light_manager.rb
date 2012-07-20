@@ -6,6 +6,7 @@ module Ashton
 
     def each(&block); @lights.each &block end
     def size; @lights.size end
+    def empty?; @lights.empty? end
 
     def initialize
       @lights = Set.new
@@ -45,27 +46,29 @@ module Ashton
     def update_shadow_casters(&block)
       raise ArgumentError, "Requires block" unless block_given?
 
-      # TODO: Need to only render to lights that are on-screen.
-      @lights.each do |light|
-        light.send :render_shadow_casters, &block
-      end
+      unless empty?
+        # TODO: Need to only render to lights that are on-screen.
+        @lights.each do |light|
+          light.send :render_shadow_casters, &block
+        end
 
-      # Use each shader on every light, to save setting and un-setting shaders (a bit faster, depending on number of light sources).
-      LightSource.distort_shader.use do
-        @lights.each {|light| light.send :distort }
-      end
+        # Use each shader on every light, to save setting and un-setting shaders (a bit faster, depending on number of light sources).
+        LightSource.distort_shader.use do
+          @lights.each {|light| light.send :distort }
+        end
 
-      LightSource.draw_shadows_shader.use do
-        @lights.each {|light| light.send :draw_shadows }
-      end
+        LightSource.draw_shadows_shader.use do
+          @lights.each {|light| light.send :draw_shadows }
+        end
 
-      LightSource.blur_shader.use do
-        @lights.each {|light| light.send :blur }
+        LightSource.blur_shader.use do
+          @lights.each {|light| light.send :blur }
+        end
       end
 
       @shadows.render do |buffer|
         buffer.clear
-        @lights.each {|light| light.draw }
+        @lights.each {|light| light.draw } unless empty?
       end
 
       nil
