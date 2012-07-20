@@ -13,7 +13,7 @@ def media_path(file); File.expand_path "media/#{file}", File.dirname(__FILE__) e
 class TestWindow < Gosu::Window
   def initialize
     super 640, 480, false
-    self.caption = "Shadow-casting - <space> new layout; <LMB> place light; <D> toggle debug"
+    self.caption = "Shadow-casting - <space> new layout; <LMB> place light; <Arrows> to scroll"
 
     @font = Gosu::Font.new self, Gosu::default_font_name, 32
     @background = Gosu::Image.new(self, media_path("Earth.png"), true)
@@ -31,6 +31,7 @@ class TestWindow < Gosu::Window
     end
 
     @debug = false
+    @camera_x, @camera_y = 0, 0
   end
 
   def setup_lighting
@@ -53,7 +54,15 @@ class TestWindow < Gosu::Window
   end
 
   def update
-    @light_mouse.x, @light_mouse.y = mouse_x, mouse_y
+    @camera_x -= 2 if button_down? Gosu::KbLeft
+    @camera_x += 2 if button_down? Gosu::KbRight
+    @camera_y -= 2 if button_down? Gosu::KbUp
+    @camera_y += 2 if button_down? Gosu::KbDown
+
+    @lighting.camera_x = @camera_x
+    @lighting.camera_y = @camera_y
+
+    @light_mouse.x, @light_mouse.y = mouse_x + @camera_x, mouse_y + @camera_y
 
     @lighting.update_shadow_casters do
       draw_shadow_casters
@@ -81,7 +90,7 @@ class TestWindow < Gosu::Window
 
       when Gosu::MsLeft
         color = Gosu::Color.rgba rand(255), rand(255), rand(255), 127 + rand(128)
-        @lighting.create_light mouse_x, mouse_y, 0, height / 16 + rand(height / 2), color: color
+        @lighting.create_light mouse_x + @camera_x, mouse_y + @camera_y, 0, height / 16 + rand(height / 2), color: color
 
       when Gosu::KbD
         @debug = !@debug
@@ -92,18 +101,20 @@ class TestWindow < Gosu::Window
   end
 
   def draw
-    @background.draw 0, 0, 0, width.fdiv(@background.width), height.fdiv(@background.height)
+    translate -@camera_x, -@camera_y do
+      @background.draw 0, 0, 0, width.fdiv(@background.width), height.fdiv(@background.height)
 
-    # ... would draw player and other objects here ...
+      # ... would draw player and other objects here ...
 
-    @lighting.draw
+      @lighting.draw
 
-    draw_shadow_casters
+      draw_shadow_casters # These should be drawn above or below the lighting, depending on preference.
 
-    # Draw the light itself - this isn't managed by the manager.
-    @lighting.each do |light|
-      pixel.draw_rot light.x, light.y, 0, 0, 0.5, 0.5, 15, 15, light.color, :add
-      light.draw_debug if @debug
+      # Draw the light itself - this isn't managed by the manager.
+      @lighting.each do |light|
+        pixel.draw_rot light.x, light.y, 0, 0, 0.5, 0.5, 15, 15, light.color, :add
+        light.draw_debug if @debug
+      end
     end
 
     # Drawing after the effect isn't processed, which is useful for GUI elements.

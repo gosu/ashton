@@ -5,13 +5,28 @@ module Lighting
   class Manager
     include Enumerable
 
+    attr_accessor :camera_x, :camera_y, :z
+
     def each(&block); @lights.each &block end
     def size; @lights.size end
     def empty?; @lights.empty? end
+    def width; @shadows.width end
+    def height; @shadows.height end
 
-    def initialize
+    def initialize(options = {})
+      options = {
+          width: $window.width,
+          height: $window.height,
+          camera_x: 0,
+          camera_y: 0,
+          z: 0,
+      }.merge! options
+
+      @camera_x, @camera_y = options[:camera_x], options[:camera_y]
+      @z = options[:z]
+
       @lights = Set.new
-      @shadows = Ashton::WindowBuffer.new
+      @shadows = Ashton::Framebuffer.new options[:width], options[:height]
     end
 
     # @param light [Ashton::LightSource]
@@ -41,7 +56,7 @@ module Lighting
           blend: :multiply,
       }.merge! options
 
-      @shadows.draw 0, 0, 0, options
+      @shadows.draw @camera_x, @camera_y, @z, options
     end
 
     def update_shadow_casters(&block)
@@ -69,7 +84,9 @@ module Lighting
 
       @shadows.render do |buffer|
         buffer.clear
-        @lights.each {|light| light.draw } unless empty?
+        $window.translate -@camera_x, -@camera_y do
+          @lights.each {|light| light.draw } unless empty?
+        end
       end
 
       nil
