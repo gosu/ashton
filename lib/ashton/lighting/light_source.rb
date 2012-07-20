@@ -1,4 +1,5 @@
 module Ashton
+module Lighting
   # Based on Catalin Zima's shader based dynamic shadows system.
   # http://www.catalinzima.com/2010/07/my-technique-for-the-shader-based-dynamic-2d-shadows/
   class LightSource
@@ -41,7 +42,7 @@ module Ashton
       LightSource.distort_shader.use { distort }
 
       # Render the shadows themselves, before blurring.
-      LightSource.draw_shadows_shader.use { draw_shadows }
+      LightLightSource.draw_shadows_shader.use { draw_shadows }
 
       # Finally blur it up and apply the radial lighting.
       LightSource.blur_shader.use { blur }
@@ -122,11 +123,11 @@ module Ashton
 
     protected
     def load_shaders
-      LightSource.distort_shader ||= Ashton::Shader.new fragment: :shadow_distort
+      LightSource.distort_shader ||= Ashton::Shader.new fragment: :"lighting/distort"
 
-      LightSource.draw_shadows_shader ||= Ashton::Shader.new fragment: :shadow_draw_shadows
+      LightSource.draw_shadows_shader ||= Ashton::Shader.new fragment: :"lighting/draw_shadows"
 
-      LightSource.blur_shader ||= Ashton::Shader.new fragment: :shadow_blur
+      LightSource.blur_shader ||= Ashton::Shader.new fragment: :"lighting/shadow_blur"
 
       nil
     end
@@ -141,4 +142,5 @@ module Ashton
       @blurred_fb.to_image.save "output/blurred_#{x}_#{y}.png"
     end
   end
+end
 end

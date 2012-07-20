@@ -1,7 +1,8 @@
 module Ashton
+module Lighting
   # Based on Catalin Zima's shader based dynamic shadows system.
   # http://www.catalinzima.com/2010/07/my-technique-for-the-shader-based-dynamic-2d-shadows/
-  class LightManager
+  class Manager
     include Enumerable
 
     def each(&block); @lights.each &block end
@@ -74,4 +75,5 @@ module Ashton
       nil
     end
   end
+end
 end

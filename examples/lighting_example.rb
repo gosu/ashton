@@ -26,7 +26,7 @@ class TestWindow < Gosu::Window
     setup_lighting
 
     # Perform the initial rendering into the light manager.
-    @light_manager.update_shadow_casters do
+    @lighting.update_shadow_casters do
       draw_shadow_casters
     end
 
@@ -34,15 +34,15 @@ class TestWindow < Gosu::Window
   end
 
   def setup_lighting
-    @light_manager = Ashton::LightManager.new
+    @lighting = Ashton::Lighting::Manager.new
 
     # Add some lights (various methods)
-    @light_manager.create_light 240, 240, 0, height / 3, color: Gosu::Color::RED
+    @lighting.create_light 240, 240, 0, height / 3, color: Gosu::Color::RED
 
-    light =  Ashton::LightSource.new 400, 150, 0, height / 5, color: Gosu::Color::GREEN
-    @light_manager << light
+    light =  Ashton::Lighting::LightSource.new 400, 150, 0, height / 5, color: Gosu::Color::GREEN
+    @lighting << light
 
-    @light_mouse = @light_manager.create_light mouse_x, mouse_y, 0, height / 2, color: Gosu::Color::GRAY
+    @light_mouse = @lighting.create_light mouse_x, mouse_y, 0, height / 2, color: Gosu::Color::GRAY
   end
 
   # Creates a new set of objects that cast shadows.
@@ -55,7 +55,7 @@ class TestWindow < Gosu::Window
   def update
     @light_mouse.x, @light_mouse.y = mouse_x, mouse_y
 
-    @light_manager.update_shadow_casters do
+    @lighting.update_shadow_casters do
       draw_shadow_casters
     end
   end
@@ -81,13 +81,13 @@ class TestWindow < Gosu::Window
 
       when Gosu::MsLeft
         color = Gosu::Color.rgba rand(255), rand(255), rand(255), 127 + rand(128)
-        @light_manager.create_light mouse_x, mouse_y, 0, height / 16 + rand(height / 2), color: color
+        @lighting.create_light mouse_x, mouse_y, 0, height / 16 + rand(height / 2), color: color
 
       when Gosu::KbD
         @debug = !@debug
 
       when Gosu::KbS
-        @light_manager.each {|light| light.send :save_buffers }
+        @lighting.each {|light| light.send :save_buffers }
     end
   end
 
@@ -96,18 +96,18 @@ class TestWindow < Gosu::Window
 
     # ... would draw player and other objects here ...
 
-    @light_manager.draw
+    @lighting.draw
 
     draw_shadow_casters
 
     # Draw the light itself - this isn't managed by the manager.
-    @light_manager.each do |light|
+    @lighting.each do |light|
       pixel.draw_rot light.x, light.y, 0, 0, 0.5, 0.5, 15, 15, light.color, :add
       light.draw_debug if @debug
     end
 
     # Drawing after the effect isn't processed, which is useful for GUI elements.
-    @font.draw "FPS: #{Gosu::fps} (for #{@light_manager.size} lights)", 0, 0, 0
+    @font.draw "FPS: #{Gosu::fps} (for #{@lighting.size} lights)", 0, 0, 0
   end
 end
 
