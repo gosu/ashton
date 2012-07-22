@@ -9,17 +9,19 @@ case RUBY_PLATFORM
   when /darwin/
     # Everyone on OSX has plenty of OpenGL to go around.
     $LDFLAGS <<  " -framework OpenGL"
-    $CFLAGS << " -framework OpenGL"
 
   when /win32|mingw/
     gl_path = File.expand_path "../vendor/gl", __FILE__
-    $LDFLAGS <<  " -L#{File.join gl_path, "lib"}"
-    $CFLAGS << " -I#{File.join gl_path, "include"}"
+    $LDFLAGS << " -L#{gl_path}/lib"
+    $CFLAGS << " -I#{gl_path}/include"
 
     exit unless have_library('opengl32.lib', 'glVertex3d') || have_library('opengl32')
+
     exit unless have_header 'GL/gl.h'
 
   else
+    $LDFLAGS << " -lGL"
+
     # You are on Linux, so everything is hunky dory!
     exit unless have_library 'opengl32'
 end

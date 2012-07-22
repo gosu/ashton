@@ -3,12 +3,9 @@
 
 #include <ruby.h>
 
-#if defined(WIN32) || defined(__linux) || defined(__FreeBSD__)
-#  include <GL/gl.h>
-#else
-#  include <OpenGL/gl.h>
-#endif
+#include "GLee.h"
 
+typedef unsigned char uchar;
 typedef unsigned int uint;
 typedef unsigned long ulong;
 

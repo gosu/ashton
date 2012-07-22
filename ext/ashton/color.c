@@ -2,7 +2,7 @@
 
 void Init_Gosu_Color(VALUE module)
 {
-    VALUE rb_cColor = rb_define_class_under(module, "Color", rb_cObject);
+    rb_cColor = rb_define_class_under(module, "Color", rb_cObject);
 
     rb_define_singleton_method(rb_cColor, "from_opengl", Gosu_Color_from_opengl, 1);
 

@@ -59,6 +59,7 @@ Third party
 -----------
 
 - OpenGL static library (in Windows binary gem) and headers.
+- [GLee](http://elf-stone.com/glee.php) source.
 
 - Various trivial shaders - "randomly found on the Internet" :$
 

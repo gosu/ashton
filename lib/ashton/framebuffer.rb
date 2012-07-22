@@ -3,25 +3,15 @@ module Ashton
     include Mixins::VersionChecking
 
     DEFAULT_DRAW_COLOR = Gosu::Color::WHITE
-    FRAMEBUFFER_EXTENSION = "GL_EXT_framebuffer_object"
 
-    attr_reader :width, :height
     def rendering?; @rendering end
 
     def initialize(width, height)
-      check_opengl_extension FRAMEBUFFER_EXTENSION
-
-      @width, @height = width.to_i, height.to_i
-      @fbo = create_framebuffer
-      @texture = create_color_buffer
       @rendering = false
 
-      status = glCheckFramebufferStatusEXT GL_FRAMEBUFFER_EXT
-      raise unless status == GL_FRAMEBUFFER_COMPLETE_EXT
+      initialize_ width, height
 
       clear
-
-      glBindFramebufferEXT GL_FRAMEBUFFER_EXT, 0
     end
 
     public
@@ -36,7 +26,7 @@ module Ashton
       color = options[:color]
       color = color.to_opengl if color.is_a? Gosu::Color
 
-      glBindFramebufferEXT GL_FRAMEBUFFER_EXT, @fbo unless rendering?
+      glBindFramebufferEXT GL_FRAMEBUFFER_EXT, fbo_id unless rendering?
 
       glDisable GL_BLEND # Need to replace the alpha too.
       glClearColor *color
@@ -70,7 +60,7 @@ module Ashton
       $window.flush # Ensure that any drawing _before_ the render block is drawn to screen, rather than into the buffer.
 
       # Reset the projection matrix so that drawing into the buffer is zeroed.
-      glBindFramebufferEXT GL_FRAMEBUFFER_EXT, @fbo
+      glBindFramebufferEXT GL_FRAMEBUFFER_EXT, fbo_id
       glPushMatrix
       glMatrixMode GL_PROJECTION
       glLoadIdentity
@@ -127,7 +117,7 @@ module Ashton
         glEnable GL_BLEND
         glEnable GL_TEXTURE_2D
         glActiveTexture GL_TEXTURE0
-        glBindTexture GL_TEXTURE_2D, @texture
+        glBindTexture GL_TEXTURE_2D, texture_id
 
         # Set blending mode.
         case options[:blend]
@@ -145,16 +135,16 @@ module Ashton
 
         glBegin GL_QUADS do
           glTexCoord2d 0, 0
-          glVertex2d x, y + @height # BL
+          glVertex2d x, y + height # BL
 
           glTexCoord2d 0, 1
           glVertex2d x, y # TL
 
           glTexCoord2d 1, 1
-          glVertex2d x + @width, y # TR
+          glVertex2d x + width, y # TR
 
           glTexCoord2d 1, 0
-          glVertex2d x + @width, y + @height # BR
+          glVertex2d x + width, y + height # BR
         end
       end
 
@@ -169,7 +159,7 @@ module Ashton
     # @option options :rect [Array<Integer>] ([0, 0, width, height]) Rectangular area of buffer to use to create the image [x, y, w, h]
     def to_image(options = {})
       options = {
-        rect: [0, 0, @width, @height],
+        rect: [0, 0, width, height],
         tileable: false,
       }.merge! options
 
@@ -177,75 +167,34 @@ module Ashton
 
       # Draw onto the clean flip buffer, in order to flip before saving.
       # TODO: Just add a second colour buffer, rather than using a second fbo.
-      unless defined? @fbo_flip
-        @fbo_flip = create_framebuffer
-        @fbo_flip_texture = create_color_buffer
+      flip = Framebuffer.new width, height
+      image = nil
+
+      flip.render do
+        $window.gl do
+          glColor4f 1.0, 1.0, 1.0, 1.0
+          glMatrixMode GL_PROJECTION
+          glLoadIdentity
+          glViewport 0, 0, $window.width, $window.height
+          glOrtho 0, $window.width, 0, $window.height, -1, 1 # Invert screen!
+
+          glClearColor 0, 0, 0, 0
+          glClear GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT
+          draw 0, 0, nil
+        end
+
+        blob = glReadPixels *rect, GL_RGBA, GL_UNSIGNED_BYTE
+
+        # Create a new Image from the flipped pixel data.
+        stub = ImageStub.new blob, rect[2], rect[3]
+        if defined? TexPlay
+          image = Gosu::Image.new $window, stub, options[:tileable], options
+        else
+          image = Gosu::Image.new $window, stub, options[:tileable]
+        end
       end
 
-      glBindFramebufferEXT GL_FRAMEBUFFER_EXT, @fbo_flip
-
-      $window.gl do
-        glColor4f 1.0, 1.0, 1.0, 1.0
-        glMatrixMode GL_PROJECTION
-        glLoadIdentity
-        glViewport 0, 0, $window.width, $window.height
-        glOrtho 0, $window.width, 0, $window.height, -1, 1 # Invert screen!
-
-        glClearColor 0, 0, 0, 0
-        glClear GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT
-        draw 0, 0, nil
-      end
-
-      blob = glReadPixels *rect, GL_RGBA, GL_UNSIGNED_BYTE
-
-      glBindFramebufferEXT GL_FRAMEBUFFER_EXT, 0
-
-      # Create a new Image from the flipped pixel data.
-      stub = ImageStub.new blob, rect[2], rect[3]
-      if defined? TexPlay
-        Gosu::Image.new $window, stub, options[:tileable], options
-      else
-        Gosu::Image.new $window, stub, options[:tileable]
-      end
-    end
-
-    protected
-    # Create the fbo itself and assign it for rendering.
-    def create_framebuffer
-      fbo = glGenFramebuffersEXT(1)[0]
-      glBindFramebufferEXT GL_FRAMEBUFFER_EXT, fbo
-
-      fbo
-    end
-
-    protected
-    def create_color_buffer
-      texture = glGenTextures(1)[0]
-      glBindTexture GL_TEXTURE_2D, texture
-
-      glTexParameterf GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE
-      glTexParameterf GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE
-      glTexParameteri GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST
-      glTexParameteri GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST
-
-      # Create an empty texture, that might be filled with junk.
-      glTexImage2D GL_TEXTURE_2D, 0, GL_RGBA8, @width, @height,
-                   0, GL_RGBA, GL_UNSIGNED_BYTE, nil
-
-      glFramebufferTexture2DEXT GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, texture, 0
-
-      glBindTexture GL_TEXTURE_2D, 0 # Unbind the texture
-
-      texture
-    end
-
-    protected
-    def delete
-      glDeleteFramebuffersEXT @fbo
-      glDeleteTextures @texture
-
-      glDeleteFramebuffersEXT @fbo_flip if defined? @fbo_flip
-      glDeleteTextures @fbo_flip_texture if defined? @fbo_flip_texture
+      image
     end
   end
 end

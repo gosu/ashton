@@ -12,6 +12,8 @@
 
 #include "common.h"
 
+VALUE rb_cColor;
+
 void Init_Gosu_Color(VALUE module);
 
 // Singleton methods
