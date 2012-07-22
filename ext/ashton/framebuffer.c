@@ -73,6 +73,7 @@ VALUE Ashton_Framebuffer_init(VALUE self, VALUE width, VALUE height)
     framebuffer->height = NUM2UINT(height);
 
     framebuffer->is_cached = FALSE;
+    framebuffer->cache_created = FALSE;
 
     // Create the FBO itself.
     glGenFramebuffersEXT(1, &framebuffer->fbo_id);
@@ -112,7 +113,11 @@ void Ashton_Framebuffer_FREE(Framebuffer* framebuffer)
 // Make a copy of the framebuffer texture in main memory.
 static void cache_texture(Framebuffer* framebuffer)
 {
-    framebuffer->cache = ALLOC_N(Color, framebuffer->width * framebuffer->height);
+    if(!framebuffer->cache_created)
+    {
+        framebuffer->cache = ALLOC_N(Color, framebuffer->width * framebuffer->height);
+        framebuffer->cache_created = TRUE;
+    }
 
     glBindTexture(GL_TEXTURE_2D, framebuffer->texture_id);
     glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, framebuffer->cache);
@@ -124,7 +129,6 @@ static void refresh_cache(Framebuffer* framebuffer)
 {
     // Lazy refresh - we take a new copy only when we access it next.
     framebuffer->is_cached = FALSE;
-    xfree(framebuffer->cache);
 }
 
 // Get color of a single pixel.

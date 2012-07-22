@@ -28,7 +28,8 @@ typedef struct _framebuffer
     GLuint texture_id;
 
     Color * cache;
-    uint is_cached;
+    uint is_cached; // If false, then the cache data needs updating.
+    uint cache_created; // Has space for the cache ever been allocated?
 } Framebuffer;
 
 // Create an 'emitter' variable which points to our data.
