@@ -60,6 +60,8 @@ class TestWindow < Gosu::Window
   end
 
   def update
+    $gosu_blocks.clear # workaround for Gosu 0.7.45 bug.
+
     @image_emitter.update        unless button_down? Gosu::Kb1
     @shaded_image_emitter.update unless button_down? Gosu::Kb2
     @point_emitter.update        unless button_down? Gosu::Kb3
