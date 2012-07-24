@@ -1,3 +1,5 @@
+require 'set'
+
 module Ashton
 module Lighting
   # Based on Catalin Zima's shader based dynamic shadows system.
