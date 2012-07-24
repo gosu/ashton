@@ -175,8 +175,8 @@ module Ashton
           glColor4f 1.0, 1.0, 1.0, 1.0
           glMatrixMode GL_PROJECTION
           glLoadIdentity
-          glViewport 0, 0, $window.width, $window.height
-          glOrtho 0, $window.width, 0, $window.height, -1, 1 # Invert screen!
+          glViewport 0, 0, width, height
+          glOrtho 0, width, 0, height, -1, 1 # Invert screen!
 
           glClearColor 0, 0, 0, 0
           glClear GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT
