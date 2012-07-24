@@ -21,25 +21,29 @@ puts "Benchmarks for Ashton::Framebuffer"
 puts "=================================="
 puts
 
+GC.disable
 Benchmark.bm 28 do |x|
   # Since Framebuffer#refresh_cache is lazy, must read a pixel before it will update.
-  puts "Ashton"
-  puts "------"
+  puts "Ashton (#[] returns Gosu::Color, otherwise Fixnum or Fixnum arrays)"
+  puts "-------------------------------------------------------------------"
   puts
-  x.report("    Framebuffer refresh cache") { REFRESH_REPEAT.times { framebuffer.refresh_cache; framebuffer.transparent? 0, 0 } }
+  x.report("    Framebuffer#refresh_cache") { REFRESH_REPEAT.times { framebuffer.refresh_cache; framebuffer.transparent? 0, 0 } }
   x.report("    Framebuffer#[x,y]")         { REPEAT.times { framebuffer[0, 0] } }
+  x.report("    Framebuffer#rgba(x,y)")     { REPEAT.times { framebuffer.rgba(0, 0) } }
   x.report("    Framebuffer#red(x,y)")      { REPEAT.times { framebuffer.red 0, 0 } }
   x.report("    Framebuffer#transparent?")  { REPEAT.times { framebuffer.transparent? 0, 0 } }
 
   puts
-  puts "TexPlay equivalents"
-  puts "-------------------"
+  puts "TexPlay equivalents (Float arrays)"
+  puts "----------------------------"
   puts
-  x.report("    Image refresh cache")       { REFRESH_REPEAT.times { image.refresh_cache } }
+  x.report("    Image#refresh_cache")       { REFRESH_REPEAT.times { image.refresh_cache } }
+  x.report("    Image#[x,y]")               { REPEAT.times { image[0, 0] } }
   x.report("    Image#[x,y]")               { REPEAT.times { image[0, 0] } }
   x.report("    Image#[x,y][0]")            { REPEAT.times { image[0, 0][0] } }
   x.report("    Image#[x,y][3] == 0.0")     { REPEAT.times { image[0, 0][3] == 0.0 } }
 end
+GC.enable
 
 
 puts "\n\nBenchmarks completed in #{"%.3f" % (Time.now - t)} s"

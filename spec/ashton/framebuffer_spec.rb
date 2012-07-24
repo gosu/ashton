@@ -31,6 +31,16 @@ describe Ashton::Framebuffer do
     end
   end
 
+  describe "rgba" do
+    it "should return the appropriate array of values" do
+      @subject.rgba(0, 0).should eq [255, 255, 255, 255]
+      @subject.rgba(0, 1).should eq [255, 0, 0, 255]
+      @subject.rgba(0, 2).should eq [0, 255, 0, 255]
+      @subject.rgba(0, 3).should eq [0, 0, 255, 255]
+      @subject.rgba(0, 8).should eq [0, 0, 0, 0]
+    end
+  end
+
   describe "red" do
     it "should return the appropriate value" do
       @subject.red(0, 0).should eq 255

@@ -14,6 +14,7 @@ void Init_Ashton_Framebuffer(VALUE module)
     rb_define_method(rb_cFramebuffer, "texture_id", Ashton_Framebuffer_get_texture_id, 0);
 
     rb_define_method(rb_cFramebuffer, "[]", Ashton_Framebuffer_get_pixel, 2);
+    rb_define_method(rb_cFramebuffer, "rgba", Ashton_Framebuffer_get_rgba_array, 2);
     rb_define_method(rb_cFramebuffer, "red", Ashton_Framebuffer_get_red, 2);
     rb_define_method(rb_cFramebuffer, "green", Ashton_Framebuffer_get_green, 2);
     rb_define_method(rb_cFramebuffer, "blue", Ashton_Framebuffer_get_blue, 2);
@@ -181,6 +182,21 @@ VALUE Ashton_Framebuffer_get_pixel(VALUE self, VALUE x, VALUE y)
                                        rgba.blue));
 
     return color;
+}
+
+VALUE Ashton_Framebuffer_get_rgba_array(VALUE self, VALUE x, VALUE y)
+{
+    FRAMEBUFFER();
+
+    Color rgba = get_pixel_color(framebuffer, NUM2INT(x), NUM2INT(y));
+
+    VALUE array = rb_ary_new();
+    rb_ary_push(array, UINT2NUM(rgba.red));
+    rb_ary_push(array, UINT2NUM(rgba.green));
+    rb_ary_push(array, UINT2NUM(rgba.blue));
+    rb_ary_push(array, UINT2NUM(rgba.alpha));
+
+    return array;
 }
 
 //
