@@ -31,6 +31,46 @@ describe Ashton::Framebuffer do
     end
   end
 
+  describe "red" do
+    it "should return the appropriate value" do
+      @subject.red(0, 0).should eq 255
+      @subject.red(0, 1).should eq 255
+      @subject.red(0, 2).should eq 0
+      @subject.red(0, 3).should eq 0
+      @subject.red(0, 8).should eq 0
+    end
+  end
+
+  describe "green" do
+    it "should return the appropriate value" do
+      @subject.green(0, 0).should eq 255
+      @subject.green(0, 1).should eq 0
+      @subject.green(0, 2).should eq 255
+      @subject.green(0, 3).should eq 0
+      @subject.green(0, 8).should eq 0
+    end
+  end
+
+  describe "blue" do
+    it "should return the appropriate value" do
+      @subject.blue(0, 0).should eq 255
+      @subject.blue(0, 1).should eq 0
+      @subject.blue(0, 2).should eq 0
+      @subject.blue(0, 3).should eq 255
+      @subject.blue(0, 8).should eq 0
+    end
+  end
+
+  describe "alpha" do
+    it "should return the appropriate value" do
+      @subject.alpha(0, 0).should eq 255
+      @subject.alpha(0, 1).should eq 255
+      @subject.alpha(0, 2).should eq 255
+      @subject.alpha(0, 3).should eq 255
+      @subject.alpha(0, 8).should eq 0
+    end
+  end
+
   describe "transparent?" do
     it "should be false where the buffer is opaque or semi-transparent" do
       @subject.transparent?(0, 1).should eq false

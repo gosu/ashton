@@ -57,7 +57,12 @@ void Ashton_Framebuffer_FREE(Framebuffer* framebuffer);
 
 // Methods.
 VALUE Ashton_Framebuffer_get_pixel(VALUE self, VALUE x, VALUE y);
+VALUE Ashton_Framebuffer_get_red(VALUE self, VALUE x, VALUE y);
+VALUE Ashton_Framebuffer_get_green(VALUE self, VALUE x, VALUE y);
+VALUE Ashton_Framebuffer_get_blue(VALUE self, VALUE x, VALUE y);
+VALUE Ashton_Framebuffer_get_alpha(VALUE self, VALUE x, VALUE y);
 VALUE Ashton_Framebuffer_is_transparent(VALUE self, VALUE x, VALUE y);
+
 VALUE Ashton_Framebuffer_refresh_cache(VALUE self);
 
 #endif // ASHTON_FRAMEBUFFER_H

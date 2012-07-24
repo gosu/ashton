@@ -14,6 +14,11 @@ void Init_Ashton_Framebuffer(VALUE module)
     rb_define_method(rb_cFramebuffer, "texture_id", Ashton_Framebuffer_get_texture_id, 0);
 
     rb_define_method(rb_cFramebuffer, "[]", Ashton_Framebuffer_get_pixel, 2);
+    rb_define_method(rb_cFramebuffer, "red", Ashton_Framebuffer_get_red, 2);
+    rb_define_method(rb_cFramebuffer, "green", Ashton_Framebuffer_get_green, 2);
+    rb_define_method(rb_cFramebuffer, "blue", Ashton_Framebuffer_get_blue, 2);
+    rb_define_method(rb_cFramebuffer, "alpha", Ashton_Framebuffer_get_alpha, 2);
+
     rb_define_method(rb_cFramebuffer, "transparent?", Ashton_Framebuffer_is_transparent, 2);
     rb_define_method(rb_cFramebuffer, "refresh_cache", Ashton_Framebuffer_refresh_cache, 0);
 }
@@ -176,6 +181,38 @@ VALUE Ashton_Framebuffer_get_pixel(VALUE self, VALUE x, VALUE y)
                                        rgba.blue));
 
     return color;
+}
+
+//
+VALUE Ashton_Framebuffer_get_red(VALUE self, VALUE x, VALUE y)
+{
+    FRAMEBUFFER();
+    Color rgba = get_pixel_color(framebuffer, NUM2INT(x), NUM2INT(y));
+    return UINT2NUM(rgba.red);
+}
+
+//
+VALUE Ashton_Framebuffer_get_green(VALUE self, VALUE x, VALUE y)
+{
+    FRAMEBUFFER();
+    Color rgba = get_pixel_color(framebuffer, NUM2INT(x), NUM2INT(y));
+    return UINT2NUM(rgba.green);
+}
+
+//
+VALUE Ashton_Framebuffer_get_blue(VALUE self, VALUE x, VALUE y)
+{
+    FRAMEBUFFER();
+    Color rgba = get_pixel_color(framebuffer, NUM2INT(x), NUM2INT(y));
+    return UINT2NUM(rgba.blue);
+}
+
+//
+VALUE Ashton_Framebuffer_get_alpha(VALUE self, VALUE x, VALUE y)
+{
+    FRAMEBUFFER();
+    Color rgba = get_pixel_color(framebuffer, NUM2INT(x), NUM2INT(y));
+    return UINT2NUM(rgba.alpha);
 }
 
 //
