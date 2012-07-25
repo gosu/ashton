@@ -44,18 +44,21 @@ benchmark("Framebuffer#[x,y]", REPEAT)              { framebuffer[0, 0] }
 benchmark("Framebuffer#rgba(x,y)", REPEAT)          { framebuffer.rgba(0, 0) }
 benchmark("Framebuffer#red(x,y)", REPEAT)           { framebuffer.red 0, 0 }
 benchmark("Framebuffer#transparent?(x, y)", REPEAT) { framebuffer.transparent? 0, 0 }
+benchmark("Framebuffer#render {}", SLOW_REPEAT)          { framebuffer.render {} }
 
 
 puts
-puts "Gosu::Image - TexPlay equivalents (Float arrays)"
+puts "TexPlay equivalents (Float arrays)"
 puts "----------------------------------"
 
-benchmark("Image#refresh_cache", SLOW_REPEAT) { image.refresh_cache }
-benchmark("Image#to_blob", SLOW_REPEAT)       { image.to_blob }
-benchmark("Image#[x,y]", REPEAT)              { image[0, 0] }
-benchmark("Image#[x,y]", REPEAT)              { image[0, 0] }
-benchmark("Image#[x,y][0]", REPEAT)           { image[0, 0][0] }
-benchmark("Image#[x,y][3] == 0.0", REPEAT)    { image[0, 0][3] == 0.0 }
+benchmark("Image#refresh_cache", SLOW_REPEAT)  { image.refresh_cache }
+benchmark("Image#to_blob", SLOW_REPEAT)        { image.to_blob }
+benchmark("Image#[x,y]", REPEAT)               { image[0, 0] }
+benchmark("Image#[x,y]", REPEAT)               { image[0, 0] }
+benchmark("Image#[x,y][0]", REPEAT)            { image[0, 0][0] }
+benchmark("Image#[x,y][3] == 0.0", REPEAT)     { image[0, 0][3] == 0.0 }
+benchmark("Window#render_to_image {}", SLOW_REPEAT) { $window.render_to_image(image) {} }
+
 GC.enable
 
 puts "\n\nBenchmarks completed in #{"%.2f" % (Time.now - t)}s"

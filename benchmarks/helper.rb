@@ -6,7 +6,7 @@ require 'texplay'
 
 DESCRIPTION_WIDTH = 30
 
-$window = Gosu::Window.new 100, 100, false
+$window = Gosu::Window.new 1022, 1022, false
 
 def benchmark(description, repeats)
   t = Time.now
