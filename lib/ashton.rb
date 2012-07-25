@@ -34,6 +34,7 @@ require "ashton/framebuffer"
 require "ashton/window_buffer"
 require "ashton/image_stub"
 require "ashton/particle_emitter"
+require "ashton/pixel_cache"
 
 require "ashton/lighting/light_source"
 require "ashton/lighting/manager"

@@ -39,6 +39,8 @@ Features
 
     - {Ashton::ParticleEmitter} - Generates, manages and displays particles.
 
+    - {Ashton::PixelCache} - Cached image data attached to an {Ashton::Framebuffer} or {Gosu::Image}.
+
     - {Ashton::Shader} -  Wrapper around a GLSL shaders, Supports vertex and fragment shaders. Small shader/function library.
 
     - {Ashton::WindowBuffer} - Framebuffer that is the same size as the Gosu Window.

@@ -128,7 +128,7 @@ static void draw_particle(Particle* particle,
                           const float tex_right, const float tex_bottom)
 {
     // Set the particle's color.
-    Color* color = &particle->color;
+    Color_f* color = &particle->color;
     glColor4f(color->red, color->green, color->blue, color->alpha);
 
     // Splodge the particle quad onto the screen; you know, how you do?
@@ -244,7 +244,7 @@ static VALUE draw_block(VALUE yield_value, VALUE self, int argc, VALUE argv[])
 
 // ----------------------------------------
 // Convert Color structure into 0xAARRGGBB value.
-static uint color_to_argb(Color* color)
+static uint color_to_argb(Color_f* color)
 {
     uint argb = ((((uint)(color->alpha * 255.0)) & 0xff) << 24) +
                 ((((uint)(color->red   * 255.0)) & 0xff) << 16) +

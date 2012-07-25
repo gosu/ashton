@@ -11,11 +11,6 @@
 
 #include "common.h"
 
-typedef struct _color
-{
-    float red, green, blue, alpha; // 0.0..1.0
-} Color;
-
 // A single particle.
 typedef struct _particle
 {
@@ -25,7 +20,7 @@ typedef struct _particle
     float velocity_x, velocity_y;
     float angular_velocity;
 
-    Color color;
+    Color_f color;
 
     // Rate of change
     float fade;
@@ -53,7 +48,7 @@ typedef struct _particle_emitter
     // Generating particles.
     Range angular_velocity;
     Range center_x, center_y;
-    Color color;
+    Color_f color;
     Range fade;
     Range friction;
     Range offset; // Distance from origin to spawn.
@@ -145,7 +140,7 @@ static void draw_particles(Particle* first, Particle* last,
                            const float tex_right, const float tex_bottom);
 
 static VALUE enable_shader_block(VALUE yield_value, VALUE self, int argc, VALUE argv[]);
-static uint color_to_argb(Color* color);
+static uint color_to_argb(Color_f* color);
 
 // Methods
 VALUE Ashton_ParticleEmitter_draw(VALUE self);

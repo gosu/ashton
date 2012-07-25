@@ -18,6 +18,7 @@ void Init_ashton()
     Init_Ashton_Framebuffer(rb_mAshton);
     Init_Ashton_ParticleEmitter(rb_mAshton);
     Init_Ashton_Shader(rb_mAshton);
+    Init_Ashton_PixelCache(rb_mAshton);
     //Init_Ashton_WindowBuffer(rb_mAshton);
 }
 

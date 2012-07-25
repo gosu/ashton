@@ -21,6 +21,7 @@ static VALUE rb_mAshton;
 
 #include "framebuffer.h"
 #include "particle_emitter.h"
+#include "pixel_cache.h"
 #include "shader.h"
 //#include "window_buffer.h"
 
