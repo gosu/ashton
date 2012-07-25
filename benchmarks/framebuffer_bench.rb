@@ -1,49 +1,61 @@
-require 'benchmark'
+require_relative "helper.rb"
 
-# Use dev version, not gem.
-$LOAD_PATH.unshift File.expand_path("../../lib", __FILE__)
-require "ashton"
+# Iterate for different number of times, depending on the speed of the operation, so benchmarks don't take all day!
+REPEAT = 10000
+SLOW_REPEAT = 50
 
-require 'texplay'
+framebuffer = Ashton::Framebuffer.new 1022, 1022 # Largest Gosu image size.
+framebuffer.clear color: Gosu::Color::RED
+image = framebuffer.to_image
+pixel_cache = framebuffer.cache
 
 t = Time.now
 
-$window = Gosu::Window.new 100, 100, false
-
-REPEAT = 10000
-REFRESH_REPEAT = 100
-
-framebuffer = Ashton::Framebuffer.new 1000, 1000
-framebuffer.clear color: Gosu::Color::RED
-image = framebuffer.to_image
-
-puts "Benchmarks for Ashton::Framebuffer"
-puts "=================================="
+puts "Benchmarks for Ashton"
+puts "====================="
+puts "(results in milliseconds per call, operating on a texture of size 1022x1022)"
 puts
 
 GC.disable
-Benchmark.bm 28 do |x|
-  # Since Framebuffer#refresh_cache is lazy, must read a pixel before it will update.
-  puts "Ashton (#[] returns Gosu::Color, otherwise Fixnum or Fixnum arrays)"
-  puts "-------------------------------------------------------------------"
-  puts
-  x.report("    Framebuffer#refresh_cache") { REFRESH_REPEAT.times { framebuffer.refresh_cache; framebuffer.transparent? 0, 0 } }
-  x.report("    Framebuffer#[x,y]")         { REPEAT.times { framebuffer[0, 0] } }
-  x.report("    Framebuffer#rgba(x,y)")     { REPEAT.times { framebuffer.rgba(0, 0) } }
-  x.report("    Framebuffer#red(x,y)")      { REPEAT.times { framebuffer.red 0, 0 } }
-  x.report("    Framebuffer#transparent?")  { REPEAT.times { framebuffer.transparent? 0, 0 } }
 
-  puts
-  puts "TexPlay equivalents (Float arrays)"
-  puts "----------------------------"
-  puts
-  x.report("    Image#refresh_cache")       { REFRESH_REPEAT.times { image.refresh_cache } }
-  x.report("    Image#[x,y]")               { REPEAT.times { image[0, 0] } }
-  x.report("    Image#[x,y]")               { REPEAT.times { image[0, 0] } }
-  x.report("    Image#[x,y][0]")            { REPEAT.times { image[0, 0][0] } }
-  x.report("    Image#[x,y][3] == 0.0")     { REPEAT.times { image[0, 0][3] == 0.0 } }
-end
+puts
+puts "Ashton::PixelCache (#[] returns Gosu::Color, else Fixnum(s))"
+puts "-----------------------------------------------------------"
+
+benchmark("PixelCache#to_image", SLOW_REPEAT)      { pixel_cache.to_image }
+puts
+benchmark("PixelCache#refresh", SLOW_REPEAT)       { pixel_cache.refresh; pixel_cache.transparent? 0, 0 }
+benchmark("PixelCache#to_blob", SLOW_REPEAT)       { pixel_cache.to_blob  }
+benchmark("PixelCache#[x,y]", REPEAT)              { pixel_cache[0, 0] }
+benchmark("PixelCache#rgba(x,y)", REPEAT)          { pixel_cache.rgba(0, 0) }
+benchmark("PixelCache#red(x,y)", REPEAT)           { pixel_cache.red 0, 0 }
+benchmark("PixelCache#transparent?(x, y)", REPEAT) { pixel_cache.transparent? 0, 0 }
+
+
+puts
+puts "Ashton::Framebuffer (#[] returns Gosu::Color, else Fixnum(s))"
+puts "-----------------------------------------------------------"
+
+benchmark("Framebuffer#to_image", SLOW_REPEAT) { framebuffer.to_image }
+puts
+benchmark("Framebuffer#refresh_cache", SLOW_REPEAT) { framebuffer.refresh_cache; framebuffer.transparent? 0, 0 }
+benchmark("Framebuffer#to_blob", SLOW_REPEAT)       { framebuffer.to_blob  }
+benchmark("Framebuffer#[x,y]", REPEAT)              { framebuffer[0, 0] }
+benchmark("Framebuffer#rgba(x,y)", REPEAT)          { framebuffer.rgba(0, 0) }
+benchmark("Framebuffer#red(x,y)", REPEAT)           { framebuffer.red 0, 0 }
+benchmark("Framebuffer#transparent?(x, y)", REPEAT) { framebuffer.transparent? 0, 0 }
+
+
+puts
+puts "Gosu::Image - TexPlay equivalents (Float arrays)"
+puts "----------------------------------"
+
+benchmark("Image#refresh_cache", SLOW_REPEAT) { image.refresh_cache }
+benchmark("Image#to_blob", SLOW_REPEAT)       { image.to_blob }
+benchmark("Image#[x,y]", REPEAT)              { image[0, 0] }
+benchmark("Image#[x,y]", REPEAT)              { image[0, 0] }
+benchmark("Image#[x,y][0]", REPEAT)           { image[0, 0][0] }
+benchmark("Image#[x,y][3] == 0.0", REPEAT)    { image[0, 0][3] == 0.0 }
 GC.enable
 
-
-puts "\n\nBenchmarks completed in #{"%.3f" % (Time.now - t)} s"
+puts "\n\nBenchmarks completed in #{"%.2f" % (Time.now - t)}s"

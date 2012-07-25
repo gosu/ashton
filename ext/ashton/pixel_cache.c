@@ -23,6 +23,7 @@ void Init_Ashton_PixelCache(VALUE module)
     rb_define_method(rb_cPixelCache, "transparent?", Ashton_PixelCache_is_transparent, 2);
 
     rb_define_method(rb_cPixelCache, "refresh", Ashton_PixelCache_refresh, 0);
+    rb_define_method(rb_cPixelCache, "to_blob", Ashton_PixelCache_to_blob, 0);
 }
 
 //
@@ -59,13 +60,28 @@ VALUE Ashton_PixelCache_init(VALUE self, VALUE owner)
 
     pixel_cache->rb_owner = owner;
 
-    // Assume we are looking at a Framebuffer for now.
-    pixel_cache->texture_id = NUM2UINT(rb_funcall(owner, rb_intern("texture_id"), 0));
+    // Different behaviour depending on what the owning class is.
+    if(RTEST(rb_obj_is_kind_of(owner, rb_cFramebuffer)))
+    {
+        // Ashton::Framebuffer
+        pixel_cache->texture_id = NUM2UINT(rb_funcall(owner, rb_intern("texture_id"), 0));
+    }
+    else if(RTEST(rb_obj_is_kind_of(owner, rb_cImage)))
+    {
+        // Gosu::Image
+        // TODO: this needs to be done completely differently, since the image is a sprite on a texture, 1024x1024.
+        VALUE tex_info = rb_funcall(owner, rb_intern("gl_tex_info"), 0);
+        pixel_cache->texture_id = NUM2UINT(rb_funcall(tex_info, rb_intern("tex_name"), 0));
+    }
+    else
+    {
+        rb_raise(rb_eTypeError, "Can only cache Gosu::Image or Ashton::Framebuffer objects.");
+    }
+
     pixel_cache->width = NUM2UINT(rb_funcall(owner, rb_intern("width"), 0));
     pixel_cache->height = NUM2UINT(rb_funcall(owner, rb_intern("height"), 0));
-
     pixel_cache->data = ALLOC_N(Color_i, pixel_cache->width * pixel_cache->height);
-    pixel_cache->is_cached = FALSE;
+    cache_texture(pixel_cache);
 
     return Qnil;
 }
@@ -84,17 +100,21 @@ void Ashton_PixelCache_FREE(PixelCache* pixel_cache)
 // Make a copy of the pixel_cache texture in main memory.
 static void cache_texture(PixelCache* pixel_cache)
 {
+    glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, pixel_cache->texture_id);
     glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixel_cache->data);
 
-    pixel_cache->is_cached = TRUE;
+    pixel_cache->is_cached = true;
 }
 
 // Get color of a single pixel.
-static Color_i get_pixel_color(PixelCache* pixel_cache, const int x, const int y)
+static Color_i get_pixel_color(PixelCache* pixel_cache, VALUE x, VALUE y)
 {
-    if(x < 0 || x >= (int)pixel_cache->width ||
-       y < 0 || y >= (int)pixel_cache->height)
+    int _x = NUM2INT(x);
+    int _y = NUM2INT(y);
+
+    if(_x < 0 || _x >= (int)pixel_cache->width ||
+       _y < 0 || _y >= (int)pixel_cache->height)
     {
         Color_i color;
         memset(&color, 0, sizeof(Color_i));
@@ -104,7 +124,7 @@ static Color_i get_pixel_color(PixelCache* pixel_cache, const int x, const int y
     {
         if(!pixel_cache->is_cached) cache_texture(pixel_cache);
 
-        return pixel_cache->data[x + (pixel_cache->height - 1 - y) * pixel_cache->width];
+        return pixel_cache->data[_x + (pixel_cache->height - 1 - _y) * pixel_cache->width];
     }
 }
 
@@ -119,7 +139,7 @@ VALUE Ashton_PixelCache_refresh(VALUE self)
 {
     PIXEL_CACHE();
     // Lazy refresh - we take a new copy only when we access it next.
-    pixel_cache->is_cached = FALSE;
+    pixel_cache->is_cached = false;
     return Qnil;
 }
 
@@ -128,7 +148,7 @@ VALUE Ashton_PixelCache_get_pixel(VALUE self, VALUE x, VALUE y)
 {
     PIXEL_CACHE();
 
-    Color_i rgba = get_pixel_color(pixel_cache, NUM2INT(x), NUM2INT(y));
+    Color_i rgba = get_pixel_color(pixel_cache, x, y);
 
     VALUE color = rb_funcall(rb_cColor, rb_intern("new"), 1,
                              UINT2NUM((rgba.alpha << 24) +
@@ -144,7 +164,7 @@ VALUE Ashton_PixelCache_get_rgba_array(VALUE self, VALUE x, VALUE y)
 {
     PIXEL_CACHE();
 
-    Color_i rgba = get_pixel_color(pixel_cache, NUM2INT(x), NUM2INT(y));
+    Color_i rgba = get_pixel_color(pixel_cache, x, y);
 
     VALUE array = rb_ary_new();
     rb_ary_push(array, UINT2NUM(rgba.red));
@@ -159,7 +179,7 @@ VALUE Ashton_PixelCache_get_rgba_array(VALUE self, VALUE x, VALUE y)
 VALUE Ashton_PixelCache_get_red(VALUE self, VALUE x, VALUE y)
 {
     PIXEL_CACHE();
-    Color_i rgba = get_pixel_color(pixel_cache, NUM2INT(x), NUM2INT(y));
+    Color_i rgba = get_pixel_color(pixel_cache, x, y);
     return UINT2NUM(rgba.red);
 }
 
@@ -167,7 +187,7 @@ VALUE Ashton_PixelCache_get_red(VALUE self, VALUE x, VALUE y)
 VALUE Ashton_PixelCache_get_green(VALUE self, VALUE x, VALUE y)
 {
     PIXEL_CACHE();
-    Color_i rgba = get_pixel_color(pixel_cache, NUM2INT(x), NUM2INT(y));
+    Color_i rgba = get_pixel_color(pixel_cache, x, y);
     return UINT2NUM(rgba.green);
 }
 
@@ -175,7 +195,7 @@ VALUE Ashton_PixelCache_get_green(VALUE self, VALUE x, VALUE y)
 VALUE Ashton_PixelCache_get_blue(VALUE self, VALUE x, VALUE y)
 {
     PIXEL_CACHE();
-    Color_i rgba = get_pixel_color(pixel_cache, NUM2INT(x), NUM2INT(y));
+    Color_i rgba = get_pixel_color(pixel_cache, x, y);
     return UINT2NUM(rgba.blue);
 }
 
@@ -183,7 +203,7 @@ VALUE Ashton_PixelCache_get_blue(VALUE self, VALUE x, VALUE y)
 VALUE Ashton_PixelCache_get_alpha(VALUE self, VALUE x, VALUE y)
 {
     PIXEL_CACHE();
-    Color_i rgba = get_pixel_color(pixel_cache, NUM2INT(x), NUM2INT(y));
+    Color_i rgba = get_pixel_color(pixel_cache, x, y);
     return UINT2NUM(rgba.alpha);
 }
 
@@ -191,6 +211,31 @@ VALUE Ashton_PixelCache_get_alpha(VALUE self, VALUE x, VALUE y)
 VALUE Ashton_PixelCache_is_transparent(VALUE self, VALUE x, VALUE y)
 {
     PIXEL_CACHE();
-    Color_i rgba = get_pixel_color(pixel_cache, NUM2INT(x), NUM2INT(y));
+    Color_i rgba = get_pixel_color(pixel_cache, x, y);
     return (rgba.alpha == 0) ? Qtrue : Qfalse;
+}
+
+//
+VALUE Ashton_PixelCache_to_blob(VALUE self)
+{
+   PIXEL_CACHE();
+
+   uint row_length = sizeof(Color_i) * pixel_cache->width;
+   uint size = row_length * pixel_cache->height;
+   VALUE blob = rb_str_new(NULL, size);
+
+   // Need to invert Y since Gosu is upside-down :)
+   char* start_of_last_data_row = ((char*)pixel_cache->data) + size - row_length;
+   char* start_of_string = RSTRING_PTR(blob);
+
+   for(uint y = 0; y < pixel_cache->height; y++)
+   {
+      int offset = row_length * y;
+
+      memcpy(start_of_string + offset,
+             start_of_last_data_row - offset,
+             row_length);
+   }
+
+   return blob;
 }

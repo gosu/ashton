@@ -12,20 +12,26 @@
 
 #include "common.h"
 
-extern VALUE rb_cColor;
 VALUE rb_cPixelCache;
+extern VALUE rb_cImage;
+extern VALUE rb_cColor;
+extern VALUE rb_cFramebuffer;
 
 typedef struct _pixel_cache
 {
+    float x;
+    float y;
+
     uint width;
     uint height;
 
     VALUE rb_owner; // Framebuffer or Image object (held for marking purposes).
     uint texture_id; // Direct access to the owner's texture.
     
-    Color_i * data;
-    uint is_cached; // If false, then the cache data needs updating.
-    uint is_created; // Has space for the cache ever been allocated?
+    Color_i* data; // The actual "blob" data.
+
+    bool is_cached; // If false, then the cache data needs updating.
+    bool is_created; // Has space for the cache ever been allocated?
 } PixelCache;
 
 #define PIXEL_CACHE() \
@@ -36,7 +42,7 @@ void Init_Ashton_PixelCache(VALUE module);
     
 // Helpers
 static void cache_texture(PixelCache* pixel_cache);
-static Color_i get_pixel_color(PixelCache* pixel_cache, const int x, const int y);
+static Color_i get_pixel_color(PixelCache* pixel_cache, VALUE x, VALUE y);
 
 // Creation and destruction.
 VALUE Ashton_PixelCache_singleton_new(int argc, VALUE* argv, VALUE klass);
@@ -59,5 +65,6 @@ VALUE Ashton_PixelCache_get_alpha(VALUE self, VALUE x, VALUE y);
 VALUE Ashton_PixelCache_is_transparent(VALUE self, VALUE x, VALUE y);
 
 VALUE Ashton_PixelCache_refresh(VALUE self);
+VALUE Ashton_PixelCache_to_blob(VALUE self);
    
 #endif // ASHTON_PIXEL_CACHE_H

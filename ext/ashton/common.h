@@ -2,6 +2,7 @@
 #define COMMON_H
 
 #include <ruby.h>
+#include <stdbool.h>
 
 #include "GLee.h"
 

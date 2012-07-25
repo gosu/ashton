@@ -13,6 +13,8 @@
 #include "common.h"
 #include "pixel_cache.h"
 
+VALUE rb_cFramebuffer;
+
 typedef struct _framebuffer
 {
     uint width;
@@ -56,6 +58,7 @@ VALUE Ashton_Framebuffer_get_green(VALUE self, VALUE x, VALUE y);
 VALUE Ashton_Framebuffer_get_blue(VALUE self, VALUE x, VALUE y);
 VALUE Ashton_Framebuffer_get_alpha(VALUE self, VALUE x, VALUE y);
 VALUE Ashton_Framebuffer_is_transparent(VALUE self, VALUE x, VALUE y);
+VALUE Ashton_Framebuffer_to_blob(VALUE self);
 
 #endif // ASHTON_FRAMEBUFFER_H
 

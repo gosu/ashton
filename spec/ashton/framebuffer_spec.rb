@@ -195,6 +195,12 @@ describe Ashton::Framebuffer do
     end
   end
 
+  describe "to_blob" do
+    it "should create a blob the same as an equivalent image would" do
+      @subject.to_blob.should eq @testcard_image.to_blob
+    end
+  end
+
   describe "to_image" do
     before :each do
       @image = @subject.to_image

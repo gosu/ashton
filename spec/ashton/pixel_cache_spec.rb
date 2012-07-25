@@ -8,7 +8,7 @@ describe Ashton::PixelCache do
   end
 
   before :each do
-    @framebuffer = Ashton::Framebuffer.new 16, 12
+    @framebuffer = Ashton::Framebuffer.new @testcard_image.width, @testcard_image.height
     @framebuffer.render do
       @testcard_image.draw 0, 0, 0
     end
@@ -19,6 +19,27 @@ describe Ashton::PixelCache do
   describe "owner" do
     it "should remember the owner it was created for" do
       @subject.owner.should eq @framebuffer
+    end
+  end
+
+  describe "refresh" do
+    it "should respond to refresh" do
+      @subject.should respond_to :refresh
+    end
+  end
+
+  describe "initialize" do
+    it "should cache for a framebuffer class" do
+      ->{ described_class.new @framebuffer }.should_not raise_error TypeError
+    end
+
+    it "should cache for an image class" do
+      pending "it not freezing :/"
+      ->{ described_class.new @testcard_image }.should_not raise_error TypeError
+    end
+
+    it "should fail passed an unexpected class" do
+      ->{ described_class.new "frog" }.should raise_error TypeError
     end
   end
 
@@ -102,13 +123,38 @@ describe Ashton::PixelCache do
 
   describe "width" do
     it "should be initially set" do
-      @subject.width.should eq 16
+      @subject.width.should eq @testcard_image.width
     end
   end
 
   describe "height" do
     it "should be initially set" do
-      @subject.height.should eq 12
+      @subject.height.should eq @testcard_image.height
+    end
+  end
+
+  describe "to_blob" do
+    it "should create a blob identical to one an equivalent image would create" do
+      @subject.to_blob.should eq @testcard_image.to_blob
+    end
+  end
+
+  describe "to_image" do
+    before :each do
+      @image = @subject.to_image
+    end
+
+    it "should create a Gosu::Image" do
+      @image.should be_kind_of Gosu::Image
+    end
+
+    it "should create an image of the appropriate size" do
+      @image.width.should eq @testcard_image.width
+      @image.height.should eq @testcard_image.height
+    end
+
+    it "should create an image identical to the one that was drawn into it originally" do
+      @image.to_blob.should eq @testcard_image.to_blob
     end
   end
 end

@@ -151,50 +151,15 @@ module Ashton
       shader.disable z if shader
     end
 
+
     public
     # Convert the current contents of the buffer into a Gosu::Image
     #
     # @option options :caching [Boolean] (true) TexPlay behaviour.
     # @option options :tileable [Boolean] (false) Standard Gosu behaviour.
     # @option options :rect [Array<Integer>] ([0, 0, width, height]) Rectangular area of buffer to use to create the image [x, y, w, h]
-    def to_image(options = {})
-      options = {
-        rect: [0, 0, width, height],
-        tileable: false,
-      }.merge! options
-
-      rect = options[:rect]
-
-      # Draw onto the clean flip buffer, in order to flip before saving.
-      # TODO: Just add a second colour buffer, rather than using a second fbo.
-      flip = Framebuffer.new width, height
-      image = nil
-
-      flip.render do
-        $window.gl do
-          glColor4f 1.0, 1.0, 1.0, 1.0
-          glMatrixMode GL_PROJECTION
-          glLoadIdentity
-          glViewport 0, 0, width, height
-          glOrtho 0, width, 0, height, -1, 1 # Invert screen!
-
-          glClearColor 0, 0, 0, 0
-          glClear GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT
-          draw 0, 0, nil
-        end
-
-        blob = glReadPixels *rect, GL_RGBA, GL_UNSIGNED_BYTE
-
-        # Create a new Image from the flipped pixel data.
-        stub = ImageStub.new blob, rect[2], rect[3]
-        if defined? TexPlay
-          image = Gosu::Image.new $window, stub, options[:tileable], options
-        else
-          image = Gosu::Image.new $window, stub, options[:tileable]
-        end
-      end
-
-      image
+    def to_image(*args)
+      cache.to_image *args
     end
   end
 end

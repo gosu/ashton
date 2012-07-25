@@ -4,7 +4,7 @@ extern VALUE rb_cPixelCache;
 
 void Init_Ashton_Framebuffer(VALUE module)
 {
-    VALUE rb_cFramebuffer = rb_define_class_under(module, "Framebuffer", rb_cObject);
+    rb_cFramebuffer = rb_define_class_under(module, "Framebuffer", rb_cObject);
 
     rb_define_singleton_method(rb_cFramebuffer, "new", Ashton_Framebuffer_singleton_new, -1);
 
@@ -26,6 +26,7 @@ void Init_Ashton_Framebuffer(VALUE module)
 
     rb_define_method(rb_cFramebuffer, "transparent?", Ashton_Framebuffer_is_transparent, 2);
     rb_define_method(rb_cFramebuffer, "refresh_cache", Ashton_Framebuffer_refresh_cache, 0);
+    rb_define_method(rb_cFramebuffer, "to_blob", Ashton_Framebuffer_to_blob, 0);
 }
 
 //
@@ -198,4 +199,11 @@ VALUE Ashton_Framebuffer_refresh_cache(VALUE self)
     FRAMEBUFFER();
     ensure_cache_exists(self, framebuffer);
     return Ashton_PixelCache_refresh(framebuffer->rb_cache);
+}
+
+VALUE Ashton_Framebuffer_to_blob(VALUE self)
+{
+    FRAMEBUFFER();
+    ensure_cache_exists(self, framebuffer);
+    return Ashton_PixelCache_to_blob(framebuffer->rb_cache);
 }

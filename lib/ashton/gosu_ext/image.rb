@@ -1,6 +1,7 @@
 module Gosu
   class Image
     DEFAULT_DRAW_COLOR = Gosu::Color::WHITE
+
     alias_method :draw_without_hash, :draw
     protected :draw_without_hash
     def draw(*args)
@@ -66,8 +67,6 @@ module Gosu
       shader = options[:shader]
       mode = options[:mode] || :default
 
-      opengl_color = color.is_a?(Gosu::Color) ? color.to_opengl : color
-
       if shader
         shader.enable z
         $window.gl z do
@@ -83,6 +82,11 @@ module Gosu
       ensure
         shader.disable z if shader
       end
+    end
+
+    # The cache is a replacement for Texplay's pixel cache system.
+    def cache
+      @cache ||= Ashton::PixelCache.new self
     end
   end
 end
