@@ -8,7 +8,7 @@ describe Ashton::Framebuffer do
   end
 
   before :each do
-    @subject = described_class.new 16, 12
+    @subject = described_class.new @testcard_image.width, @testcard_image.height
     @subject.render do
       @testcard_image.draw 0, 0, 0
     end
@@ -20,8 +20,8 @@ describe Ashton::Framebuffer do
     end
 
     it "should be of the right size" do
-      @subject.cache.width.should eq 16
-      @subject.cache.height.should eq 12
+      @subject.cache.width.should eq @testcard_image.width
+      @subject.cache.height.should eq @testcard_image.height
     end
 
     it "should consider the Framebuffer its owner" do
@@ -115,13 +115,13 @@ describe Ashton::Framebuffer do
 
   describe "width" do
     it "should be initially set" do
-      @subject.width.should eq 16
+      @subject.width.should eq @testcard_image.width
     end
   end
 
   describe "height" do
     it "should be initially set" do
-      @subject.height.should eq 12
+      @subject.height.should eq  @testcard_image.height
     end
   end
 
@@ -154,16 +154,45 @@ describe Ashton::Framebuffer do
 
   describe "clear" do
     it "should clear the buffer to transparent" do
-      pending
+      @subject.clear
+      @subject.width.times do |x|
+        @subject.height.times do |y|
+          @subject[x, y].should eq Gosu::Color.rgba(0, 0, 0, 0)
+        end
+      end
     end
 
-    it "should clear the buffer to a specified color" do
-      pending
+    it "should clear the buffer to a specified Gosu::Color" do
+      @subject.clear color: Gosu::Color::CYAN
+      @subject.width.times do |x|
+        @subject.height.times do |y|
+          @subject[x, y].should eq Gosu::Color::CYAN
+        end
+      end
+    end
+
+    it "should clear the buffer to a specified opengl color float array" do
+      @subject.clear color: Gosu::Color::CYAN.to_opengl
+      @subject.width.times do |x|
+        @subject.height.times do |y|
+          @subject[x, y].should eq Gosu::Color::CYAN
+        end
+      end
     end
   end
 
   describe "draw" do
-    pending
+    it "should be able to be drawn" do
+      @subject.draw 0, 0, 0
+    end
+
+    it "should be drawn with a specific mode" do
+      pending
+    end
+
+    it "should be drawn with a specific color" do
+      pending
+    end
   end
 
   describe "to_image" do
@@ -171,9 +200,17 @@ describe Ashton::Framebuffer do
       @image = @subject.to_image
     end
 
+    it "should create a Gosu::Image" do
+      @image.should be_kind_of Gosu::Image
+    end
+
     it "should create an image of the appropriate size" do
-      @image.width.should eq 16
-      @image.height.should eq 12
+      @image.width.should eq @testcard_image.width
+      @image.height.should eq @testcard_image.height
+    end
+
+    it "should create an image identical to the one that was drawn into it originally" do
+      @image.to_blob.should eq @testcard_image.to_blob
     end
   end
 end
