@@ -41,6 +41,7 @@ describe Ashton::Framebuffer do
       @subject[0, 1].should eq Gosu::Color::RED
       @subject[0, 2].should eq Gosu::Color::GREEN
       @subject[0, 3].should eq Gosu::Color::BLUE
+      @subject[0, 4].should eq Gosu::Color.rgba(255, 255, 255, 153)
       @subject[0, 8].should eq Gosu::Color.rgba(0, 0, 0, 0)
     end
 
@@ -58,6 +59,7 @@ describe Ashton::Framebuffer do
       @subject.rgba(0, 1).should eq [255, 0, 0, 255]
       @subject.rgba(0, 2).should eq [0, 255, 0, 255]
       @subject.rgba(0, 3).should eq [0, 0, 255, 255]
+      @subject.rgba(0, 4).should eq [255, 255, 255, 153]
       @subject.rgba(0, 8).should eq [0, 0, 0, 0]
     end
   end

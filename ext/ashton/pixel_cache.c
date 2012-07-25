@@ -225,8 +225,8 @@ VALUE Ashton_PixelCache_to_blob(VALUE self)
    VALUE blob = rb_str_new(NULL, size);
 
    // Need to invert Y since Gosu is upside-down :)
-   char* start_of_last_data_row = ((char*)pixel_cache->data) + size - row_length;
-   char* start_of_string = RSTRING_PTR(blob);
+   uchar* start_of_last_data_row = ((char*)pixel_cache->data) + size - row_length;
+   uchar* start_of_string = RSTRING_PTR(blob);
 
    for(uint y = 0; y < pixel_cache->height; y++)
    {
