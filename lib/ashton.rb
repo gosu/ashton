@@ -30,6 +30,7 @@ require "ashton/mixins/version_checking"
 
 require "ashton/version"
 require "ashton/shader"
+require "ashton/signed_distance_field"
 require "ashton/framebuffer"
 require "ashton/window_buffer"
 require "ashton/image_stub"

@@ -41,6 +41,8 @@ Features
 
     - {Ashton::PixelCache} - Cached image data attached to an {Ashton::Framebuffer} or {Gosu::Image}.
 
+    - {Ashton::SignedDistanceField} - A signed distance field based on a an image mask.
+
     - {Ashton::Shader} -  Wrapper around a GLSL shaders, Supports vertex and fragment shaders. Small shader/function library.
 
     - {Ashton::WindowBuffer} - Framebuffer that is the same size as the Gosu Window.
