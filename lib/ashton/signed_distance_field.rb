@@ -41,6 +41,35 @@ module Ashton
       @field.red(x / @scale, y / @scale) - ZERO_DISTANCE
     end
 
+    # Does the point x1, x2 have line of sight to x2, y2 (that is, no solid in the way).
+    def line_of_sight?(x1, y1, x2, y2)
+      !!line_of_sight_blocked_at(x1, y1, x2, y2)
+    end
+
+    # Returns blocking position, else nil if line of sight isn't blocked.
+    def line_of_sight_blocked_at(x1, y1, x2, y2)
+      distance_to_travel = Gosu::distance x1, y1, x2, y2
+      distance_x, distance_y = x2 - x1, y2 - y1
+      distance_travelled = 0
+      x, y = x1, y1
+
+      loop do
+        distance = clear_distance x, y
+
+        # Blocked?
+        return [x, y] if distance <= 0
+
+        distance_travelled += distance
+
+        # Got to destination in the clear.
+        return nil if distance_travelled >= distance_to_travel
+
+        lerp = distance_travelled.fdiv distance_to_travel
+        x = x1 + distance_x * lerp
+        y = y1 + distance_y * lerp
+      end
+    end
+
     # Update the SDF should the image have changed.
     def update_field
       @shader.use do
