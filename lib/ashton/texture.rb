@@ -161,5 +161,13 @@ module Ashton
     def to_image(*args)
       cache.to_image *args
     end
+
+    def dup
+      new_texture = Texture.new width, height
+      new_texture.render do
+        draw 0, 0, 0, blend: :copy
+      end
+      new_texture
+    end
   end
 end

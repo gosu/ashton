@@ -235,4 +235,15 @@ describe Ashton::Texture do
       @image.to_blob.should eq @testcard_image.to_blob
     end
   end
+
+  describe "dup" do
+    it "should create a new Texture object" do
+      new = @subject.dup.should be_kind_of described_class
+      new.__id__.should_not eq @subject.__id__
+    end
+
+    it "should create an exact copy of the Texture" do
+      @subject.dup.to_blob.should eq @subject.to_blob
+    end
+  end
 end

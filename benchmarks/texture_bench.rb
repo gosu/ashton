@@ -40,11 +40,12 @@ benchmark("Texture#to_image", SLOW_REPEAT) { texture.to_image }
 puts
 benchmark("Texture#refresh_cache", SLOW_REPEAT) { texture.refresh_cache; texture.transparent? 0, 0 }
 benchmark("Texture#to_blob", SLOW_REPEAT)       { texture.to_blob  }
+benchmark("Texture#dup", SLOW_REPEAT)           { texture.dup }
 benchmark("Texture#[x,y]", REPEAT)              { texture[0, 0] }
 benchmark("Texture#rgba(x,y)", REPEAT)          { texture.rgba(0, 0) }
 benchmark("Texture#red(x,y)", REPEAT)           { texture.red 0, 0 }
 benchmark("Texture#transparent?(x, y)", REPEAT) { texture.transparent? 0, 0 }
-benchmark("Texture#render {}", SLOW_REPEAT)          { texture.render {} }
+benchmark("Texture#render {}", SLOW_REPEAT)     { texture.render {} }
 
 
 puts
@@ -53,6 +54,7 @@ puts "----------------------------------"
 
 benchmark("Image#refresh_cache", SLOW_REPEAT)  { image.refresh_cache }
 benchmark("Image#to_blob", SLOW_REPEAT)        { image.to_blob }
+benchmark("Image#dup", 1)                      { image.dup }
 benchmark("Image#[x,y]", REPEAT)               { image[0, 0] }
 benchmark("Image#[x,y]", REPEAT)               { image[0, 0] }
 benchmark("Image#[x,y][0]", REPEAT)            { image[0, 0][0] }
