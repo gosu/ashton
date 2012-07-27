@@ -4,10 +4,10 @@ require_relative "helper.rb"
 REPEAT = 10000
 SLOW_REPEAT = 50
 
-framebuffer = Ashton::Framebuffer.new 1022, 1022 # Largest Gosu image size.
-framebuffer.clear color: Gosu::Color::RED
-image = framebuffer.to_image
-pixel_cache = framebuffer.cache
+texture = Ashton::Texture.new 1022, 1022 # Largest Gosu image size.
+texture.clear color: Gosu::Color::RED
+image = texture.to_image
+pixel_cache = texture.cache
 
 t = Time.now
 
@@ -33,18 +33,18 @@ benchmark("PixelCache#transparent?(x, y)", REPEAT) { pixel_cache.transparent? 0,
 
 
 puts
-puts "Ashton::Framebuffer (#[] returns Gosu::Color, else Fixnum(s))"
+puts "Ashton::Texture (#[] returns Gosu::Color, else Fixnum(s))"
 puts "-----------------------------------------------------------"
 
-benchmark("Framebuffer#to_image", SLOW_REPEAT) { framebuffer.to_image }
+benchmark("Texture#to_image", SLOW_REPEAT) { texture.to_image }
 puts
-benchmark("Framebuffer#refresh_cache", SLOW_REPEAT) { framebuffer.refresh_cache; framebuffer.transparent? 0, 0 }
-benchmark("Framebuffer#to_blob", SLOW_REPEAT)       { framebuffer.to_blob  }
-benchmark("Framebuffer#[x,y]", REPEAT)              { framebuffer[0, 0] }
-benchmark("Framebuffer#rgba(x,y)", REPEAT)          { framebuffer.rgba(0, 0) }
-benchmark("Framebuffer#red(x,y)", REPEAT)           { framebuffer.red 0, 0 }
-benchmark("Framebuffer#transparent?(x, y)", REPEAT) { framebuffer.transparent? 0, 0 }
-benchmark("Framebuffer#render {}", SLOW_REPEAT)          { framebuffer.render {} }
+benchmark("Texture#refresh_cache", SLOW_REPEAT) { texture.refresh_cache; texture.transparent? 0, 0 }
+benchmark("Texture#to_blob", SLOW_REPEAT)       { texture.to_blob  }
+benchmark("Texture#[x,y]", REPEAT)              { texture[0, 0] }
+benchmark("Texture#rgba(x,y)", REPEAT)          { texture.rgba(0, 0) }
+benchmark("Texture#red(x,y)", REPEAT)           { texture.red 0, 0 }
+benchmark("Texture#transparent?(x, y)", REPEAT) { texture.transparent? 0, 0 }
+benchmark("Texture#render {}", SLOW_REPEAT)          { texture.render {} }
 
 
 puts

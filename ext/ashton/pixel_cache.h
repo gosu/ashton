@@ -15,7 +15,7 @@
 VALUE rb_cPixelCache;
 extern VALUE rb_cImage;
 extern VALUE rb_cColor;
-extern VALUE rb_cFramebuffer;
+extern VALUE rb_cTexture;
 
 typedef struct _pixel_cache
 {
@@ -25,7 +25,7 @@ typedef struct _pixel_cache
     uint width;
     uint height;
 
-    VALUE rb_owner; // Framebuffer or Image object (held for marking purposes).
+    VALUE rb_owner; // Texture or Image object (held for marking purposes).
     uint texture_id; // Direct access to the owner's texture.
     
     Color_i* data; // The actual "blob" data.

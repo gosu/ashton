@@ -28,7 +28,7 @@ module Lighting
       @z = options[:z]
 
       @lights = Set.new
-      @shadows = Ashton::Framebuffer.new options[:width], options[:height]
+      @shadows = Ashton::Texture.new options[:width], options[:height]
     end
 
     # @param light [Ashton::LightSource]

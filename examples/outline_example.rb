@@ -24,7 +24,7 @@ class TestWindow < Gosu::Window
     @ship = Gosu::Image.new(self, media_path("Starfighter.png"), true)
     @background = Gosu::Image.new(self, media_path("Earth.png"), true)
 
-    @buffer = Ashton::Framebuffer.new width, height
+    @buffer = Ashton::Texture.new width, height
 
     render_to_buffer
   end

@@ -13,17 +13,17 @@ def media_path(file); File.expand_path "media/#{file}", File.dirname(__FILE__) e
 class GameWindow < Gosu::Window
   def initialize
     super 800, 600, false
-    self.caption = "Ashton::Framebuffer example - composing an image inside a buffer - hold <LMB> to draw - <delete> to clear"
+    self.caption = "Ashton::Texture example - composing an image - hold <LMB> to draw - <delete> to clear"
 
     @font = Gosu::Font.new(self, Gosu::default_font_name, 20)
     @star = Gosu::Image.new(self, media_path("LargeStar.png"), true)
-    @framebuffer = Ashton::Framebuffer.new width, height
+    @texture = Ashton::Texture.new width, height
   end
 
   def update
     if button_down? Gosu::MsLeft
-      # Draw into the framebuffer, rather than onto the screen.
-      @framebuffer.render do
+      # Draw into the texture, rather than onto the screen.
+      @texture.render do
         @star.draw_rot mouse_x, mouse_y, 0, 0, 0.5, 0.5
       end
     end
@@ -32,7 +32,7 @@ class GameWindow < Gosu::Window
   def needs_cursor?; true end
 
   def draw
-    @framebuffer.draw 0, 0, 0
+    @texture.draw 0, 0, 0
     @star.draw_rot mouse_x, mouse_y, 0, 0, 0.5, 0.5
 
     @font.draw "FPS: #{Gosu::fps}", 0, 0, 0
@@ -41,7 +41,7 @@ class GameWindow < Gosu::Window
   def button_down(id)
     case id
       when Gosu::KbDelete
-        @framebuffer.clear color: Gosu::Color.rgb(rand() * 255, rand() * 255, rand() * 255)
+        @texture.clear color: Gosu::Color.rgb(rand() * 255, rand() * 255, rand() * 255)
       when Gosu::KbEscape
         close
     end

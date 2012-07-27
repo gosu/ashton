@@ -1,6 +1,6 @@
 module Ashton
-  # A framebuffer that is the same size as the Gosu::Window.
-  class WindowBuffer < Framebuffer
+  # A texture that is the same size as the Gosu::Window.
+  class WindowBuffer < Texture
     def initialize
       super $window.width, $window.height
     end

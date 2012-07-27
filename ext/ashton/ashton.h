@@ -1,7 +1,7 @@
 /*
  * module Ashton
  *
- * Ruby module extension for Gosu, implementing shaders and framebuffers.
+ * Ruby module extension for Gosu, implementing shaders and textures.
  *
  */
 
@@ -19,7 +19,7 @@ static VALUE rb_mAshton;
 
 #include "gosu.h"
 
-#include "framebuffer.h"
+#include "texture.h"
 #include "particle_emitter.h"
 #include "pixel_cache.h"
 #include "shader.h"

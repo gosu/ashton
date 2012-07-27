@@ -1,5 +1,5 @@
 module Ashton
-  class Framebuffer
+  class Texture
     include Mixins::VersionChecking
 
     DEFAULT_DRAW_COLOR = Gosu::Color::WHITE
@@ -39,7 +39,7 @@ module Ashton
     end
 
     public
-    # Enable the framebuffer to use (e.g. to draw or convert it).
+    # Enable the texture to use (e.g. to draw or convert it).
     def render
       raise ArgumentError, "block required (use #enable/#disable without blocks)" unless block_given?
 
@@ -84,7 +84,7 @@ module Ashton
     public
     # Draw the image, _immediately_ (no z-ordering by Gosu).
     #
-    # This is not as versatile as converting the Framebuffer into a Gosu::Image and then
+    # This is not as versatile as converting the Texture into a Gosu::Image and then
     # drawing it, but it is many times faster, so use it when you are updating the buffer
     # every frame, rather than just composing an image.
     #
@@ -117,7 +117,7 @@ module Ashton
         glEnable GL_BLEND
         glEnable GL_TEXTURE_2D
         glActiveTexture GL_TEXTURE0
-        glBindTexture GL_TEXTURE_2D, texture_id
+        glBindTexture GL_TEXTURE_2D, id
 
         # Set blending mode.
         case options[:blend]

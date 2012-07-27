@@ -61,10 +61,10 @@ VALUE Ashton_PixelCache_init(VALUE self, VALUE owner)
     pixel_cache->rb_owner = owner;
 
     // Different behaviour depending on what the owning class is.
-    if(RTEST(rb_obj_is_kind_of(owner, rb_cFramebuffer)))
+    if(RTEST(rb_obj_is_kind_of(owner, rb_cTexture)))
     {
-        // Ashton::Framebuffer
-        pixel_cache->texture_id = NUM2UINT(rb_funcall(owner, rb_intern("texture_id"), 0));
+        // Ashton::Texture
+        pixel_cache->texture_id = NUM2UINT(rb_funcall(owner, rb_intern("id"), 0));
     }
     else if(RTEST(rb_obj_is_kind_of(owner, rb_cImage)))
     {
@@ -75,7 +75,7 @@ VALUE Ashton_PixelCache_init(VALUE self, VALUE owner)
     }
     else
     {
-        rb_raise(rb_eTypeError, "Can only cache Gosu::Image or Ashton::Framebuffer objects.");
+        rb_raise(rb_eTypeError, "Can only cache Gosu::Image or Ashton::Texture objects.");
     }
 
     pixel_cache->width = NUM2UINT(rb_funcall(owner, rb_intern("width"), 0));

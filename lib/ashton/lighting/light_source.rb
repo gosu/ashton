@@ -23,10 +23,10 @@ module Lighting
       @x, @y, @z, @radius = x, y, z, radius.to_i
       @color = options[:color] || Gosu::Color::WHITE
 
-      @shadow_casters_fb = Ashton::Framebuffer.new width, height
-      @shadow_map_fb = Ashton::Framebuffer.new 2, height
-      @shadows_fb = Ashton::Framebuffer.new width, height
-      @blurred_fb = Ashton::Framebuffer.new width, height
+      @shadow_casters_fb = Ashton::Texture.new width, height
+      @shadow_map_fb = Ashton::Texture.new 2, height
+      @shadows_fb = Ashton::Texture.new width, height
+      @blurred_fb = Ashton::Texture.new width, height
 
       load_shaders
     end

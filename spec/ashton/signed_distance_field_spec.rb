@@ -17,7 +17,7 @@ describe Ashton::SignedDistanceField do
     # ----------
     # ----------
     # ----------
-    @image = Ashton::Framebuffer.new 10, 10
+    @image = Ashton::Texture.new 10, 10
     @image.render do
       $window.pixel.draw 1, 1, 0, 3, 3
       $window.pixel.draw 4, 2, 0, 1, 2

@@ -8,17 +8,17 @@ describe Ashton::PixelCache do
   end
 
   before :each do
-    @framebuffer = Ashton::Framebuffer.new @testcard_image.width, @testcard_image.height
-    @framebuffer.render do
+    @texture = Ashton::Texture.new @testcard_image.width, @testcard_image.height
+    @texture.render do
       @testcard_image.draw 0, 0, 0
     end
 
-    @subject = described_class.new @framebuffer
+    @subject = described_class.new @texture
   end
 
   describe "owner" do
     it "should remember the owner it was created for" do
-      @subject.owner.should eq @framebuffer
+      @subject.owner.should eq @texture
     end
   end
 
@@ -29,8 +29,8 @@ describe Ashton::PixelCache do
   end
 
   describe "initialize" do
-    it "should cache for a framebuffer class" do
-      ->{ described_class.new @framebuffer }.should_not raise_error TypeError
+    it "should cache for a texture class" do
+      ->{ described_class.new @texture }.should_not raise_error TypeError
     end
 
     it "should cache for an image class" do
@@ -137,7 +137,6 @@ describe Ashton::PixelCache do
 
   describe "to_blob" do
     it "should create a blob identical to one an equivalent image would create" do
-      p @subject.to_blob.unpack("I*").zip @testcard_image.to_blob.unpack("I*")
       @subject.to_blob.should eq @testcard_image.to_blob
     end
   end

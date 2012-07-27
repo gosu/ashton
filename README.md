@@ -31,7 +31,7 @@ Features
     - {Gosu::Window} - Post-processing with shaders. Converting to image.
 
 * Ashton
-    - {Ashton::Framebuffer} - low-level graphics buffer that can be drawn directly onto and drawn to the Window.
+    - {Ashton::Texture} - Single texture (compared to Gosu::Image which uses a spritesheet) which can be drawn directly onto and drawn to the Window.
 
     - {Ashton::LightManager} -  Manages and combines the lighting from {Ashton::LightSource} objects.
 
@@ -39,13 +39,13 @@ Features
 
     - {Ashton::ParticleEmitter} - Generates, manages and displays particles.
 
-    - {Ashton::PixelCache} - Cached image data attached to an {Ashton::Framebuffer} or {Gosu::Image}.
+    - {Ashton::PixelCache} - Cached image data attached to an {Ashton::Texture} or {Gosu::Image}.
 
     - {Ashton::SignedDistanceField} - A signed distance field based on a an image mask.
 
     - {Ashton::Shader} -  Wrapper around a GLSL shaders, Supports vertex and fragment shaders. Small shader/function library.
 
-    - {Ashton::WindowBuffer} - Framebuffer that is the same size as the Gosu Window.
+    - {Ashton::WindowBuffer} - Texture that is the same size as the Gosu Window that can capture the contents of the screen.
 
 Requirements
 ------------

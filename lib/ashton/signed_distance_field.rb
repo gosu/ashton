@@ -8,7 +8,7 @@ module Ashton
     # Creates a Signed Distance Field based on a given image.
     # Image should be a mask with alpha = 0 (clear) and alpha = 255 (solid)
     #
-    # @param image [Gosu::Image, Ashton::Framebuffer]
+    # @param image [Gosu::Image, Ashton::Texture]
     # @param max_distance [Integer] Maximum distance to measure.
     # @option options :step_size [Integer] (1) pixels to step out.
     # @option options :scale [Integer] (1) Scale relative to the image.
@@ -27,7 +27,7 @@ module Ashton
           texture_size: [width, height].map(&:to_f),
       }
 
-      @field = Framebuffer.new (width / @scale).ceil, (height / @scale).ceil
+      @field = Texture.new (width / @scale).ceil, (height / @scale).ceil
 
       update_field
     end
@@ -108,7 +108,7 @@ module Ashton
     end
 
     # Draw the field, usually for debugging purposes.
-    # @see Ashton::Framebuffer#draw
+    # @see Ashton::Texture#draw
     def draw(x, y, z, options = {})
       options = {
           blend: :add,

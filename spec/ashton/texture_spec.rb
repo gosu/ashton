@@ -1,7 +1,7 @@
 
 require File.expand_path("../../helper.rb", __FILE__)
 
-describe Ashton::Framebuffer do
+describe Ashton::Texture do
   before :all do
     $window ||= Gosu::Window.new 16, 16, false
     @testcard_image = Gosu::Image.new $window, media_path("simple.png")
@@ -11,6 +11,20 @@ describe Ashton::Framebuffer do
     @subject = described_class.new @testcard_image.width, @testcard_image.height
     @subject.render do
       @testcard_image.draw 0, 0, 0
+    end
+  end
+
+  describe "id" do
+    it "should be a positive number" do
+      @subject.id.should be_kind_of Integer
+      @subject.id.should > 0
+    end
+  end
+
+  describe "fbo_id" do
+    it "should be a positive number" do
+      @subject.fbo_id.should be_kind_of Integer
+      @subject.fbo_id.should > 0
     end
   end
 
@@ -24,7 +38,7 @@ describe Ashton::Framebuffer do
       @subject.cache.height.should eq @testcard_image.height
     end
 
-    it "should consider the Framebuffer its owner" do
+    it "should consider the Texture its owner" do
       @subject.cache.owner.should eq @subject
     end
   end
