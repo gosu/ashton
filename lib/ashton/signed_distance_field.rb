@@ -2,23 +2,23 @@ module Ashton
   class SignedDistanceField
     ZERO_DISTANCE = 128 # color channel containing 0 => -128, 128 => 0, 129 => +1, 255 => +128
 
-    def width; @image.width end
-    def height; @image.height end
+    attr_reader :width, :height
 
     # Creates a Signed Distance Field based on a given image.
-    # Image should be a mask with alpha = 0 (clear) and alpha = 255 (solid)
+    # When drawing into the SDF, drawing should ONLY have alpha of 0 (clear) or 255 (solid)
     #
-    # @param image [Gosu::Image, Ashton::Texture]
+    # @param width [Integer]
+    # @params height [Integer]
     # @param max_distance [Integer] Maximum distance to measure.
     # @option options :step_size [Integer] (1) pixels to step out.
     # @option options :scale [Integer] (1) Scale relative to the image.
-    def initialize(image, max_distance, options = {})
+    def initialize(width, height, max_distance, options = {}, &block)
       options = {
          scale: 1,
          step_size: 1,
       }.merge! options
 
-      @image = image
+      @width, @height = width, height
       @scale = options[:scale].to_f
 
       @shader = Shader.new fragment: :signed_distance_field, uniforms: {
@@ -28,8 +28,13 @@ module Ashton
       }
 
       @field = Texture.new (width / @scale).ceil, (height / @scale).ceil
+      @mask = Texture.new @field.width, @field.height
 
-      update_field
+      if block_given?
+        render_field &block
+      else
+        @field.clear color: Gosu::Color.rgb(*([ZERO_DISTANCE + max_distance] * 3))
+      end
     end
 
     # Is the position clear for a given radius around it.
@@ -96,14 +101,23 @@ module Ashton
     end
 
     # Update the SDF should the image have changed.
-    def update_field
-      @shader.use do
-        @field.render do
-          $window.scale 1.0 / @scale do
-            @image.draw 0, 0, 0
-          end
+    # Draw the mask in the passed block.
+    def render_field
+      raise ArgumentError, "Block required" unless block_given?
+
+      @mask.render do
+        @mask.clear
+        $window.scale 1.0 / @scale do
+          yield self
         end
       end
+
+      @shader.use do
+        @field.render do
+          @mask.draw 0, 0, 0
+        end
+      end
+
       nil
     end
 

@@ -7,42 +7,52 @@ describe Ashton::SignedDistanceField do
     Gosu::enable_undocumented_retrofication
 
     $window ||= Gosu::Window.new 16, 16, false
-    # ----------
-    # -XXX------
-    # -XXXX-----
-    # -XXXX-----
-    # ----------
-    # ----------
-    # ----------
-    # ----------
-    # ----------
-    # ----------
-    @image = Ashton::Texture.new 10, 10
-    @image.render do
-      $window.pixel.draw 1, 1, 0, 3, 3
-      $window.pixel.draw 4, 2, 0, 1, 2
-    end
-
+    @width, @height = 9, 10
     @max_distance = 3
   end
 
   before :each do
-    @subject = described_class.new @image, @max_distance
+    @subject = described_class.new @width, @height, @max_distance do
+      # ---------
+      # -XXX-----
+      # -XXXX----
+      # -XXXX----
+      # ---------
+      # ---------
+      # ---------
+      # ---------
+      # ---------
+      # ---------
+      $window.pixel.draw 1, 1, 0, 3, 3
+      $window.pixel.draw 4, 2, 0, 1, 2
+    end
   end
 
   describe "initialize" do
-    pending
+    it "should accept a block and yield itself" do
+      yielded = nil
+      field = described_class.new @width, @height, @max_distance do |value|
+        yielded = value
+      end
+
+      yielded.should eq field
+    end
+
+    it "should initialize itself to max_distance if not given a block" do
+      field = described_class.new @width, @height, @max_distance
+      field.to_a.flatten.uniq.should eq [@max_distance]
+    end
   end
 
   describe "width" do
-    it "should give the width of the original image" do
-      @subject.height.should eq @image.width
+    it "should give the width" do
+      @subject.width.should eq @width
     end
   end
 
   describe "height" do
-    it "should give the height of the original image" do
-      @subject.height.should eq @image.height
+    it "should give the height" do
+      @subject.height.should eq @height
     end
   end
 
@@ -69,7 +79,7 @@ describe Ashton::SignedDistanceField do
     end
 
     it "should max out at the specified limit" do
-      @subject.sample_distance(9, 9).should eq @max_distance
+      @subject.sample_distance(8, 9).should eq @max_distance
     end
   end
 
@@ -113,7 +123,19 @@ describe Ashton::SignedDistanceField do
     end
   end
 
-  describe "update_field" do
+  describe "render_field" do
+    it "should yield the field" do
+      field = nil
+      @subject.render_field do |value|
+        field = value
+      end
+      field.should eq @subject
+    end
+
+    it "should fail without a block" do
+      ->{ @subject.render_field }.should raise_error ArgumentError
+    end
+
     pending
   end
 
@@ -132,7 +154,6 @@ describe Ashton::SignedDistanceField do
           [1, 1,  0, 0, 1, 2, 3, 3, 3, 3],
           [2, 1,  1, 1, 1, 2, 3, 3, 3, 3],
           [3, 2,  2, 2, 2, 3, 3, 3, 3, 3],
-          [3, 3,  3, 3, 3, 3, 3, 3, 3, 3],
           [3, 3,  3, 3, 3, 3, 3, 3, 3, 3],
           [3, 3,  3, 3, 3, 3, 3, 3, 3, 3],
       ]
