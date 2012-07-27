@@ -98,6 +98,61 @@ module Ashton
     #   @option options :color [Gosu::Color] (Gosu::Color::WHITE) Color to apply to the drawing.
     #   @option options :blend [Symbol] (:alpha) :alpha, :copy, :additive or :multiplicative
 
+    def draw(x, y, z, options = {})
+      options = {
+          color: DEFAULT_DRAW_COLOR,
+          blend: :alpha,
+      }.merge! options
+      shader = options[:shader]
+      color = options[:color]
+
+      shader.enable z if shader
+
+      $window.gl z do
+        if shader
+          shader.color = color
+          location = shader.send :uniform_location, "in_TextureEnabled", required: false
+          shader.send :set_uniform, location, true if location != Shader::INVALID_LOCATION
+        else
+          glColor4f *color.to_opengl
+        end
+
+        glEnable GL_BLEND
+        glEnable GL_TEXTURE_2D
+        glBindTexture GL_TEXTURE_2D, id
+
+        # Set blending mode.
+        case options[:blend]
+          when :default, :alpha
+            glBlendFunc GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA
+          when :additive, :add
+            glBlendFunc GL_ONE, GL_ONE
+          when :multiplicative, :multiply
+            glBlendFunc GL_DST_COLOR, GL_ZERO
+          when :copy
+            glBlendFunc GL_ONE, GL_ZERO
+          else
+            raise options[:mode].to_s
+        end
+
+        glBegin GL_QUADS do
+          glTexCoord2d 0, 0
+          glVertex2d x, y + height # BL
+
+          glTexCoord2d 0, 1
+          glVertex2d x, y # TL
+
+          glTexCoord2d 1, 1
+          glVertex2d x + width, y # TR
+
+          glTexCoord2d 1, 0
+          glVertex2d x + width, y + height # BR
+        end
+      end
+
+      shader.disable z if shader
+    end
+
     public
     # Convert the current contents of the buffer into a Gosu::Image
     #
