@@ -45,6 +45,7 @@ benchmark("Texture#[x,y]", REPEAT)              { texture[0, 0] }
 benchmark("Texture#rgba(x,y)", REPEAT)          { texture.rgba(0, 0) }
 benchmark("Texture#red(x,y)", REPEAT)           { texture.red 0, 0 }
 benchmark("Texture#transparent?(x, y)", REPEAT) { texture.transparent? 0, 0 }
+benchmark("Texture#draw(x,y,z)", REPEAT)        { texture.draw(0, 0, 0); $window.flush }
 benchmark("Texture#render {}", SLOW_REPEAT)     { texture.render {} }
 
 
@@ -59,6 +60,7 @@ benchmark("Image#[x,y]", REPEAT)               { image[0, 0] }
 benchmark("Image#[x,y]", REPEAT)               { image[0, 0] }
 benchmark("Image#[x,y][0]", REPEAT)            { image[0, 0][0] }
 benchmark("Image#[x,y][3] == 0.0", REPEAT)     { image[0, 0][3] == 0.0 }
+benchmark("Image#draw(x,y,z)", REPEAT)         { image.draw(0, 0, 0); $window.flush }
 benchmark("Window#render_to_image {}", SLOW_REPEAT) { $window.render_to_image(image) {} }
 
 GC.enable

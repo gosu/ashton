@@ -3,14 +3,15 @@ require File.expand_path("../../helper.rb", __FILE__)
 
 describe Ashton::Texture do
   before :all do
-    $window ||= Gosu::Window.new 16, 16, false
-    @testcard_image = Gosu::Image.new $window, media_path("simple.png")
   end
 
   before :each do
+    $window = Gosu::Window.new 16, 16, false # Horrible, but otherwise we can't flush out "wrong" params properly.
+    @testcard_image = Gosu::Image.new $window, media_path("simple.png")
+
     @subject = described_class.new @testcard_image.width, @testcard_image.height
     @subject.render do
-      @testcard_image.draw 0, 0, 0
+      @testcard_image.draw 0, 0, 0, blend: :copy
     end
   end
 
@@ -199,15 +200,38 @@ describe Ashton::Texture do
 
   describe "draw" do
     it "should be able to be drawn" do
-      @subject.draw 0, 0, 0
+      @subject.draw 1, 2, 3
     end
 
-    it "should be drawn with a specific mode" do
-      pending
+    it "should be drawn with a specific blend mode" do
+      [:default, :alpha, :add, :additive, :multiply, :multiplicative, :copy].each do |mode|
+        @subject.draw 1, 2, 3, blend: mode
+      end
+    end
+
+    it "should fail with a bad blend mode name" do
+      @subject.draw 1, 2, 3, blend: :fish
+      ->{ $window.flush }.should raise_error(ArgumentError, /Unrecognised blend mode: :fish/)
+    end
+
+    it "should fail with a bad blend mode type" do
+      ->{ @subject.draw 1, 2, 3, blend: 12 }.should raise_error TypeError
     end
 
     it "should be drawn with a specific color" do
-      pending
+      @subject.draw 1, 2, 3, color: Gosu::Color::RED
+    end
+
+    it "should fail with a bad color type" do
+      ->{ @subject.draw 1, 2, 3, color: 12 }.should raise_error TypeError
+    end
+
+    it "should be drawn with a specific shader" do
+      @subject.draw 1, 2, 3, shader: Ashton::Shader.new
+    end
+
+    it "should fail with a bad shader type" do
+      ->{ @subject.draw 1, 2, 3, shader: 12 }.should raise_error TypeError
     end
   end
 

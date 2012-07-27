@@ -14,6 +14,8 @@
 #include "pixel_cache.h"
 
 VALUE rb_cTexture;
+extern VALUE rb_cColor;
+extern VALUE rb_cShader;
 
 typedef struct _texture
 {
@@ -26,8 +28,8 @@ typedef struct _texture
     VALUE rb_cache; // Value of cache for marking purpose.
 } Texture;
 
-// Create an 'emitter' variable which points to our data.
-#define FRAMEBUFFER() \
+// Create an 'texture' variable which points to our data.
+#define TEXTURE() \
     Texture* texture; \
     Data_Get_Struct(self, Texture, texture);
 
@@ -59,6 +61,7 @@ VALUE Ashton_Texture_get_blue(VALUE self, VALUE x, VALUE y);
 VALUE Ashton_Texture_get_alpha(VALUE self, VALUE x, VALUE y);
 VALUE Ashton_Texture_is_transparent(VALUE self, VALUE x, VALUE y);
 VALUE Ashton_Texture_to_blob(VALUE self);
+VALUE Ashton_Texture_draw(int argc, VALUE argv[], VALUE self);
 
 #endif // ASHTON_FRAMEBUFFER_H
 

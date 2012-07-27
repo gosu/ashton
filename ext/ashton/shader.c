@@ -5,5 +5,5 @@
 // ----------------------------------------
 void Init_Ashton_Shader(VALUE module)
 {
-    VALUE rb_cShader = rb_define_class_under(module, "Shader", rb_cObject);
+    rb_cShader = rb_define_class_under(module, "Shader", rb_cObject);
 }

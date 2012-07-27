@@ -23,4 +23,6 @@ typedef struct _color_f
     float red, green, blue, alpha;
 } Color_f;
 
+#define SYMBOL(STR) ID2SYM(rb_intern(STR))
+
 #endif // COMMON_H

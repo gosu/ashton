@@ -8,7 +8,7 @@ module Ashton
     public
     # Copy the window contents into the buffer.
     def capture
-      glBindTexture GL_TEXTURE_2D, @texture
+      glBindTexture GL_TEXTURE_2D, id
       glCopyTexImage2D GL_TEXTURE_2D, 0, GL_RGBA8, 0, 0, width, height, 0
     end
   end
