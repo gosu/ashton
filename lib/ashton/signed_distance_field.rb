@@ -67,8 +67,11 @@ module Ashton
     def sample_normal(x, y)
       gradient_x, gradient_y = sample_gradient x, y
       length = Gosu::distance 0, 0, gradient_x, gradient_y
-
-      [gradient_x / length, gradient_y / length]
+      if length == 0
+        [0, 0] # This could be NaN in edge cases.
+      else
+        [gradient_x / length, gradient_y / length]
+      end
     end
 
     # Does the point x1, x2 have line of sight to x2, y2 (that is, no solid in the way).
