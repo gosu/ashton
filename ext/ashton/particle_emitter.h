@@ -70,12 +70,11 @@ typedef struct _particle_emitter
 
 
 void Init_Ashton_ParticleEmitter(VALUE module);
+static VALUE particle_emitter_allocate(VALUE klass);
+static void particle_emitter_free(ParticleEmitter* emitter);
 
 // Initialization
-VALUE Ashton_ParticleEmitter_singleton_new(int argc, VALUE argv[], VALUE klass);
 VALUE Ashton_ParticleEmitter_init(VALUE self, VALUE x, VALUE y, VALUE z, VALUE max_particles);
-
-void Ashton_ParticleEmitter_FREE(ParticleEmitter* emitter);
 
 // Create an 'emitter' variable which points to our data.
 #define EMITTER() \

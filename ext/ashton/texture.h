@@ -36,6 +36,9 @@ typedef struct _texture
 void Init_Ashton_Texture(VALUE module);
 
 // Helpers
+static VALUE texture_allocate(VALUE klass);
+static void texture_mark(Texture* texture);
+static void texture_free(Texture* texture);
 static void ensure_cache_exists(VALUE self, Texture* texture);
 
 // Getters.
@@ -46,10 +49,7 @@ VALUE Ashton_Texture_get_fbo_id(VALUE self);
 VALUE Ashton_Texture_get_id(VALUE self);
 
 // Creation and destruction.
-VALUE Ashton_Texture_singleton_new(int argc, VALUE* argv, VALUE klass);
 VALUE Ashton_Texture_init(VALUE self, VALUE width, VALUE height);
-void Ashton_Texture_FREE(Texture* texture);
-void Ashton_Texture_MARK(Texture* texture);
 
 // Methods.
 VALUE Ashton_Texture_refresh_cache(VALUE self);

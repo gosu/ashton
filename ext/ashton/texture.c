@@ -6,7 +6,7 @@ void Init_Ashton_Texture(VALUE module)
 {
     rb_cTexture = rb_define_class_under(module, "Texture", rb_cObject);
 
-    rb_define_singleton_method(rb_cTexture, "new", Ashton_Texture_singleton_new, -1);
+    rb_define_alloc_func(rb_cTexture, texture_allocate);
 
     rb_define_method(rb_cTexture, "initialize_", Ashton_Texture_init, 2);
 
@@ -57,18 +57,6 @@ VALUE Ashton_Texture_get_id(VALUE self)
 }
 
 //
-VALUE Ashton_Texture_singleton_new(int argc, VALUE* argv, VALUE klass)
-{
-    Texture* texture;
-    VALUE new_texture = Data_Make_Struct(klass, Texture, Ashton_Texture_MARK,
-                                             Ashton_Texture_FREE, texture);
-
-    rb_obj_call_init(new_texture, argc, argv);
-
-    return new_texture;
-}
-
-//
 VALUE Ashton_Texture_init(VALUE self, VALUE width, VALUE height)
 {
     TEXTURE();
@@ -111,16 +99,26 @@ VALUE Ashton_Texture_init(VALUE self, VALUE width, VALUE height)
 }
 
 //
-void Ashton_Texture_MARK(Texture* texture)
+static VALUE texture_allocate(VALUE klass)
+{
+    Texture* texture = ALLOC(Texture);
+    memset(texture, 0, sizeof(Texture));
+
+    return Data_Wrap_Struct(klass, texture_mark, texture_free, texture);
+}
+
+//
+static void texture_mark(Texture* texture)
 {
     if(!NIL_P(texture->rb_cache)) rb_gc_mark(texture->rb_cache);
 }
 
 //
-void Ashton_Texture_FREE(Texture* texture)
+static void texture_free(Texture* texture)
 {
     glDeleteFramebuffersEXT(1, &texture->fbo_id);
     glDeleteTextures(1, &texture->id);
+    xfree(texture);
 }
 
 //

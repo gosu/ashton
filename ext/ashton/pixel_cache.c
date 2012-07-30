@@ -4,7 +4,7 @@ void Init_Ashton_PixelCache(VALUE module)
 {
     rb_cPixelCache = rb_define_class_under(module, "PixelCache", rb_cObject);
 
-    rb_define_singleton_method(rb_cPixelCache, "new", Ashton_PixelCache_singleton_new, -1);
+    rb_define_alloc_func(rb_cPixelCache, pixel_cache_allocate);
 
     rb_define_method(rb_cPixelCache, "initialize", Ashton_PixelCache_init, 1);
 
@@ -42,15 +42,25 @@ VALUE Ashton_PixelCache_get_height(VALUE self)
 
 
 //
-VALUE Ashton_PixelCache_singleton_new(int argc, VALUE* argv, VALUE klass)
+static VALUE pixel_cache_allocate(VALUE klass)
 {
-    PixelCache* pixel_cache;
-    VALUE new_pixel_cache = Data_Make_Struct(klass, PixelCache, Ashton_PixelCache_MARK,
-                                             Ashton_PixelCache_FREE, pixel_cache);
+    PixelCache* pixel_cache = ALLOC(PixelCache);
+    memset(pixel_cache, 0, sizeof(PixelCache));
 
-    rb_obj_call_init(new_pixel_cache, argc, argv);
+    return Data_Wrap_Struct(klass, pixel_cache_mark, pixel_cache_free, pixel_cache);
+}
 
-    return new_pixel_cache;
+//
+static void pixel_cache_mark(PixelCache* pixel_cache)
+{
+    rb_gc_mark(pixel_cache->rb_owner);
+}
+
+//
+static void pixel_cache_free(PixelCache* pixel_cache)
+{
+    xfree(pixel_cache->data);
+    xfree(pixel_cache);
 }
 
 //
@@ -84,17 +94,6 @@ VALUE Ashton_PixelCache_init(VALUE self, VALUE owner)
     cache_texture(pixel_cache);
 
     return Qnil;
-}
-
-void Ashton_PixelCache_MARK(PixelCache* pixel_cache)
-{
-    rb_gc_mark(pixel_cache->rb_owner);
-}
-
-//
-void Ashton_PixelCache_FREE(PixelCache* pixel_cache)
-{
-    xfree(pixel_cache->data);
 }
 
 // Make a copy of the pixel_cache texture in main memory.

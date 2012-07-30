@@ -43,12 +43,12 @@ void Init_Ashton_PixelCache(VALUE module);
 // Helpers
 static void cache_texture(PixelCache* pixel_cache);
 static Color_i get_pixel_color(PixelCache* pixel_cache, VALUE x, VALUE y);
+static VALUE pixel_cache_allocate(VALUE klass);
+static void pixel_cache_mark(PixelCache* pixel_cache);
+static void pixel_cache_free(PixelCache* pixel_cache);
 
 // Creation and destruction.
-VALUE Ashton_PixelCache_singleton_new(int argc, VALUE* argv, VALUE klass);
 VALUE Ashton_PixelCache_init(VALUE self, VALUE owner);
-void Ashton_PixelCache_FREE(PixelCache* pixel_cache);
-void Ashton_PixelCache_MARK(PixelCache* pixel_cache);
 
 // Accessors
 VALUE Ashton_PixelCache_get_owner(VALUE self);

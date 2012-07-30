@@ -28,7 +28,7 @@ void Init_Ashton_ParticleEmitter(VALUE module)
 {
     VALUE rb_cParticleEmitter = rb_define_class_under(module, "ParticleEmitter", rb_cObject);
 
-    rb_define_singleton_method(rb_cParticleEmitter, "new", Ashton_ParticleEmitter_singleton_new, -1);
+    rb_define_alloc_func(rb_cParticleEmitter, particle_emitter_allocate);
 
     rb_define_method(rb_cParticleEmitter, "initialize_", Ashton_ParticleEmitter_init, 4);
 
@@ -65,18 +65,6 @@ void Init_Ashton_ParticleEmitter(VALUE module)
 }
 
 // ----------------------------------------
-// Ashton::ParticleEmitter.new(x, y, z, options = {})
-VALUE Ashton_ParticleEmitter_singleton_new(int argc, VALUE* argv, VALUE klass)
-{
-    ParticleEmitter* emitter;
-    VALUE particle_emitter = Data_Make_Struct(klass, ParticleEmitter, NULL, Ashton_ParticleEmitter_FREE, emitter);
-
-    rb_obj_call_init(particle_emitter, argc, argv);
-
-    return particle_emitter;
-}
-
-// ----------------------------------------
 // Ashton::ParticleEmitter#initialize
 VALUE Ashton_ParticleEmitter_init(VALUE self, VALUE x, VALUE y, VALUE z, VALUE max_particles)
 {
@@ -94,9 +82,17 @@ VALUE Ashton_ParticleEmitter_init(VALUE self, VALUE x, VALUE y, VALUE z, VALUE m
     return self;
 }
 
+static VALUE particle_emitter_allocate(VALUE klass)
+{
+    ParticleEmitter* emitter = ALLOC(ParticleEmitter);
+    memset(emitter, 0, sizeof(ParticleEmitter));
+
+    return Data_Wrap_Struct(klass, NULL, particle_emitter_free, emitter);
+}
+
 // ----------------------------------------
 // Deallocate data structure and its contents.
-void Ashton_ParticleEmitter_FREE(ParticleEmitter* emitter)
+static void particle_emitter_free(ParticleEmitter* emitter)
 {
     xfree(emitter->particles);
     xfree(emitter);
