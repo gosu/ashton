@@ -99,12 +99,21 @@ module Ashton
     #   @option options :blend [Symbol] (:alpha) :alpha, :copy, :additive or :multiplicative
 
     def draw(x, y, z, options = {})
-      options = {
-          color: DEFAULT_DRAW_COLOR,
-          blend: :alpha,
-      }.merge! options
       shader = options[:shader]
-      color = options[:color]
+      color = options[:color] || DEFAULT_DRAW_COLOR
+      blend = options[:blend] || :alpha
+
+      unless shader.nil? || shader.is_a?(Shader)
+        raise TypeError, "Expected :shader option of type Ashton::Shader"
+      end
+
+      unless color.is_a? Gosu::Color
+        raise TypeError, "Expected :color option of type Gosu::Color"
+      end
+
+      unless blend.is_a? Symbol
+        raise TypeError, "Expected :blend option to be a Symbol"
+      end
 
       shader.enable z if shader
 
@@ -122,7 +131,7 @@ module Ashton
         glBindTexture GL_TEXTURE_2D, id
 
         # Set blending mode.
-        case options[:blend]
+        case
           when :default, :alpha
             glBlendFunc GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA
           when :additive, :add
@@ -132,7 +141,7 @@ module Ashton
           when :copy
             glBlendFunc GL_ONE, GL_ZERO
           else
-            raise options[:mode].to_s
+            raise ArgumentError, "Unrecognised blend mode: #{options[:blend].inspect}"
         end
 
         glBegin GL_QUADS do
