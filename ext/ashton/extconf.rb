@@ -23,7 +23,7 @@ case RUBY_PLATFORM
     $LDFLAGS << " -lGL"
 
     # You are on Linux, so everything is hunky dory!
-    exit unless have_library 'opengl32'
+    exit unless have_library 'GL'
 end
 
 # 1.9 compatibility
