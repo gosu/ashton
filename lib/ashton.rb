@@ -9,7 +9,7 @@ rescue LoadError
 end
 
 module Ashton
-  class Error < RuntimeError; end
+  class Error < StandardError; end
 
   class NotSupportedError < Error; end
 
