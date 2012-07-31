@@ -28,7 +28,7 @@ Gem::Specification.new do |s|
   s.required_ruby_version = '>= 1.9.2'
 
   s.add_dependency 'opengl', '~> 0.8.0.pre1'
-  s.add_dependency 'gosu', '~> 0.7.44'
+  s.add_dependency 'gosu', '~> 0.7.45'
 
   s.add_development_dependency 'rake-compiler', '~> 0.8.1'
   s.add_development_dependency 'rspec', '~> 2.10.0'
