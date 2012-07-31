@@ -11,10 +11,9 @@ case RUBY_PLATFORM
     $LDFLAGS <<  " -framework OpenGL"
 
   when /win32|mingw/
-    gl_path = File.expand_path "../vendor/gl", __FILE__
+    gl_path = File.expand_path("../vendor/gl", __FILE__).gsub(" ", "\\ ")
     $LDFLAGS << " -L#{gl_path}/lib"
     $CFLAGS << " -I#{gl_path}/include"
-
     exit unless have_library('opengl32.lib', 'glVertex3d') || have_library('opengl32')
 
     exit unless have_header 'GL/gl.h'
