@@ -16,7 +16,7 @@ module Ashton
           # Create from Gosu::Image
           image = args[0]
           raise TypeError, "Expected Gosu::Image" unless image.is_a? Gosu::Image
-          initialize_ image.width, image.height
+          initialize_ image.width, image.height, nil
 
           render do
             # TODO: Ideally we'd draw the image in replacement mode, but Gosu doesn't support that.
@@ -46,16 +46,14 @@ module Ashton
         when 2
           # Create blank image.
           width, height = *args
-          initialize_ width, height
+          initialize_ width, height, nil
           clear
 
         when 3
           # Create from blob - create a Gosu image first.
           blob, width, height = *args
           raise ArgumentError, "Blob data is not of expected size" if blob.length != width * height * 4
-          stub = ImageStub.new blob, width, height
-          image = Gosu::Image.new $window, stub
-          initialize image
+          initialize_ width, height, blob
 
         else
           raise ArgumentError, "Expected 1, 2 or 3 parameters."
@@ -111,11 +109,12 @@ module Ashton
 
       # Reset the projection matrix so that drawing into the buffer is zeroed.
       glBindFramebufferEXT GL_FRAMEBUFFER_EXT, fbo_id
-      glPushMatrix
+
+      # Invert projection because we don't like Gosu :)
       glMatrixMode GL_PROJECTION
       glLoadIdentity
       glViewport 0, 0, width, height
-      glOrtho 0, width, height, 0, -1, 1
+      glOrtho 0, width, 0, height, -1, 1
 
       @rendering = true
     end
@@ -125,8 +124,13 @@ module Ashton
       raise AshtonError unless rendering?
 
       $window.flush # Force all the drawing to draw now!
-      glPopMatrix
       glBindFramebufferEXT GL_FRAMEBUFFER_EXT, 0
+
+      # Back to Gosu projection.
+      glMatrixMode GL_PROJECTION
+      glLoadIdentity
+      glViewport 0, 0, $window.width, $window.height
+      glOrtho 0, $window.width, $window.height, 0, -1, 1
 
       @rendering = false
     end
@@ -196,16 +200,16 @@ module Ashton
         end
 
         glBegin GL_QUADS do
-          glTexCoord2d 0, 0
+          glTexCoord2d 0, 1
           glVertex2d x, y + height # BL
 
-          glTexCoord2d 0, 1
+          glTexCoord2d 0, 0
           glVertex2d x, y # TL
 
-          glTexCoord2d 1, 1
+          glTexCoord2d 1, 0
           glVertex2d x + width, y # TR
 
-          glTexCoord2d 1, 0
+          glTexCoord2d 1, 1
           glVertex2d x + width, y + height # BR
         end
       end
@@ -224,6 +228,7 @@ module Ashton
     end
 
     def dup
+      # Create a new texture and draw self into it.
       new_texture = Texture.new width, height
       new_texture.render do
         draw 0, 0, 0, mode: :replace

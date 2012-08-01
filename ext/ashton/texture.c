@@ -8,7 +8,7 @@ void Init_Ashton_Texture(VALUE module)
 
     rb_define_alloc_func(rb_cTexture, texture_allocate);
 
-    rb_define_method(rb_cTexture, "initialize_", Ashton_Texture_init, 2);
+    rb_define_method(rb_cTexture, "initialize_", Ashton_Texture_init, 3);
 
     rb_define_method(rb_cTexture, "cache", Ashton_Texture_get_cache, 0);
 
@@ -57,7 +57,7 @@ VALUE Ashton_Texture_get_id(VALUE self)
 }
 
 //
-VALUE Ashton_Texture_init(VALUE self, VALUE width, VALUE height)
+VALUE Ashton_Texture_init(VALUE self, VALUE width, VALUE height, VALUE blob)
 {
     TEXTURE();
 
@@ -84,9 +84,19 @@ VALUE Ashton_Texture_init(VALUE self, VALUE width, VALUE height)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
-    // Create an empty texture, that might be filled with junk.
+    // Create the texture, either undefined or based on RGBA blob data string.
+    uchar* data;
+    if(NIL_P(blob))
+    {
+       data = NULL; // Create an empty texture, that might be filled with junk.
+    }
+    else
+    {
+       data = StringValuePtr(blob); // Create from blob data.
+    }
+
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, texture->width,
-                texture->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+                        texture->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 
     // Ensure the texture was created.
     GLint created_width;

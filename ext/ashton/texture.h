@@ -49,7 +49,7 @@ VALUE Ashton_Texture_get_fbo_id(VALUE self);
 VALUE Ashton_Texture_get_id(VALUE self);
 
 // Creation and destruction.
-VALUE Ashton_Texture_init(VALUE self, VALUE width, VALUE height);
+VALUE Ashton_Texture_init(VALUE self, VALUE width, VALUE height, VALUE blob);
 
 // Methods.
 VALUE Ashton_Texture_refresh_cache(VALUE self);

@@ -6,9 +6,8 @@ module Gosu
 
       # Used for post-processing effects, but could be used by any
       # anyone needing to have a temporary, full-window render buffer.
-      def back_buffer
-        @back_buffer ||= Ashton::WindowBuffer.new
-      end
+      def primary_buffer; @primary_buffer ||= Ashton::WindowBuffer.new; end
+      def secondary_buffer; @secondary_buffer ||= Ashton::WindowBuffer.new; end
 
       def pixel
         @pixel ||= Gosu::Image.new $window, Ashton::ImageStub.new(WHITE_PIXEL_BLOB, 1, 1)
@@ -47,33 +46,28 @@ module Gosu
         return
       end
 
-      buffer = Window.back_buffer
-      buffer.clear
+      buffer1 = Window.primary_buffer
+      buffer1.clear
 
-      # allow drawing into the back-buffer.
-      buffer.render do
+      # Allow user to draw into a buffer, rather than the window.
+      buffer1.render do
         yield
       end
 
-      $window.gl do
-        # Clear screen and set "normal" Gosu coordinates.
-        glClear GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT
-        glColor4f 1.0, 1.0, 1.0, 1.0
-        glMatrixMode GL_PROJECTION
-        glLoadIdentity
-        glViewport 0, 0, width, height
-        glOrtho 0, width, height, 0, -1, 1
+      if shaders.size > 1
+        buffer2 = Window.secondary_buffer # Don't need to clear, since we will :replace.
 
-        # Draw the back-buffer onto the window, utilising the shader.
-        buffer.draw 0, 0, nil, shader: shaders[0]
-
-        # If using additional shaders, copy the screen out to the buffer and shader it.
-        # This is slower, but saves having a second back-buffer.
-        shaders[1..-1].each do |shader|
-          buffer.capture
-          buffer.draw 0, 0, nil, shader: shader
+        # Draw into alternating buffers, applying each shader in turn.
+        shaders[0...-1].each do |shader|
+          buffer1, buffer2 = buffer2, buffer1
+          buffer1.render do
+            buffer2.draw 0, 0, nil, shader: shader, mode: :replace
+          end
         end
       end
+
+      # Draw the buffer directly onto the window, utilising the (last) shader.
+      buffer1.draw 0, 0, nil, shader: shaders.last
     end
   end
 end

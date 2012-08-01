@@ -123,7 +123,7 @@ static Color_i get_pixel_color(PixelCache* pixel_cache, VALUE x, VALUE y)
     {
         if(!pixel_cache->is_cached) cache_texture(pixel_cache);
 
-        return pixel_cache->data[_x + (pixel_cache->height - 1 - _y) * pixel_cache->width];
+        return pixel_cache->data[_x + _y * pixel_cache->width];
     }
 }
 
@@ -219,22 +219,10 @@ VALUE Ashton_PixelCache_to_blob(VALUE self)
 {
    PIXEL_CACHE();
 
-   uint row_length = sizeof(Color_i) * pixel_cache->width;
-   uint size = row_length * pixel_cache->height;
+   uint size = sizeof(Color_i) * pixel_cache->width * pixel_cache->height;
    VALUE blob = rb_str_new(NULL, size);
 
-   // Need to invert Y since Gosu is upside-down :)
-   uchar* start_of_last_data_row = ((char*)pixel_cache->data) + size - row_length;
-   uchar* start_of_string = RSTRING_PTR(blob);
-
-   for(uint y = 0; y < pixel_cache->height; y++)
-   {
-      int offset = row_length * y;
-
-      memcpy(start_of_string + offset,
-             start_of_last_data_row - offset,
-             row_length);
-   }
+   memcpy(RSTRING_PTR(blob), pixel_cache->data, size);
 
    return blob;
 }

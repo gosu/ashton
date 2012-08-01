@@ -10,6 +10,7 @@ module Ashton
     def capture
       glBindTexture GL_TEXTURE_2D, id
       glCopyTexImage2D GL_TEXTURE_2D, 0, GL_RGBA8, 0, 0, width, height, 0
+      self
     end
   end
 end

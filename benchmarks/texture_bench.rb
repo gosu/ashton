@@ -2,8 +2,8 @@ require_relative "helper.rb"
 
 # Iterate for different number of times, depending on the speed of the operation, so benchmarks don't take all day!
 REPEAT = 10000 # < 1ms
-SLOW_REPEAT = 100 # < 10ms
-VERY_SLOW_REPEAT = 10 # < 100ms
+SLOW_REPEAT = 250 # < 10ms
+VERY_SLOW_REPEAT = 25 # < 100ms
 GLACIAL_REPEAT = 3 # otherwise
 
 texture = Ashton::Texture.new 1022, 1022 # Largest Gosu image size.
