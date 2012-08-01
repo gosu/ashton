@@ -21,6 +21,10 @@ describe Ashton::Texture do
       ->{ described_class.new 1, 2, 3, 4 }.should raise_error ArgumentError, /Expected 1, 2 or 3 parameters./
     end
 
+    it "should fail if the texture size is too large" do
+      ->{ described_class.new 100000, 100000 }.should raise_error ArgumentError, /Unable to create a texture of size 100000x100000/
+    end
+
     describe "creating blank image (1 parameter)" do
       before :each do
         @subject = described_class.new 10, 12

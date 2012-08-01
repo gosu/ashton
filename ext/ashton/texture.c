@@ -88,6 +88,14 @@ VALUE Ashton_Texture_init(VALUE self, VALUE width, VALUE height)
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, texture->width,
                 texture->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 
+    // Ensure the texture was created.
+    GLint created_width;
+    glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &created_width);
+    if(created_width == 0) {
+      rb_raise(rb_eArgError, "Unable to create a texture of size %dx%d",
+               texture->width, texture->height);
+    }
+
     glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT,
                               GL_TEXTURE_2D, texture->id, 0);
 
