@@ -3,15 +3,65 @@ module Ashton
     include Mixins::VersionChecking
 
     DEFAULT_DRAW_COLOR = Gosu::Color::WHITE
+    VALID_DRAW_MODES = [:alpha_blend, :add, :multiply, :replace]
 
     def rendering?; @rendering end
 
-    def initialize(width, height)
+    # @overload initialize(image)
+    # @overload initialize(blob, width, height)
+    # @overload initialize(width, height)
+    def initialize(*args)
+      case args.size
+        when 1
+          # Create from Gosu::Image
+          image = args[0]
+          raise TypeError, "Expected Gosu::Image" unless image.is_a? Gosu::Image
+          initialize_ image.width, image.height
+
+          render do
+            # TODO: Ideally we'd draw the image in replacement mode, but Gosu doesn't support that.
+            $window.gl do
+              info = image.gl_tex_info
+              glEnable GL_TEXTURE_2D
+              glBindTexture GL_TEXTURE_2D, info.tex_name
+              glEnable GL_BLEND
+              glBlendFunc GL_ONE, GL_ZERO
+
+              glBegin GL_QUADS do
+                glTexCoord2d info.left, info.bottom
+                glVertex2d 0, height # BL
+
+                glTexCoord2d info.left, info.top
+                glVertex2d 0, 0 # TL
+
+                glTexCoord2d info.right, info.top
+                glVertex2d width, 0 # TR
+
+                glTexCoord2d info.right, info.bottom
+                glVertex2d width, height # BR
+              end
+            end
+          end
+
+        when 2
+          # Create blank image.
+          width, height = *args
+          initialize_ width, height
+          clear
+
+        when 3
+          # Create from blob - create a Gosu image first.
+          blob, width, height = *args
+          raise ArgumentError, "Blob data is not of expected size" if blob.length != width * height * 4
+          stub = ImageStub.new blob, width, height
+          image = Gosu::Image.new $window, stub
+          initialize image
+
+        else
+          raise ArgumentError, "Expected 1, 2 or 3 parameters."
+      end
+
       @rendering = false
-
-      initialize_ width, height
-
-      clear
     end
 
     public
@@ -65,7 +115,7 @@ module Ashton
       glMatrixMode GL_PROJECTION
       glLoadIdentity
       glViewport 0, 0, width, height
-      glOrtho 0,  width, height, 0, -1, 1
+      glOrtho 0, width, height, 0, -1, 1
 
       @rendering = true
     end
@@ -96,12 +146,11 @@ module Ashton
     #
     #   @option options :shader [Ashton::Shader] Shader to apply to drawing.
     #   @option options :color [Gosu::Color] (Gosu::Color::WHITE) Color to apply to the drawing.
-    #   @option options :blend [Symbol] (:alpha) :alpha, :copy, :additive or :multiplicative
-
+    #   @option options :mode [Symbol] (:alpha_blend) :alpha_blend, :add, :multiply, :replace
     def draw(x, y, z, options = {})
       shader = options[:shader]
       color = options[:color] || DEFAULT_DRAW_COLOR
-      blend = options[:blend] || :alpha
+      mode = options[:mode] || :alpha_blend
 
       unless shader.nil? || shader.is_a?(Shader)
         raise TypeError, "Expected :shader option of type Ashton::Shader"
@@ -111,9 +160,11 @@ module Ashton
         raise TypeError, "Expected :color option of type Gosu::Color"
       end
 
-      unless blend.is_a? Symbol
-        raise TypeError, "Expected :blend option to be a Symbol"
+      unless mode.is_a? Symbol
+        raise TypeError, "Expected :mode option to be a Symbol"
       end
+
+      raise ArgumentError, "Unsupported draw :mode, #{mode.inspect}" unless VALID_DRAW_MODES.include? mode
 
       shader.enable z if shader
 
@@ -126,22 +177,22 @@ module Ashton
           glColor4f *color.to_opengl
         end
 
-        glEnable GL_BLEND
         glEnable GL_TEXTURE_2D
         glBindTexture GL_TEXTURE_2D, id
 
         # Set blending mode.
-        case
-          when :default, :alpha
+        glEnable GL_BLEND
+        case mode
+          when :alpha_blend
             glBlendFunc GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA
-          when :additive, :add
+          when :add
             glBlendFunc GL_ONE, GL_ONE
-          when :multiplicative, :multiply
+          when :multiply
             glBlendFunc GL_DST_COLOR, GL_ZERO
-          when :copy
+          when :replace
             glBlendFunc GL_ONE, GL_ZERO
           else
-            raise ArgumentError, "Unrecognised blend mode: #{options[:blend].inspect}"
+            raise ArgumentError, "Unrecognised draw :mode, #{mode.inspect}"
         end
 
         glBegin GL_QUADS do
@@ -175,7 +226,7 @@ module Ashton
     def dup
       new_texture = Texture.new width, height
       new_texture.render do
-        draw 0, 0, 0, blend: :copy
+        draw 0, 0, 0, mode: :replace
       end
       new_texture
     end

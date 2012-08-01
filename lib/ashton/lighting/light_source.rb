@@ -95,7 +95,7 @@ module Lighting
     public
     def draw(options = {})
       options = {
-          blend: :add,
+          mode: :add,
           color: @color,
       }.merge! options
 

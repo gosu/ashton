@@ -88,5 +88,9 @@ module Gosu
     def cache
       @cache ||= Ashton::PixelCache.new self
     end
+
+    def to_texture
+      Ashton::Texture.new self
+    end
   end
 end

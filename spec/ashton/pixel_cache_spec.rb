@@ -8,10 +8,7 @@ describe Ashton::PixelCache do
   end
 
   before :each do
-    @texture = Ashton::Texture.new @testcard_image.width, @testcard_image.height
-    @texture.render do
-      @testcard_image.draw 0, 0, 0
-    end
+    @texture = Ashton::Texture.new @testcard_image
 
     @subject = described_class.new @texture
   end

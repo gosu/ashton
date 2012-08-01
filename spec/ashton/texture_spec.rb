@@ -9,9 +9,72 @@ describe Ashton::Texture do
     $window = Gosu::Window.new 16, 16, false # Horrible, but otherwise we can't flush out "wrong" params properly.
     @testcard_image = Gosu::Image.new $window, media_path("simple.png")
 
-    @subject = described_class.new @testcard_image.width, @testcard_image.height
-    @subject.render do
-      @testcard_image.draw 0, 0, 0, blend: :copy
+    @subject = described_class.new @testcard_image
+  end
+
+  describe "initialize" do
+    it "should fail with too few arguments" do
+      ->{ described_class.new }.should raise_error ArgumentError, /Expected 1, 2 or 3 parameters./
+    end
+
+    it "should fail with too many arguments" do
+      ->{ described_class.new 1, 2, 3, 4 }.should raise_error ArgumentError, /Expected 1, 2 or 3 parameters./
+    end
+
+    describe "creating blank image (1 parameter)" do
+      before :each do
+        @subject = described_class.new 10, 12
+      end
+
+      it "should be of the expected size" do
+        @subject.width.should eq 10
+        @subject.height.should eq 12
+      end
+
+      it "should be totally blank" do
+        color = Gosu::Color.rgba 0, 0, 0, 0
+        10.times do |x|
+          12.times do |y|
+            @subject[x, y].should eq color
+          end
+        end
+      end
+    end
+
+    describe "creating from Gosu::Image (2 parameters)" do
+      before :each do
+        @image = @testcard_image
+        @subject = described_class.new @image
+      end
+
+      it "should be of the expected size" do
+        @subject.width.should eq @image.width
+        @subject.height.should eq @image.height
+      end
+
+      it "should be an identical copy of the image" do
+        @subject.to_blob.should eq @image.to_blob
+      end
+    end
+
+    describe "creating from blob (3 parameters)" do
+      before :each do
+        @image = @testcard_image
+        @subject = described_class.new @image.to_blob, @image.width, @image.height
+      end
+
+      it "should fail if the width/height are not the expected size" do
+        ->{ described_class.new @image.to_blob, @image.width, @image.height + 1 }.should raise_error ArgumentError, /Blob data is not of expected size/
+      end
+
+      it "should be of the expected size" do
+        @subject.width.should eq @image.width
+        @subject.height.should eq @image.height
+      end
+
+      it "should be filled with the blob data" do
+        @subject.to_blob.should eq @image.to_blob
+      end
     end
   end
 
@@ -138,7 +201,7 @@ describe Ashton::Texture do
 
   describe "height" do
     it "should be initially set" do
-      @subject.height.should eq  @testcard_image.height
+      @subject.height.should eq @testcard_image.height
     end
   end
 
@@ -204,18 +267,17 @@ describe Ashton::Texture do
     end
 
     it "should be drawn with a specific blend mode" do
-      [:default, :alpha, :add, :additive, :multiply, :multiplicative, :copy].each do |mode|
-        @subject.draw 1, 2, 3, blend: mode
+      [:alpha_blend, :add, :multiply, :replace].each do |mode|
+        @subject.draw 1, 2, 3, mode: mode
       end
     end
 
     it "should fail with a bad blend mode name" do
-      @subject.draw 1, 2, 3, blend: :fish
-      ->{ $window.flush }.should raise_error(ArgumentError, /Unrecognised blend mode: :fish/)
+      ->{ @subject.draw 1, 2, 3, mode: :fish }.should raise_error(ArgumentError, /Unsupported draw :mode, :fish/)
     end
 
     it "should fail with a bad blend mode type" do
-      ->{ @subject.draw 1, 2, 3, blend: 12 }.should raise_error TypeError
+      ->{ @subject.draw 1, 2, 3, mode: 12 }.should raise_error TypeError
     end
 
     it "should be drawn with a specific color" do

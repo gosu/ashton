@@ -55,4 +55,11 @@ describe Gosu::Image do
       @subject.draw_rot 0, 1, 2, 3, 4, 5, 6, 7, 8, :shader => shader
     end
   end
+
+  describe "to_texture" do
+    it "should create a texture identical to the image" do
+      texture = @subject.to_texture
+      texture.to_blob.should eq @subject.to_blob
+    end
+  end
 end

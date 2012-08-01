@@ -128,7 +128,7 @@ module Ashton
     # @see Ashton::Texture#draw
     def draw(x, y, z, options = {})
       options = {
-          blend: :add,
+          mode: :add,
       }.merge! options
 
       $window.scale @scale do

@@ -2,7 +2,7 @@ require_relative "helper.rb"
 
 # Iterate for different number of times, depending on the speed of the operation, so benchmarks don't take all day!
 REPEAT = 10000
-SLOW_REPEAT = 50
+SLOW_REPEAT = 100
 VERY_SLOW_REPEAT = 10
 
 texture = Ashton::Texture.new 1022, 1022 # Largest Gosu image size.
@@ -17,13 +17,11 @@ puts "====================="
 puts "(results in milliseconds per call, operating on a image/texture of size 1022x1022)"
 puts
 
-GC.disable
-
 puts
 puts "Ashton::PixelCache"
 puts "------------------"
 
-benchmark("PixelCache#to_image", SLOW_REPEAT)      { pixel_cache.to_image }
+benchmark("PixelCache#to_image", VERY_SLOW_REPEAT)      { pixel_cache.to_image }
 puts
 benchmark("PixelCache#refresh", SLOW_REPEAT)       { pixel_cache.refresh; pixel_cache.transparent? 0, 0 }
 benchmark("PixelCache#to_blob", SLOW_REPEAT)       { pixel_cache.to_blob  }
@@ -37,11 +35,17 @@ puts
 puts "Ashton::Texture"
 puts "---------------"
 
-benchmark("Texture#to_image", SLOW_REPEAT) { texture.to_image }
+benchmark("Texture#to_image", VERY_SLOW_REPEAT) { texture.to_image }
+benchmark("Image#to_texture", VERY_SLOW_REPEAT) { image.to_texture }
 puts
 
-benchmark("Texture.new", VERY_SLOW_REPEAT)      { Ashton::Texture.new 1022, 1022 }
-benchmark("- TP TexPlay.create_image", 2)       { TexPlay.create_image $window, 1022, 1022 }
+benchmark("Texture.new(w,h)", VERY_SLOW_REPEAT) { Ashton::Texture.new 1022, 1022 }
+benchmark("- TP TexPlay.create_image(w,h)", VERY_SLOW_REPEAT) { TexPlay.create_image $window, 1022, 1022 }
+puts
+
+blob = image.to_blob
+benchmark("Texture.new(blob,w,h)", VERY_SLOW_REPEAT)          { Ashton::Texture.new blob, 1022, 1022 }
+benchmark("- TexPlay Image.new(ImageStub)", VERY_SLOW_REPEAT) { Gosu::Image.new $window, TexPlay::ImageStub.new(blob, 1022, 1022) }
 puts
 
 benchmark("Texture#refresh_cache", SLOW_REPEAT) { texture.refresh_cache; texture.transparent? 0, 0 }
@@ -78,9 +82,7 @@ benchmark("- Gosu Image#draw_rot(...)", REPEAT) { image.draw_rot_without_hash(0,
 
 puts
 
-benchmark("Texture#render {}", REPEAT)     { texture.render {} }
-benchmark("- TP Window#render_to_image {}", VERY_SLOW_REPEAT) { $window.render_to_image(image) {} }
-
-GC.enable
+benchmark("Texture#render {}", SLOW_REPEAT) { texture.render {} }
+benchmark("- TP Window#render_to_image {}", SLOW_REPEAT) { $window.render_to_image(image) {} }
 
 puts "\n\nBenchmarks completed in #{"%.2f" % (Time.now - t)}s"

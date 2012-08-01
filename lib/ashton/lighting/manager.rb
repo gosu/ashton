@@ -55,7 +55,7 @@ module Lighting
 
     def draw(options = {})
       options = {
-          blend: :multiply,
+          mode: :multiply,
       }.merge! options
 
       @shadows.draw @camera_x, @camera_y, @z, options
