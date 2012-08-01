@@ -9,6 +9,18 @@ describe Gosu::Window do
     pending
   end
 
+  describe "Window.pixel" do
+    it "should be a 1x1 image" do
+      described_class.pixel.should be_kind_of Gosu::Image
+      described_class.pixel.width.should eq 1
+      described_class.pixel.height.should eq 1
+    end
+
+    it "should be white" do
+      described_class.pixel[0, 0].should eq [1.0, 1.0, 1.0, 1.0]
+    end
+  end
+
   describe "Window.primary_buffer" do
     it "should be a window sized buffer" do
       described_class.primary_buffer.should be_kind_of Ashton::WindowBuffer

@@ -4,13 +4,17 @@ module Gosu
     class << self
       WHITE_PIXEL_BLOB = "\xFF" * 4
 
-      # Used for post-processing effects, but could be used by any
+      # Used for post-processing effects, but could be used by
       # anyone needing to have a temporary, full-window render buffer.
-      def primary_buffer; @primary_buffer ||= Ashton::WindowBuffer.new; end
-      def secondary_buffer; @secondary_buffer ||= Ashton::WindowBuffer.new; end
+      def primary_buffer; @primary_buffer ||= Ashton::WindowBuffer.new end
 
+      # Used for post-processing effects, but could be used by
+      # anyone needing to have a temporary, full-window render buffer.
+      def secondary_buffer; @secondary_buffer ||= Ashton::WindowBuffer.new end
+
+      # An image containing a single white pixel. Useful for drawing effects (rectangle, lines, etc).
       def pixel
-        @pixel ||= Gosu::Image.new $window, Ashton::ImageStub.new(WHITE_PIXEL_BLOB, 1, 1)
+        @pixel ||= Gosu::Image.new $window, Ashton::ImageStub.new(WHITE_PIXEL_BLOB, 1, 1), true
       end
     end
 
