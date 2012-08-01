@@ -79,7 +79,6 @@ puts
 
 benchmark("Texture#draw(x,y,z)", REPEAT) { texture.draw(0, 0, 0); $window.flush }
 benchmark("- Gosu Image#draw_rot(x,y,z,a)", REPEAT) { image.draw_rot_without_hash(0, 0, 0, 0); $window.flush }
-
 puts
 
 benchmark("Texture#render {}", SLOW_REPEAT) { texture.render {} }

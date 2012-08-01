@@ -40,6 +40,7 @@ static VALUE texture_allocate(VALUE klass);
 static void texture_mark(Texture* texture);
 static void texture_free(Texture* texture);
 static void ensure_cache_exists(VALUE self, Texture* texture);
+static void ensure_fbo_exists(Texture* texture);
 
 // Getters.
 VALUE Ashton_Texture_get_cache(VALUE self);
@@ -62,6 +63,7 @@ VALUE Ashton_Texture_get_alpha(VALUE self, VALUE x, VALUE y);
 VALUE Ashton_Texture_is_transparent(VALUE self, VALUE x, VALUE y);
 VALUE Ashton_Texture_to_blob(VALUE self);
 VALUE Ashton_Texture_draw(int argc, VALUE argv[], VALUE self);
+VALUE Ashton_Texture_enable(VALUE self);
 
 #endif // ASHTON_FRAMEBUFFER_H
 

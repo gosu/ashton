@@ -107,14 +107,7 @@ module Ashton
 
       $window.flush # Ensure that any drawing _before_ the render block is drawn to screen, rather than into the buffer.
 
-      # Reset the projection matrix so that drawing into the buffer is zeroed.
-      glBindFramebufferEXT GL_FRAMEBUFFER_EXT, fbo_id
-
-      # Invert projection because we don't like Gosu :)
-      glMatrixMode GL_PROJECTION
-      glLoadIdentity
-      glViewport 0, 0, width, height
-      glOrtho 0, width, 0, height, -1, 1
+      enable_
 
       @rendering = true
     end
@@ -136,7 +129,7 @@ module Ashton
     end
 
     # @!method draw(x, y, z, options = {})
-    #   Draw the image, _immediately_ (no z-ordering by Gosu).
+    #   Draw the Texture.
     #
     #   This is not as versatile as converting the Texture into a Gosu::Image and then
     #   drawing it, but it is many times faster, so use it when you are updating the buffer
@@ -146,7 +139,7 @@ module Ashton
     #
     #   @param x [Number] Top left corner x.
     #   @param y [Number] Top left corner y.
-    #   @param z [Number] Z-order.
+    #   @param z [Number] Z-order (can be nil to draw immediately)
     #
     #   @option options :shader [Ashton::Shader] Shader to apply to drawing.
     #   @option options :color [Gosu::Color] (Gosu::Color::WHITE) Color to apply to the drawing.
@@ -160,14 +153,8 @@ module Ashton
         raise TypeError, "Expected :shader option of type Ashton::Shader"
       end
 
-      unless color.is_a? Gosu::Color
-        raise TypeError, "Expected :color option of type Gosu::Color"
-      end
-
-      unless mode.is_a? Symbol
-        raise TypeError, "Expected :mode option to be a Symbol"
-      end
-
+      raise TypeError, "Expected :color option of type Gosu::Color" unless color.is_a? Gosu::Color
+      raise TypeError, "Expected :mode option to be a Symbol" unless mode.is_a? Symbol
       raise ArgumentError, "Unsupported draw :mode, #{mode.inspect}" unless VALID_DRAW_MODES.include? mode
 
       shader.enable z if shader

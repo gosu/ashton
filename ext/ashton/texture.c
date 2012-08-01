@@ -8,7 +8,8 @@ void Init_Ashton_Texture(VALUE module)
 
     rb_define_alloc_func(rb_cTexture, texture_allocate);
 
-    rb_define_method(rb_cTexture, "initialize_", Ashton_Texture_init, 3);
+    rb_define_protected_method(rb_cTexture, "initialize_", Ashton_Texture_init, 3);
+    rb_define_protected_method(rb_cTexture, "enable_", Ashton_Texture_enable, 0);
 
     rb_define_method(rb_cTexture, "cache", Ashton_Texture_get_cache, 0);
 
@@ -44,9 +45,25 @@ VALUE Ashton_Texture_get_height(VALUE self)
     return UINT2NUM(texture->height);
 }
 
+//
+static void ensure_fbo_exists(Texture* texture)
+{
+    if(!texture->fbo_id)
+    {
+        glGenFramebuffersEXT(1, &texture->fbo_id);
+
+        // Bind our already existing texture to the FBO.
+        glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, texture->fbo_id);
+        glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT,
+                                  GL_TEXTURE_2D, texture->id, 0);
+        glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+    }
+}
+
 VALUE Ashton_Texture_get_fbo_id(VALUE self)
 {
     TEXTURE();
+    ensure_fbo_exists(texture);
     return UINT2NUM(texture->fbo_id);
 }
 
@@ -70,10 +87,6 @@ VALUE Ashton_Texture_init(VALUE self, VALUE width, VALUE height, VALUE blob)
     texture->height = NUM2UINT(height);
 
     texture->rb_cache = Qnil;
-
-    // Create the FBO itself.
-    glGenFramebuffersEXT(1, &texture->fbo_id);
-    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, texture->fbo_id);
 
     // Create the texture.
     glGenTextures(1, &texture->id);
@@ -106,12 +119,23 @@ VALUE Ashton_Texture_init(VALUE self, VALUE width, VALUE height, VALUE blob)
                texture->width, texture->height);
     }
 
-    glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT,
-                              GL_TEXTURE_2D, texture->id, 0);
+    // Be as lazy as possible in creating the actual FBO :)
 
-    // Make everything safe again
-    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
-    glBindTexture(GL_TEXTURE_2D, 0);
+    return Qnil;
+}
+
+VALUE Ashton_Texture_enable(VALUE self)
+{
+    TEXTURE();
+
+    ensure_fbo_exists(texture);
+    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, texture->fbo_id);
+
+    // Invert projection because we don't like Gosu :)
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glViewport(0, 0, texture->width, texture->height);
+    glOrtho(0, texture->width, 0, texture->height, -1, 1);
 
     return Qnil;
 }
@@ -134,7 +158,9 @@ static void texture_mark(Texture* texture)
 //
 static void texture_free(Texture* texture)
 {
-    glDeleteFramebuffersEXT(1, &texture->fbo_id);
+    // FBO might never have been created.
+    if(texture->fbo_id) glDeleteFramebuffersEXT(1, &texture->fbo_id);
+
     glDeleteTextures(1, &texture->id);
     xfree(texture);
 }
