@@ -1,13 +1,15 @@
 require_relative "helper.rb"
 
 # Iterate for different number of times, depending on the speed of the operation, so benchmarks don't take all day!
-REPEAT = 10000
-SLOW_REPEAT = 100
-VERY_SLOW_REPEAT = 10
+REPEAT = 10000 # < 1ms
+SLOW_REPEAT = 100 # < 10ms
+VERY_SLOW_REPEAT = 10 # < 100ms
+GLACIAL_REPEAT = 3 # otherwise
 
 texture = Ashton::Texture.new 1022, 1022 # Largest Gosu image size.
 texture.clear color: Gosu::Color::RED
 image = texture.to_image
+blob = image.to_blob
 pixel_cache = texture.cache
 
 t = Time.now
@@ -43,8 +45,7 @@ benchmark("Texture.new(w,h)", VERY_SLOW_REPEAT) { Ashton::Texture.new 1022, 1022
 benchmark("- TP TexPlay.create_image(w,h)", VERY_SLOW_REPEAT) { TexPlay.create_image $window, 1022, 1022 }
 puts
 
-blob = image.to_blob
-benchmark("Texture.new(blob,w,h)", VERY_SLOW_REPEAT)          { Ashton::Texture.new blob, 1022, 1022 }
+benchmark("Texture.new(blob,w,h)", VERY_SLOW_REPEAT) { Ashton::Texture.new blob, 1022, 1022 }
 benchmark("- TexPlay Image.new(ImageStub)", VERY_SLOW_REPEAT) { Gosu::Image.new $window, TexPlay::ImageStub.new(blob, 1022, 1022) }
 puts
 
@@ -52,12 +53,12 @@ benchmark("Texture#refresh_cache", SLOW_REPEAT) { texture.refresh_cache; texture
 benchmark("- TP Image#refresh_cache", SLOW_REPEAT){ image.refresh_cache }
 puts
 
-benchmark("Texture#to_blob", SLOW_REPEAT)       { texture.to_blob  }
-benchmark("- TP Image#to_blob", VERY_SLOW_REPEAT){ image.to_blob }
+benchmark("Texture#to_blob", VERY_SLOW_REPEAT) { texture.to_blob  }
+benchmark("- TP Image#to_blob", VERY_SLOW_REPEAT) { image.to_blob }
 puts
 
-benchmark("Texture#dup", SLOW_REPEAT)           { texture.dup }
-benchmark("- TP Image#dup", 1)                  { image.dup }
+benchmark("Texture#dup", GLACIAL_REPEAT) { texture.dup }
+benchmark("- TP Image#dup", GLACIAL_REPEAT) { image.dup }
 puts
 
 benchmark("Texture#[x,y]", REPEAT)              { texture[0, 0] }
@@ -73,12 +74,11 @@ benchmark("- TP Image#[x,y][0]", REPEAT)        { image[0, 0][0] }
 puts
 
 benchmark("Texture#transparent?(x, y)", REPEAT) { texture.transparent? 0, 0 }
-benchmark("- TP Image#[x,y][3] == 0.0", REPEAT)  { image[0, 0][3] == 0.0 }
+benchmark("- TP Image#[x,y][3] == 0.0", REPEAT) { image[0, 0][3] == 0.0 }
 puts
 
-benchmark("Texture#draw(x,y,z)", REPEAT)        { texture.draw(0, 0, 0); $window.flush }
-benchmark("- Gosu Image#draw(x,y,z)", REPEAT)   { image.draw_without_hash(0, 0, 0); $window.flush }
-benchmark("- Gosu Image#draw_rot(...)", REPEAT) { image.draw_rot_without_hash(0, 0, 0, 0, 0.5, 0.5); $window.flush }
+benchmark("Texture#draw(x,y,z)", REPEAT) { texture.draw(0, 0, 0); $window.flush }
+benchmark("- Gosu Image#draw_rot(x,y,z,a)", REPEAT) { image.draw_rot_without_hash(0, 0, 0, 0); $window.flush }
 
 puts
 
