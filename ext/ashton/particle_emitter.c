@@ -70,6 +70,11 @@ VALUE Ashton_ParticleEmitter_init(VALUE self, VALUE x, VALUE y, VALUE z, VALUE m
 {
     EMITTER();
 
+//    if(!GL_ARB_vertex_buffer_object)
+//    {
+//       rb_raise(rb_eRuntimeError, "Ashton::ParticleEmitter requires GL_ARB_vertex_buffer_object, which is not supported by OpenGL");
+//    }
+
     emitter->x = NUM2DBL(x);
     emitter->y = NUM2DBL(y);
     emitter->z = NUM2DBL(z);
@@ -78,6 +83,18 @@ VALUE Ashton_ParticleEmitter_init(VALUE self, VALUE x, VALUE y, VALUE z, VALUE m
     emitter->max_particles = NUM2UINT(max_particles);
     emitter->particles = ALLOC_N(Particle, emitter->max_particles);
     memset(emitter->particles, 0, emitter->max_particles * sizeof(Particle));
+
+    // Setup VBO.
+//    emitter->vertex_array = ALLOC_N(Vertex2d, emitter->max_particles * 4);
+//    emitter->color_array = ALLOC_N(Color_f, emitter->max_particles);
+//    glGenBuffersARB(1, &emitter->vbo_id);
+//    glBufferDataARB(GL_ARRAY_BUFFER_ARB, sizeof(emitter->vertex_array) + sizeof(emitter->color_array),
+//                    0, GL_STREAM_DRAW_ARB);
+//    glBufferSubDataARB(GL_ARRAY_BUFFER_ARB, 0,
+//                       sizeof(emitter->vertex_array), emitter->vertex_array);
+//    glBufferSubDataARB(GL_ARRAY_BUFFER_ARB, sizeof(emitter->vertex_array),
+//                       sizeof(emitter->color_array), emitter->color_array);
+//    glBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
 
     return self;
 }
@@ -94,6 +111,10 @@ static VALUE particle_emitter_allocate(VALUE klass)
 // Deallocate data structure and its contents.
 static void particle_emitter_free(ParticleEmitter* emitter)
 {
+//    glDeleteBuffersARB(1, &emitter->vbo_id);
+//    xfree(emitter->vertex_array);
+//    xfree(emitter->color_array);
+
     xfree(emitter->particles);
     xfree(emitter);
 }
@@ -127,37 +148,36 @@ static void draw_particle(Particle* particle,
     Color_f* color = &particle->color;
     glColor4f(color->red, color->green, color->blue, color->alpha);
 
-    // Splodge the particle quad onto the screen; you know, how you do?
-    float scaled_width  = width  * particle->scale;
-    float scaled_height = height * particle->scale;
+    // Totally ripped this code from Gosu :$
+    float sizeX = width * particle->scale;
+    float sizeY = height * particle->scale;
+    float offsX = sin(particle->angle / 180 * M_PI);
+    float offsY = cos(particle->angle / 180 * M_PI);
 
-    float left   = - scaled_width * 0.5f;
-    float right  = + scaled_width * 0.5f;
-    float bottom = - scaled_height * 0.5f;
-    float top    = + scaled_height * 0.5f;
+    float distToLeftX   = +offsY * sizeX * particle->center_x;
+    float distToLeftY   = -offsX * sizeX * particle->center_x;
+    float distToRightX  = -offsY * sizeX * (1 - particle->center_x);
+    float distToRightY  = +offsX * sizeX * (1 - particle->center_x);
+    float distToTopX    = +offsX * sizeY * particle->center_y;
+    float distToTopY    = +offsY * sizeY * particle->center_y;
+    float distToBottomX = -offsX * sizeY * (1 - particle->center_y);
+    float distToBottomY = -offsY * sizeY * (1 - particle->center_y);
 
-    // TODO: Manipulate the coordinates direcly, to avoid matrix transform?
-    glPushMatrix();
-        glTranslatef(particle->x, particle->y, 0.0f);
-        glRotatef(particle->angle, 0.0f, 0.0f, 1.0f);
-        glTranslatef(particle->center_x * scaled_width,
-                     particle->center_y * scaled_height,
-                     0.0f);
+    glTexCoord2d(tex_left, tex_top);
+    glVertex2d(particle->x + distToLeftX  + distToTopX,
+               particle->y + distToLeftY  + distToTopY);
 
-        glBegin(GL_QUADS);
-            glTexCoord2d(tex_left, tex_bottom);
-            glVertex2d(left, bottom); // BL
+    glTexCoord2d(tex_right, tex_top);
+    glVertex2d(particle->x + distToRightX + distToTopX,
+               particle->y + distToRightY + distToTopY);
 
-            glTexCoord2d(tex_left, tex_top);
-            glVertex2d(left, top); // TL
+    glTexCoord2d(tex_right, tex_bottom);
+    glVertex2d(particle->x + distToRightX + distToBottomX,
+               particle->y + distToRightY + distToBottomY);
 
-            glTexCoord2d(tex_right, tex_top);
-            glVertex2d(right, top); // TR
-
-            glTexCoord2d(tex_right, tex_bottom);
-            glVertex2d(right, bottom); // BR
-        glEnd();
-    glPopMatrix();
+    glTexCoord2d(tex_left, tex_bottom);
+    glVertex2d(particle->x + distToLeftX  + distToBottomX,
+               particle->y + distToLeftY  + distToBottomY);
 }
 
 // ----------------------------------------
@@ -169,6 +189,7 @@ static void draw_particles(Particle* first, Particle* last,
 {
     Particle* particle = first;
 
+    glBegin(GL_QUADS);
     for( ; particle <= last; particle++)
     {
         if(particle->time_to_live > 0)
@@ -176,6 +197,7 @@ static void draw_particles(Particle* first, Particle* last,
             draw_particle(particle, width, height, tex_left, tex_top, tex_right, tex_bottom);
         }
     }
+    glEnd();
 
     return;
 }

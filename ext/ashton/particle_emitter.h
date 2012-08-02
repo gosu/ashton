@@ -38,6 +38,11 @@ typedef struct _range
     float min, max;
 } Range;
 
+typedef struct _vertex2d
+{
+    float x, y;
+} Vertex2d;
+
 // The Ashton::ParticleEmitter's own data, including particles.
 typedef struct _particle_emitter
 {
@@ -66,6 +71,10 @@ typedef struct _particle_emitter
     uint max_particles; // No more will be created if max hit.
     uint next_particle_index; // Next place to create a new particle (either dead or oldest living).
     Particle* particles;
+
+    uint vbo_id; // vertex and color
+    Vertex2d* vertex_array;
+    Color_f* color_array;
 } ParticleEmitter;
 
 
