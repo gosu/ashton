@@ -62,10 +62,15 @@ class TestWindow < Gosu::Window
   def update
     $gosu_blocks.clear # workaround for Gosu 0.7.45 bug.
 
-    @image_emitter.update        unless button_down? Gosu::Kb1
-    @shaded_image_emitter.update unless button_down? Gosu::Kb2
-    @point_emitter.update        unless button_down? Gosu::Kb3
-    @shaded_point_emitter.update unless button_down? Gosu::Kb4
+    # Calculate delta from milliseconds.
+    @last_update_at ||= Gosu::milliseconds
+    delta = [Gosu::milliseconds - @last_update_at, 100].min * 0.001 # Limit delta to 100ms (10fps), in case of freezing.
+    @last_update_at = Gosu::milliseconds
+
+    @image_emitter.update delta unless button_down? Gosu::Kb1
+    @shaded_image_emitter.update delta unless button_down? Gosu::Kb2
+    @point_emitter.update delta unless button_down? Gosu::Kb3
+    @shaded_point_emitter.update delta unless button_down? Gosu::Kb4
   end
 
   def button_down(id)

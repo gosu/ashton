@@ -30,7 +30,7 @@ puts "For emitter limited to 10k particles"
 puts
 
 benchmark("#draw for 0 particles", 100_000) { emitter.draw  }
-benchmark("#update for 0 particles", 100_000) { emitter.update }
+benchmark("#update for 0 particles", 100_000) { emitter.update 1.0 / 60.0 }
 puts
 
 emitter.emit
@@ -42,7 +42,7 @@ benchmark("#emit replacing particles", 100_000) { emitter.emit }
 puts
 
 benchmark("#draw for 10k particles", 100_000) { emitter.draw  }
-benchmark("#update for 10k particles", 100) { emitter.update }
+benchmark("#update for 10k particles", 100) { emitter.update 1.0 / 60.0 }
 
 
 puts "\n\nBenchmarks completed in #{"%.2f" % (Time.now - t)}s"

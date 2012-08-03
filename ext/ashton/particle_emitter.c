@@ -61,7 +61,7 @@ void Init_Ashton_ParticleEmitter(VALUE module)
     // Public methods.
     rb_define_method(rb_cParticleEmitter, "draw", Ashton_ParticleEmitter_draw, 0);
     rb_define_method(rb_cParticleEmitter, "emit", Ashton_ParticleEmitter_emit, 0);
-    rb_define_method(rb_cParticleEmitter, "update", Ashton_ParticleEmitter_update, 0);
+    rb_define_method(rb_cParticleEmitter, "update", Ashton_ParticleEmitter_update, 1);
 }
 
 // ----------------------------------------
@@ -375,12 +375,12 @@ VALUE Ashton_ParticleEmitter_emit(VALUE self)
 }
 
 // ----------------------------------------
-// #update
-VALUE Ashton_ParticleEmitter_update(VALUE self)
+// #update(delta)
+VALUE Ashton_ParticleEmitter_update(VALUE self, VALUE delta)
 {
     EMITTER();
 
-    float elapsed = 1.0 / 60.0; // TODO: Get this time from somewhere more useful.
+    float _delta = NUM2DBL(delta);
 
     if(emitter->count > 0)
     {
@@ -392,25 +392,25 @@ VALUE Ashton_ParticleEmitter_update(VALUE self)
             if(particle->time_to_live)
             {
                 // Apply friction
-                particle->velocity_x *= 1.0 - particle->friction * elapsed;
-                particle->velocity_y *= 1.0 - particle->friction * elapsed;
+                particle->velocity_x *= 1.0 - particle->friction * _delta;
+                particle->velocity_y *= 1.0 - particle->friction * _delta;
 
                 // Gravity.
-                particle->velocity_y += emitter->gravity * elapsed;
+                particle->velocity_y += emitter->gravity * _delta;
 
                 // Move
-                particle->x += particle->velocity_x * elapsed;
-                particle->y += particle->velocity_y * elapsed;
+                particle->x += particle->velocity_x * _delta;
+                particle->y += particle->velocity_y * _delta;
 
                 // Rotate.
-                particle->angle += particle->angular_velocity * elapsed;
+                particle->angle += particle->angular_velocity * _delta;
                 // Resize.
-                particle->scale += particle->zoom * elapsed;
+                particle->scale += particle->zoom * _delta;
 
                 // Fade out.
-                particle->color.alpha *= 1 - (particle->fade * elapsed) / 255.0;
+                particle->color.alpha *= 1 - (particle->fade * _delta) / 255.0;
 
-                particle->time_to_live -= elapsed;
+                particle->time_to_live -= _delta;
 
                 // Die if out of time, invisible or shrunk to nothing.
                 if((particle->time_to_live <= 0) ||
@@ -425,7 +425,7 @@ VALUE Ashton_ParticleEmitter_update(VALUE self)
     }
 
     // Time to emit one (or more) new particles?
-    emitter->time_until_emit -= elapsed;
+    emitter->time_until_emit -= _delta;
     while(emitter->time_until_emit <= 0)
     {
         rb_funcall(self, rb_intern("emit"), 0);

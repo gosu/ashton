@@ -97,5 +97,10 @@ module Ashton
         value
       end
     end
+
+    # @!method draw()
+
+    # @!method update(delta)
+    #   @param delta (Float) number of seconds to run the simulation for.
   end
 end

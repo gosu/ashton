@@ -109,7 +109,7 @@ describe Ashton::ParticleEmitter do
   describe "update" do
     it "should emit a particle" do
       mock(@subject).emit
-      @subject.update
+      @subject.update 1.0 / 60.0
     end
   end
 end

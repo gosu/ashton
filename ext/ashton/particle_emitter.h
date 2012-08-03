@@ -153,7 +153,7 @@ static uint color_to_argb(Color_f* color);
 // Methods
 VALUE Ashton_ParticleEmitter_draw(VALUE self);
 VALUE Ashton_ParticleEmitter_emit(VALUE self);
-VALUE Ashton_ParticleEmitter_update(VALUE self);
+VALUE Ashton_ParticleEmitter_update(VALUE self, VALUE delta);
 
 #endif // ASHTON_PARTICLE_EMITTER_H
 
