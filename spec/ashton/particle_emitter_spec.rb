@@ -84,13 +84,7 @@ describe Ashton::ParticleEmitter do
   end
 
   describe "draw" do
-    it "should not draw anything if there aren't any particles'" do
-      dont_allow(@subject.instance_variable_get(:@image)).draw_as_points
-      @subject.draw
-    end
-
-    it "should draw all active particles" do
-      pending "way to tell if C functions are called!"
+    it "should respond to #draw" do
       @subject.draw
     end
   end
@@ -110,6 +104,14 @@ describe Ashton::ParticleEmitter do
     it "should emit a particle" do
       mock(@subject).emit
       @subject.update 1.0 / 60.0
+    end
+
+    it "should fail given a negative delta" do
+      ->{ @subject.update -1 }.should raise_error ArgumentError, "delta must be >= 0"
+    end
+
+    it "should fail for a bad delta type" do
+      ->{ @subject.update "fred" }.should raise_error TypeError
     end
   end
 end

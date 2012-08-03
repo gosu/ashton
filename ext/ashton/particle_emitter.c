@@ -381,6 +381,7 @@ VALUE Ashton_ParticleEmitter_update(VALUE self, VALUE delta)
     EMITTER();
 
     float _delta = NUM2DBL(delta);
+    if(_delta < 0.0) rb_raise(rb_eArgError, "delta must be >= 0");
 
     if(emitter->count > 0)
     {
