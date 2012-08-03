@@ -22,7 +22,7 @@ class TestWindow < Gosu::Window
                                                  image: @star,
                                                  scale: 0.2,
                                                  speed: 20,
-                                                 acceleration: -2,
+                                                 friction: 0.1,
                                                  max_particles: 10000,
                                                  interval: 0.002,
                                                  fade: 25, # loses 25 alpha/s

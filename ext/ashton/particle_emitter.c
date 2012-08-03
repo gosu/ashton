@@ -203,25 +203,19 @@ static void draw_particles(Particle* first, Particle* last,
 }
 
 // ----------------------------------------
-static VALUE enable_shader_block(VALUE yield_value, VALUE self, int argc, VALUE argv[])
-{
-    EMITTER();
-
-    VALUE shader = rb_iv_get(self, "@shader");
-
-    rb_funcall(shader, rb_intern("image="), 1, rb_iv_get(self, "@image"));
-    rb_funcall(shader, rb_intern("color="), 1, UINT2NUM(color_to_argb(&emitter->color)));
-
-    return Qnil;
-}
-
-// ----------------------------------------
 static VALUE draw_block(VALUE yield_value, VALUE self, int argc, VALUE argv[])
 {
     EMITTER();
 
     VALUE image = rb_iv_get(self, "@image");
     VALUE window = rb_gv_get("$window");
+
+    VALUE shader = rb_iv_get(self, "@shader");
+    if(!NIL_P(shader))
+    {
+        rb_funcall(shader, rb_intern("image="), 1, image);
+        rb_funcall(shader, rb_intern("color="), 1, UINT2NUM(color_to_argb(&emitter->color)));
+    }
 
     // Bind the image that we will be using throughout and get its coordinates.
     VALUE tex_info = rb_funcall(image, rb_intern("gl_tex_info"), 0);
@@ -315,20 +309,11 @@ VALUE Ashton_ParticleEmitter_draw(VALUE self)
     VALUE shader = rb_iv_get(self, "@shader");
     VALUE z = rb_float_new(emitter->z);
 
-    VALUE block_argv[1];
-    block_argv[0] = z;
-
     // Enable the shader, if provided.
-    if(!NIL_P(shader))
-    {
-        rb_funcall(shader, rb_intern("enable"), 1, z);
-        // Setup the shader in another block, just for good luck :)
+    if(!NIL_P(shader)) rb_funcall(shader, rb_intern("enable"), 1, z);
 
-        rb_block_call(window, rb_intern("gl"), 1, block_argv,
-                      RUBY_METHOD_FUNC(enable_shader_block), self);
-    }
-
-    rb_block_call(window, rb_intern("gl"), 1, block_argv,
+    // Run the actual drawing operation at the correct Z-order.
+    rb_block_call(window, rb_intern("gl"), 1, &z,
                   RUBY_METHOD_FUNC(draw_block), self);
 
     // Disable the shader, if provided.
@@ -395,43 +380,46 @@ VALUE Ashton_ParticleEmitter_update(VALUE self)
 {
     EMITTER();
 
-    float elapsed = 0.017; // TODO: Get this time from somewhere more useful.
+    float elapsed = 1.0 / 60.0; // TODO: Get this time from somewhere more useful.
 
-    Particle* particle = emitter->particles;
-    Particle* last = &emitter->particles[emitter->max_particles];
-    for(; particle < last; particle++)
+    if(emitter->count > 0)
     {
-        // Ignore particles that are already dead.
-        if(particle->time_to_live > 0)
+        Particle* particle = emitter->particles;
+        Particle* last = emitter->particles + emitter->max_particles;
+        for(; particle < last; particle++)
         {
-            // Apply friction
-            particle->velocity_x *= 1.0 - particle->friction * elapsed;
-            particle->velocity_y *= 1.0 - particle->friction * elapsed;
-
-            // Gravity.
-            particle->velocity_y += emitter->gravity * elapsed;
-
-            // Move
-            particle->x += particle->velocity_x * elapsed;
-            particle->y += particle->velocity_y * elapsed;
-
-            // Rotate.
-            particle->angle += particle->angular_velocity * elapsed;
-            // Resize.
-            particle->scale += particle->zoom * elapsed;
-
-            // Fade out.
-            particle->color.alpha *= 1 - (particle->fade * elapsed) / 255.0;
-
-            particle->time_to_live -= elapsed;
-
-            // Die if out of time, invisible or shrunk to nothing.
-            if((particle->time_to_live <= 0) ||
-                    (particle->color.alpha < 0) ||
-                    (particle->scale < 0))
+            // Ignore particles that are already dead.
+            if(particle->time_to_live)
             {
-                particle->time_to_live = 0;
-                emitter->count -= 1;
+                // Apply friction
+                particle->velocity_x *= 1.0 - particle->friction * elapsed;
+                particle->velocity_y *= 1.0 - particle->friction * elapsed;
+
+                // Gravity.
+                particle->velocity_y += emitter->gravity * elapsed;
+
+                // Move
+                particle->x += particle->velocity_x * elapsed;
+                particle->y += particle->velocity_y * elapsed;
+
+                // Rotate.
+                particle->angle += particle->angular_velocity * elapsed;
+                // Resize.
+                particle->scale += particle->zoom * elapsed;
+
+                // Fade out.
+                particle->color.alpha *= 1 - (particle->fade * elapsed) / 255.0;
+
+                particle->time_to_live -= elapsed;
+
+                // Die if out of time, invisible or shrunk to nothing.
+                if((particle->time_to_live <= 0) ||
+                        (particle->color.alpha < 0) ||
+                        (particle->scale < 0))
+                {
+                    particle->time_to_live = 0;
+                    emitter->count -= 1;
+                }
             }
         }
     }
