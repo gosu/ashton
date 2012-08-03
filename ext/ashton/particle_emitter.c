@@ -405,11 +405,12 @@ VALUE Ashton_ParticleEmitter_update(VALUE self, VALUE delta)
 
                 // Rotate.
                 particle->angle += particle->angular_velocity * _delta;
+
                 // Resize.
                 particle->scale += particle->zoom * _delta;
 
                 // Fade out.
-                particle->color.alpha *= 1 - (particle->fade * _delta) / 255.0;
+                particle->color.alpha -= (particle->fade / 255.0) * _delta;
 
                 particle->time_to_live -= _delta;
 

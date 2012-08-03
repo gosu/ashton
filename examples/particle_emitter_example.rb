@@ -45,7 +45,7 @@ class TestWindow < Gosu::Window
                                                  max_particles: 10000,
                                                  interval: 0.0005,
                                                  color: Gosu::Color.rgba(255, 0, 0, 150),
-                                                 fade: 100 # loses 100 alpha/s
+                                                 fade: 50 # loses 50 alpha/s
 
     @shaded_point_emitter = Ashton::ParticleEmitter.new 100, 300, 2,
                                                         scale: 4..10,
