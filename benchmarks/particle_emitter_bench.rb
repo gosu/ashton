@@ -16,6 +16,7 @@ emitter = Ashton::ParticleEmitter.new 450, 100, 0,
                                       interval: Float::INFINITY, # Never create in update.
                                       fade: 1, # loses 1 alpha/s
                                       angular_velocity: -50..50
+delta = 1.0 / 60.0
 
 puts "Benchmarks for Ashton"
 puts "====================="
@@ -30,11 +31,12 @@ puts "For emitter limited to 10k particles"
 puts
 
 benchmark("#draw for 0 particles", 100_000) { emitter.draw  }
-benchmark("#update for 0 particles", 100_000) { emitter.update 1.0 / 60.0 }
+benchmark("#update for 0 particles", 100_000) { emitter.update delta }
 puts
 
 emitter.emit
 benchmark("#draw for 1 particle", 100_000) { emitter.draw  }
+benchmark("#update for 1 particle", 100_000) { emitter.update delta }
 puts
 
 benchmark("#emit creating particles", 100_000) { emitter.emit }
@@ -42,7 +44,7 @@ benchmark("#emit replacing particles", 100_000) { emitter.emit }
 puts
 
 benchmark("#draw for 10k particles", 100_000) { emitter.draw  }
-benchmark("#update for 10k particles", 100) { emitter.update 1.0 / 60.0 }
+benchmark("#update for 10k particles", 100) { emitter.update delta }
 
 
 puts "\n\nBenchmarks completed in #{"%.2f" % (Time.now - t)}s"

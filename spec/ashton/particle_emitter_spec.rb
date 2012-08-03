@@ -101,9 +101,16 @@ describe Ashton::ParticleEmitter do
   end
 
   describe "update" do
-    it "should emit a particle" do
-      mock(@subject).emit
-      @subject.update 1.0 / 60.0
+    it "should an appropriate number of particles" do
+      subject = described_class.new 1, 2, 3, interval: 0.001
+      mock(subject).emit.times 16
+      subject.update 1.0 / 60.0 # 16.66667 ms
+    end
+
+    it "should not emit a particle if delta is less than interval" do
+      subject = described_class.new 1, 2, 3, interval: 0.020
+      dont_allow(@subject).emit
+      subject.update 1.0 / 60.0 # 16.66667 ms
     end
 
     it "should fail given a negative delta" do

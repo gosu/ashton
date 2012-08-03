@@ -13,7 +13,6 @@ GET_SET_EMITTER_DATA_RANGE(center_y, rb_float_new, NUM2DBL);
 GET_SET_EMITTER_DATA_RANGE(angular_velocity, rb_float_new, NUM2DBL);
 GET_SET_EMITTER_DATA_RANGE(fade, rb_float_new, NUM2DBL);
 GET_SET_EMITTER_DATA_RANGE(friction, rb_float_new, NUM2DBL);
-GET_SET_EMITTER_DATA_RANGE(interval, rb_float_new, NUM2DBL);
 GET_SET_EMITTER_DATA_RANGE(offset, rb_float_new, NUM2DBL);
 GET_SET_EMITTER_DATA_RANGE(scale, rb_float_new, NUM2DBL);
 GET_SET_EMITTER_DATA_RANGE(speed, rb_float_new, NUM2DBL);
@@ -22,6 +21,40 @@ GET_SET_EMITTER_DATA_RANGE(zoom, rb_float_new, NUM2DBL);
 
 GET_EMITTER_DATA(max_particles, max_particles, UINT2NUM);
 GET_EMITTER_DATA(count, count, UINT2NUM);
+
+// Special case of interval, since that should also alter the time until emission.
+
+//
+VALUE Ashton_ParticleEmitter_set_interval_min(VALUE self, VALUE value)
+{
+    EMITTER();
+    emitter->interval.min = NUM2DBL(value);
+    emitter->time_until_emit = deviate(&emitter->interval);
+    return value;
+}
+
+//
+VALUE Ashton_ParticleEmitter_get_interval_min(VALUE self)
+{
+    EMITTER();
+    return rb_float_new(emitter->interval.min);
+}
+
+//
+VALUE Ashton_ParticleEmitter_set_interval_max(VALUE self, VALUE value)
+{
+    EMITTER();
+    emitter->interval.max = NUM2DBL(value);
+    emitter->time_until_emit = deviate(&emitter->interval);
+    return value;
+}
+
+//
+VALUE Ashton_ParticleEmitter_get_interval_max(VALUE self)
+{
+    EMITTER();
+    return rb_float_new(emitter->interval.max);
+}
 
 // ----------------------------------------
 void Init_Ashton_ParticleEmitter(VALUE module)
