@@ -11,11 +11,11 @@ puts
 puts "Ashton"
 puts "------"
 
-
-benchmark("Ashton#fast_sin", 100_000) { Ashton.fast_sin 0 }
-benchmark("Ashton#fast_cos", 100_000) { Ashton.fast_cos 0 }
+puts "Actually only faster because it deals in gosu degrees, not radians"
+benchmark("Ashton#fast_sin", 100_000) { Ashton.fast_sin 99.0 }
+benchmark("Ashton#fast_cos", 100_000) { Ashton.fast_cos 99.0 }
 puts
-benchmark("Math#sin", 100_000) { Math.sin 0 }
-benchmark("Math#sin", 100_000) { Math.cos 0 }
+benchmark("Math#sin", 100_000) { Math.sin (99.0 - 90.0) * Math::PI / 180.0 }
+benchmark("Math#cos", 100_000) { Math.cos 99.0.gosu_to_radians }
 
 puts "\n\nBenchmarks completed in #{"%.2f" % (Time.now - t)}s"
