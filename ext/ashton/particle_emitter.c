@@ -128,17 +128,17 @@ static void init_vbo(ParticleEmitter* emitter)
 
     int num_vertices = emitter->max_particles * VERTICES_IN_PARTICLE;
 
-    emitter->color_array = ALLOC_N(Color_f, num_vertices);
+    emitter->color_array = ALLOC_N(Color_i, num_vertices);
     emitter->color_array_offset = 0;
 
     emitter->texture_coord_array = ALLOC_N(Vertex2d, num_vertices);
-    emitter->texture_coord_array_offset = sizeof(Color_f) * num_vertices;
+    emitter->texture_coord_array_offset = sizeof(Color_i) * num_vertices;
 
     emitter->vertex_array = ALLOC_N(Vertex2d, num_vertices);
-    emitter->vertex_array_offset = (sizeof(Color_f) + sizeof(Vertex2d)) * num_vertices;
+    emitter->vertex_array_offset = (sizeof(Color_i) + sizeof(Vertex2d)) * num_vertices;
 
     // Create the VBO, but don't upload any data yet.
-    int data_size = (sizeof(Color_f) + sizeof(Vertex2d) + sizeof(Vertex2d)) * num_vertices;
+    int data_size = (sizeof(Color_i) + sizeof(Vertex2d) + sizeof(Vertex2d)) * num_vertices;
     glGenBuffersARB(1, &emitter->vbo_id);
     glBindBufferARB(GL_ARRAY_BUFFER_ARB, emitter->vbo_id);
     glBufferDataARB(GL_ARRAY_BUFFER_ARB, data_size, NULL, GL_STREAM_DRAW_ARB);
@@ -253,15 +253,22 @@ static void write_texture_coords(Vertex2d* texture_coord,
 }
 
 // ----------------------------------------
-static void write_colors(Color_f* color, Particle* particle)
+static void write_colors(Color_i* color, Particle* particle)
 {
-    *color = particle->color;
+    // Convert the color from float to int (1/4 the data size).
+    Color_i color_base;
+    color_base.red = particle->color.red * 255;
+    color_base.green = particle->color.green * 255;
+    color_base.blue = particle->color.blue * 255;
+    color_base.alpha = particle->color.alpha * 255;
+
+    *color = color_base;
     color++;
-    *color = particle->color;
+    *color = color_base;
     color++;
-    *color = particle->color;
+    *color = color_base;
     color++;
-    *color = particle->color;
+    *color = color_base;
 }
 
 // ----------------------------------------
@@ -272,7 +279,7 @@ static uint write_particles(ParticleEmitter *emitter, Particle* first, Particle*
                             const float tex_right, const float tex_bottom,
                             const uint first_particle_index)
 {
-    Color_f* color = &emitter->color_array[first_particle_index * VERTICES_IN_PARTICLE];
+    Color_i* color = &emitter->color_array[first_particle_index * VERTICES_IN_PARTICLE];
     Vertex2d* texture_coord = &emitter->texture_coord_array[first_particle_index * VERTICES_IN_PARTICLE];
     Vertex2d* vertex = &emitter->vertex_array[first_particle_index * VERTICES_IN_PARTICLE];
 
@@ -357,7 +364,7 @@ static void draw_vbo(ParticleEmitter* emitter, const uint texture_id)
     glEnableClientState(GL_TEXTURE_COORD_ARRAY);
     glEnableClientState(GL_VERTEX_ARRAY);
 
-    glColorPointer(4, GL_FLOAT, 0, (void*)emitter->color_array_offset);
+    glColorPointer(4, GL_UNSIGNED_BYTE, 0, (void*)emitter->color_array_offset);
     glTexCoordPointer(2, GL_FLOAT, 0, (void*)emitter->texture_coord_array_offset);
     glVertexPointer(2, GL_FLOAT, 0, (void*)emitter->vertex_array_offset);
 

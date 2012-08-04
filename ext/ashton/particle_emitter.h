@@ -77,7 +77,7 @@ typedef struct _particle_emitter
     // VBO and client-side data arrays.
     uint vbo_id;
 
-    Color_f* color_array; // Color array.
+    Color_i* color_array; // Color array.
     ulong color_array_offset; // Offset to colours within VBO.
 
     Vertex2d* texture_coord_array; // Tex coord array.
@@ -152,7 +152,7 @@ inline static float deviate(Range * range);
 static void update_particle(ParticleEmitter* emitter, Particle* particle, const float delta);
 static void update_vbo(ParticleEmitter* emitter, VALUE image);
 static void draw_vbo(ParticleEmitter* emitter, const uint texture_id);
-static void write_colors(Color_f* color, Particle* particle);
+static void write_colors(Color_i* color, Particle* particle);
 static void write_texture_coords(Vertex2d* texture_coord,
                                  const float tex_left, const float tex_top,
                                  const float tex_right, const float tex_bottom);
