@@ -103,35 +103,60 @@ VALUE Ashton_ParticleEmitter_init(VALUE self, VALUE x, VALUE y, VALUE z, VALUE m
 {
     EMITTER();
 
-//    if(!GL_ARB_vertex_buffer_object)
-//    {
-//       rb_raise(rb_eRuntimeError, "Ashton::ParticleEmitter requires GL_ARB_vertex_buffer_object, which is not supported by OpenGL");
-//    }
-
     emitter->x = NUM2DBL(x);
     emitter->y = NUM2DBL(y);
     emitter->z = NUM2DBL(z);
 
     // Create space for all the particles we'll ever need!
     emitter->max_particles = NUM2UINT(max_particles);
+
+    init_vbo(emitter);
+
     emitter->particles = ALLOC_N(Particle, emitter->max_particles);
     memset(emitter->particles, 0, emitter->max_particles * sizeof(Particle));
-
-    // Setup VBO.
-//    emitter->vertex_array = ALLOC_N(Vertex2d, emitter->max_particles * 4);
-//    emitter->color_array = ALLOC_N(Color_f, emitter->max_particles);
-//    glGenBuffersARB(1, &emitter->vbo_id);
-//    glBufferDataARB(GL_ARRAY_BUFFER_ARB, sizeof(emitter->vertex_array) + sizeof(emitter->color_array),
-//                    0, GL_STREAM_DRAW_ARB);
-//    glBufferSubDataARB(GL_ARRAY_BUFFER_ARB, 0,
-//                       sizeof(emitter->vertex_array), emitter->vertex_array);
-//    glBufferSubDataARB(GL_ARRAY_BUFFER_ARB, sizeof(emitter->vertex_array),
-//                       sizeof(emitter->color_array), emitter->color_array);
-//    glBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
 
     return self;
 }
 
+//
+static void init_vbo(ParticleEmitter* emitter)
+{
+    if(!GL_ARB_vertex_buffer_object)
+    {
+       rb_raise(rb_eRuntimeError, "Ashton::ParticleEmitter requires GL_ARB_vertex_buffer_object, which is not supported by your OpenGL");
+    }
+
+    int num_vertices = emitter->max_particles * VERTICES_IN_PARTICLE;
+
+    emitter->color_array = ALLOC_N(Color_f, num_vertices);
+    emitter->color_array_offset = 0;
+
+    emitter->texture_coord_array = ALLOC_N(Vertex2d, num_vertices);
+    emitter->texture_coord_array_offset = sizeof(Color_f) * num_vertices;
+
+    emitter->vertex_array = ALLOC_N(Vertex2d, num_vertices);
+    emitter->vertex_array_offset = (sizeof(Color_f) + sizeof(Vertex2d)) * num_vertices;
+
+    // Create the VBO, but don't upload any data yet.
+    int data_size = (sizeof(Color_f) + sizeof(Vertex2d) + sizeof(Vertex2d)) * num_vertices;
+    glGenBuffersARB(1, &emitter->vbo_id);
+    glBindBufferARB(GL_ARRAY_BUFFER_ARB, emitter->vbo_id);
+    glBufferDataARB(GL_ARRAY_BUFFER_ARB, data_size, NULL, GL_STREAM_DRAW_ARB);
+
+    // Check the buffer was actually created.
+    int buffer_size = 0;
+    glGetBufferParameterivARB(GL_ARRAY_BUFFER_ARB, GL_BUFFER_SIZE_ARB, &buffer_size);
+    if(buffer_size != data_size)
+    {
+        rb_raise(rb_eRuntimeError, "Failed to create a VBO [%d bytes] to hold emitter data.", data_size);
+    }
+
+    glBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
+
+    return;
+}
+
+//
 static VALUE particle_emitter_allocate(VALUE klass)
 {
     ParticleEmitter* emitter = ALLOC(ParticleEmitter);
@@ -144,9 +169,10 @@ static VALUE particle_emitter_allocate(VALUE klass)
 // Deallocate data structure and its contents.
 static void particle_emitter_free(ParticleEmitter* emitter)
 {
-//    glDeleteBuffersARB(1, &emitter->vbo_id);
-//    xfree(emitter->vertex_array);
-//    xfree(emitter->color_array);
+    glDeleteBuffersARB(1, &emitter->vbo_id);
+    xfree(emitter->color_array);
+    xfree(emitter->texture_coord_array);
+    xfree(emitter->vertex_array);
 
     xfree(emitter->particles);
     xfree(emitter);
@@ -170,17 +196,10 @@ inline static float deviate(Range * range)
 }
 
 // ----------------------------------------
-// Draw a single particle.
-// TODO: Move this into Image#draw_rot ???
-static void draw_particle(Particle* particle,
-                          const uint width, const uint height,
-                          const float tex_left, const float tex_top,
-                          const float tex_right, const float tex_bottom)
+// Calculate the vertices.
+static void write_particle_vertices(Vertex2d* vertex, Particle* particle,
+                                        const uint width, const uint height)
 {
-    // Set the particle's color.
-    Color_f* color = &particle->color;
-    glColor4f(color->red, color->green, color->blue, color->alpha);
-
     // Totally ripped this code from Gosu :$
     float sizeX = width * particle->scale;
     float sizeY = height * particle->scale;
@@ -196,63 +215,93 @@ static void draw_particle(Particle* particle,
     float distToBottomX = -offsX * sizeY * (1 - particle->center_y);
     float distToBottomY = -offsY * sizeY * (1 - particle->center_y);
 
-    glTexCoord2d(tex_left, tex_top);
-    glVertex2d(particle->x + distToLeftX  + distToTopX,
-               particle->y + distToLeftY  + distToTopY);
+    vertex->x = particle->x + distToLeftX  + distToTopX;
+    vertex->y = particle->y + distToLeftY  + distToTopY;
+    vertex++;
 
-    glTexCoord2d(tex_right, tex_top);
-    glVertex2d(particle->x + distToRightX + distToTopX,
-               particle->y + distToRightY + distToTopY);
+    vertex->x = particle->x + distToRightX + distToTopX;
+    vertex->y = particle->y + distToRightY + distToTopY;
+    vertex++;
 
-    glTexCoord2d(tex_right, tex_bottom);
-    glVertex2d(particle->x + distToRightX + distToBottomX,
-               particle->y + distToRightY + distToBottomY);
+    vertex->x = particle->x + distToRightX + distToBottomX;
+    vertex->y = particle->y + distToRightY + distToBottomY;
+    vertex++;
 
-    glTexCoord2d(tex_left, tex_bottom);
-    glVertex2d(particle->x + distToLeftX  + distToBottomX,
-               particle->y + distToLeftY  + distToBottomY);
+    vertex->x = particle->x + distToLeftX  + distToBottomX;
+    vertex->y = particle->y + distToLeftY  + distToBottomY;
+}
+
+// ----------------------------------------
+static void write_texture_coords(Vertex2d* texture_coord,
+                                     const float tex_left, const float tex_top,
+                                     const float tex_right, const float tex_bottom)
+{
+    texture_coord->x = tex_left;
+    texture_coord->y = tex_top;
+    texture_coord++;
+
+    texture_coord->x = tex_right;
+    texture_coord->y = tex_top;
+    texture_coord++;
+
+    texture_coord->x = tex_right;
+    texture_coord->y = tex_bottom;
+    texture_coord++;
+
+    texture_coord->x = tex_left;
+    texture_coord->y = tex_bottom;
+}
+
+// ----------------------------------------
+static void write_colors(Color_f* color, Particle* particle)
+{
+    *color = particle->color;
+    color++;
+    *color = particle->color;
+    color++;
+    *color = particle->color;
+    color++;
+    *color = particle->color;
 }
 
 // ----------------------------------------
 // Draw all particles from first to last (inclusive).
-static void draw_particles(Particle* first, Particle* last,
-                           const uint width, const uint height,
-                           const float tex_left, const float tex_top,
-                           const float tex_right, const float tex_bottom)
+static uint write_particles(ParticleEmitter *emitter, Particle* first, Particle* last,
+                            const uint width, const uint height,
+                            const float tex_left, const float tex_top,
+                            const float tex_right, const float tex_bottom,
+                            const uint first_particle_index)
 {
-    Particle* particle = first;
+    Color_f* color = &emitter->color_array[first_particle_index * VERTICES_IN_PARTICLE];
+    Vertex2d* texture_coord = &emitter->texture_coord_array[first_particle_index * VERTICES_IN_PARTICLE];
+    Vertex2d* vertex = &emitter->vertex_array[first_particle_index * VERTICES_IN_PARTICLE];
 
-    glBegin(GL_QUADS);
-    for( ; particle <= last; particle++)
+    int num_particles_drawn = 0;
+
+    for(Particle* particle = first; particle <= last; particle++)
     {
         if(particle->time_to_live > 0)
         {
-            draw_particle(particle, width, height, tex_left, tex_top, tex_right, tex_bottom);
+            write_colors(color, particle);
+            write_texture_coords(texture_coord, tex_left, tex_top, tex_right, tex_bottom);
+            write_particle_vertices(vertex, particle, width, height);
+
+            color += VERTICES_IN_PARTICLE;
+            texture_coord += VERTICES_IN_PARTICLE;
+            vertex += VERTICES_IN_PARTICLE;
+
+            num_particles_drawn++;
         }
     }
-    glEnd();
 
-    return;
+    return num_particles_drawn;
 }
 
-// ----------------------------------------
-static VALUE draw_block(VALUE yield_value, VALUE self, int argc, VALUE argv[])
+// --------------------------------------
+static void update_vbo(ParticleEmitter* emitter, VALUE image)
 {
-    EMITTER();
-
-    VALUE image = rb_iv_get(self, "@image");
-    VALUE window = rb_gv_get("$window");
-
-    VALUE shader = rb_iv_get(self, "@shader");
-    if(!NIL_P(shader))
-    {
-        rb_funcall(shader, rb_intern("image="), 1, image);
-        rb_funcall(shader, rb_intern("color="), 1, UINT2NUM(color_to_argb(&emitter->color)));
-    }
-
     // Bind the image that we will be using throughout and get its coordinates.
     VALUE tex_info = rb_funcall(image, rb_intern("gl_tex_info"), 0);
-    int tex_id = NUM2INT(rb_funcall(tex_info, rb_intern("tex_name"), 0));
     float tex_left   = NUM2DBL(rb_funcall(tex_info, rb_intern("left"), 0));
     float tex_right  = NUM2DBL(rb_funcall(tex_info, rb_intern("right"), 0));
     float tex_top    = NUM2DBL(rb_funcall(tex_info, rb_intern("top"), 0));
@@ -262,27 +311,82 @@ static VALUE draw_block(VALUE yield_value, VALUE self, int argc, VALUE argv[])
     uint width  = NUM2UINT(rb_funcall(image, rb_intern("width"), 0));
     uint height = NUM2UINT(rb_funcall(image, rb_intern("height"), 0));
 
-    // Get ready to draw!
+    // Ensure that drawing order is correct by drawing in order of creation...
+
+    // First, we draw all those from the current, going up to the last one.
+    Particle* first = &emitter->particles[emitter->next_particle_index];
+    Particle* last = &emitter->particles[emitter->max_particles - 1];
+    uint num_drawn = write_particles(emitter, first, last, width, height,
+                                     tex_left, tex_top, tex_right, tex_bottom, 0);
+
+    // Then go from the first to the current.
+    first = emitter->particles;
+    last = &emitter->particles[emitter->next_particle_index - 1];
+    write_particles(emitter, first, last, width, height,
+                    tex_left, tex_top, tex_right, tex_bottom, num_drawn);
+
+    // Upload the data, but only as much as we are actually using.
+    glBindBufferARB(GL_ARRAY_BUFFER_ARB, emitter->vbo_id);
+    glBufferSubDataARB(GL_ARRAY_BUFFER_ARB, emitter->color_array_offset,
+                       sizeof(Color_f) * VERTICES_IN_PARTICLE * emitter->count, emitter->color_array);
+
+    glBufferSubDataARB(GL_ARRAY_BUFFER_ARB, emitter->texture_coord_array_offset,
+                       sizeof(Vertex2d) * VERTICES_IN_PARTICLE * emitter->count, emitter->texture_coord_array);
+
+    glBufferSubDataARB(GL_ARRAY_BUFFER_ARB, emitter->vertex_array_offset,
+                       sizeof(Vertex2d) * VERTICES_IN_PARTICLE * emitter->count, emitter->vertex_array);
+
+    glBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
+}
+
+// --------------------------------------
+static void draw_vbo(ParticleEmitter* emitter, const uint texture_id)
+{
     glEnable(GL_BLEND);
     glEnable(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, tex_id);
+    glBindTexture(GL_TEXTURE_2D, texture_id);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
     // TODO: Work out whether it should be GL_LINEAR or GL_NEAREST.
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
-    // Ensure that drawing order is correct by drawing in reverse order of creation...
+    glBindBufferARB(GL_ARRAY_BUFFER_ARB, emitter->vbo_id);
 
-    // First, we draw all those from the current, going up to the last one.
-    Particle* first = &emitter->particles[emitter->next_particle_index];
-    Particle* last = &emitter->particles[emitter->max_particles - 1];
-    draw_particles(first, last, width, height, tex_left, tex_top, tex_right, tex_bottom);
+    glEnableClientState(GL_COLOR_ARRAY);
+    glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+    glEnableClientState(GL_VERTEX_ARRAY);
 
-    // Then go from the first to the current.
-    first = emitter->particles;
-    last = &emitter->particles[emitter->next_particle_index - 1];
-    draw_particles(first, last, width, height, tex_left, tex_top, tex_right, tex_bottom);
+    glColorPointer(4, GL_FLOAT, 0, (void*)emitter->color_array_offset);
+    glTexCoordPointer(2, GL_FLOAT, 0, (void*)emitter->texture_coord_array_offset);
+    glVertexPointer(2, GL_FLOAT, 0, (void*)emitter->vertex_array_offset);
+
+    glDrawArrays(GL_QUADS, 0, emitter->count * VERTICES_IN_PARTICLE);
+
+    glDisableClientState(GL_COLOR_ARRAY);
+    glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+    glDisableClientState(GL_VERTEX_ARRAY);
+
+    glBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
+}
+
+// ----------------------------------------
+static VALUE draw_block(VALUE yield_value, VALUE self, int argc, VALUE argv[])
+{
+    EMITTER();
+
+    VALUE shader = rb_iv_get(self, "@shader");
+    VALUE image = rb_iv_get(self, "@image");
+
+    if(!NIL_P(shader))
+    {
+        rb_funcall(shader, rb_intern("image="), 1, image);
+        rb_funcall(shader, rb_intern("color="), 1, UINT2NUM(color_to_argb(&emitter->color)));
+    }
+
+    VALUE info = rb_funcall(image, rb_intern("gl_tex_info"), 0);
+    VALUE tex_id = rb_funcall(info, rb_intern("tex_name"), 0);
+    draw_vbo(emitter, FIX2UINT(tex_id));
 
     return Qnil;
 }
@@ -408,6 +512,42 @@ VALUE Ashton_ParticleEmitter_emit(VALUE self)
 }
 
 // ----------------------------------------
+static void update_particle(ParticleEmitter* emitter, Particle* particle,
+                            const float delta)
+{
+    // Apply friction
+    particle->velocity_x *= 1.0 - particle->friction * delta;
+    particle->velocity_y *= 1.0 - particle->friction * delta;
+
+    // Gravity.
+    particle->velocity_y += emitter->gravity * delta;
+
+    // Move
+    particle->x += particle->velocity_x * delta;
+    particle->y += particle->velocity_y * delta;
+
+    // Rotate.
+    particle->angle += particle->angular_velocity * delta;
+
+    // Resize.
+    particle->scale += particle->zoom * delta;
+
+    // Fade out.
+    particle->color.alpha -= (particle->fade / 255.0) * delta;
+
+    particle->time_to_live -= delta;
+
+    // Die if out of time, invisible or shrunk to nothing.
+    if((particle->time_to_live <= 0) ||
+            (particle->color.alpha < 0) ||
+            (particle->scale < 0))
+    {
+        particle->time_to_live = 0;
+        emitter->count -= 1;
+    }
+}
+
+// ----------------------------------------
 // #update(delta)
 VALUE Ashton_ParticleEmitter_update(VALUE self, VALUE delta)
 {
@@ -419,42 +559,13 @@ VALUE Ashton_ParticleEmitter_update(VALUE self, VALUE delta)
     if(emitter->count > 0)
     {
         Particle* particle = emitter->particles;
-        Particle* last = emitter->particles + emitter->max_particles;
-        for(; particle < last; particle++)
+        Particle* last = &emitter->particles[emitter->max_particles - 1];
+        for(; particle <= last; particle++)
         {
             // Ignore particles that are already dead.
-            if(particle->time_to_live)
+            if(particle->time_to_live > 0)
             {
-                // Apply friction
-                particle->velocity_x *= 1.0 - particle->friction * _delta;
-                particle->velocity_y *= 1.0 - particle->friction * _delta;
-
-                // Gravity.
-                particle->velocity_y += emitter->gravity * _delta;
-
-                // Move
-                particle->x += particle->velocity_x * _delta;
-                particle->y += particle->velocity_y * _delta;
-
-                // Rotate.
-                particle->angle += particle->angular_velocity * _delta;
-
-                // Resize.
-                particle->scale += particle->zoom * _delta;
-
-                // Fade out.
-                particle->color.alpha -= (particle->fade / 255.0) * _delta;
-
-                particle->time_to_live -= _delta;
-
-                // Die if out of time, invisible or shrunk to nothing.
-                if((particle->time_to_live <= 0) ||
-                        (particle->color.alpha < 0) ||
-                        (particle->scale < 0))
-                {
-                    particle->time_to_live = 0;
-                    emitter->count -= 1;
-                }
+                update_particle(emitter, particle, _delta);
             }
         }
     }
@@ -465,6 +576,13 @@ VALUE Ashton_ParticleEmitter_update(VALUE self, VALUE delta)
     {
         rb_funcall(self, rb_intern("emit"), 0);
         emitter->time_until_emit += deviate(&emitter->interval);
+    }
+
+    // Copy all the current data onto the graphics card.
+    if(emitter->count > 0)
+    {
+        VALUE image = rb_iv_get(self, "@image");
+        update_vbo(emitter, image);
     }
 
     return Qnil;

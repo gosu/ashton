@@ -11,6 +11,8 @@
 
 #include "common.h"
 
+#define VERTICES_IN_PARTICLE 4
+
 // A single particle.
 typedef struct _particle
 {
@@ -72,13 +74,22 @@ typedef struct _particle_emitter
     uint next_particle_index; // Next place to create a new particle (either dead or oldest living).
     Particle* particles;
 
-    uint vbo_id; // vertex and color
-    Vertex2d* vertex_array;
-    Color_f* color_array;
+    // VBO and client-side data arrays.
+    uint vbo_id;
+
+    Color_f* color_array; // Color array.
+    ulong color_array_offset; // Offset to colours within VBO.
+
+    Vertex2d* texture_coord_array; // Tex coord array.
+    ulong texture_coord_array_offset; // Offset to texture coords within VBO.
+
+    Vertex2d* vertex_array; // Vertex array.
+    ulong vertex_array_offset; // Offset to vertices within VBO.
 } ParticleEmitter;
 
 
 void Init_Ashton_ParticleEmitter(VALUE module);
+static void init_vbo(ParticleEmitter* emitter);
 static VALUE particle_emitter_allocate(VALUE klass);
 static void particle_emitter_free(ParticleEmitter* emitter);
 
@@ -138,16 +149,21 @@ VALUE Ashton_ParticleEmitter_set_color_argb(VALUE self, VALUE color);
 // Helpers.
 inline static float randf();
 inline static float deviate(Range * range);
-static void draw_particle(Particle* particle,
-                          const uint width, const uint height,
-                          const float left, const float top,
-                          const float right, const float bottom);
-static void draw_particles(Particle* first, Particle* last,
-                           const uint width, const uint height,
-                           const float tex_left, const float tex_top,
-                           const float tex_right, const float tex_bottom);
+static void update_particle(ParticleEmitter* emitter, Particle* particle, const float delta);
+static void update_vbo(ParticleEmitter* emitter, VALUE image);
+static void draw_vbo(ParticleEmitter* emitter, const uint texture_id);
+static void write_colors(Color_f* color, Particle* particle);
+static void write_texture_coords(Vertex2d* texture_coord,
+                                 const float tex_left, const float tex_top,
+                                 const float tex_right, const float tex_bottom);
+static void write_particle_vertices(Vertex2d* vertex, Particle* particle,
+                                    const uint width, const uint height);
+static uint write_particles(ParticleEmitter *emitter, Particle* first, Particle* last,
+                            const uint width, const uint height,
+                            const float tex_left, const float tex_top,
+                            const float tex_right, const float tex_bottom,
+                            const uint first_particle_index);
 
-static VALUE enable_shader_block(VALUE yield_value, VALUE self, int argc, VALUE argv[]);
 static uint color_to_argb(Color_f* color);
 
 // Methods

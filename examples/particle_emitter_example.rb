@@ -23,7 +23,7 @@ class TestWindow < Gosu::Window
                                                  scale: 0.2,
                                                  speed: 20,
                                                  friction: 0.1,
-                                                 max_particles: 10000,
+                                                 max_particles: 15000,
                                                  interval: 0.002,
                                                  fade: 25, # loses 25 alpha/s
                                                  angular_velocity: -50..50
@@ -31,9 +31,9 @@ class TestWindow < Gosu::Window
     @shaded_image_emitter = Ashton::ParticleEmitter.new 450, 350, 0,
                                                         image: @star,
                                                         shader: @grayscale,
-                                                        interval: 0.0005,
+                                                        interval: 0.0002,
                                                         offset: 0..10,
-                                                        max_particles: 10000,
+                                                        max_particles: 15000,
                                                         angular_velocity: 20..50,
                                                         center_x: 3..8, center_y: 3..8,
                                                         zoom: -0.3 # Shrinks, so doesn't need TTL.
@@ -42,8 +42,8 @@ class TestWindow < Gosu::Window
                                                  scale: 10,
                                                  speed: 200,
                                                  interval: 0.0002,
-                                                 max_particles: 10000,
-                                                 interval: 0.0005,
+                                                 max_particles: 15000,
+                                                 interval: 0.0002,
                                                  color: Gosu::Color.rgba(255, 0, 0, 150),
                                                  fade: 50 # loses 50 alpha/s
 
@@ -53,8 +53,8 @@ class TestWindow < Gosu::Window
                                                         speed: 60..100,
                                                         offset: 0..10,
                                                         time_to_live: 12,
-                                                        interval: 0.0005,
-                                                        max_particles: 10000,
+                                                        interval: 0.0003,
+                                                        max_particles: 15000,
                                                         color: Gosu::Color.rgba(255, 0, 0, 255),
                                                         gravity: 60 # pixels/s*s
   end
@@ -85,7 +85,10 @@ class TestWindow < Gosu::Window
     @shaded_point_emitter.draw
     @image_emitter.draw
 
-    @font.draw "FPS: #{Gosu::fps} Pnt: #{@point_emitter.count} ShaPnt: #{@shaded_point_emitter.count} Img: #{@image_emitter.count} ShaImg: #{@shaded_image_emitter.count}", 0, 0, Float::INFINITY
+    num_particles = @point_emitter.count + @shaded_point_emitter.count + @image_emitter.count + @shaded_image_emitter.count
+    @font.draw "FPS: #{Gosu::fps}   Particles: #{num_particles}", 0, 0, Float::INFINITY
+
+    @font.draw_rel "Pnt: #{@point_emitter.count} ShaPnt: #{@shaded_point_emitter.count} Img: #{@image_emitter.count} ShaImg: #{@shaded_image_emitter.count}", 0, height, Float::INFINITY, 0, 1
   end
 end
 
