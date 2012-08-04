@@ -8,7 +8,7 @@
 #include <math.h>
 #include <stdio.h>
 
-#define DEGREES_TO_RADIANS(ANGLE) (ANGLE * (M_PI / 180.0))
+#define DEGREES_TO_RADIANS(ANGLE) ((ANGLE - 90) * (M_PI / 180.0))
 
 #define LOOKUPS_PER_DEGREE 10
 #define NUM_LOOKUP_VALUES (360 * LOOKUPS_PER_DEGREE)

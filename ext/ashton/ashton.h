@@ -15,7 +15,7 @@
 static VALUE rb_mAshton;
 
 #include "common.h"
-
+#include "fast_math.h"
 
 #include "gosu.h"
 
@@ -26,6 +26,8 @@ static VALUE rb_mAshton;
 //#include "window_buffer.h"
 
 void Init_ashton();
+VALUE Ashton_fast_sin(VALUE self, VALUE angle);
+VALUE Ashton_fast_cos(VALUE self, VALUE angle);
 
 #endif // ASHTON_H
 
