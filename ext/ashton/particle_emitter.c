@@ -203,8 +203,10 @@ static void write_particle_vertices(Vertex2d* vertex, Particle* particle,
     // Totally ripped this code from Gosu :$
     float sizeX = width * particle->scale;
     float sizeY = height * particle->scale;
-    float offsX = sin(particle->angle / 180 * M_PI);
-    float offsY = cos(particle->angle / 180 * M_PI);
+
+    float angle = DEGREES_TO_RADIANS(particle->angle);
+    float offsX = sin(angle);
+    float offsY = cos(angle);
 
     float distToLeftX   = +offsY * sizeX * particle->center_x;
     float distToLeftY   = -offsX * sizeX * particle->center_x;

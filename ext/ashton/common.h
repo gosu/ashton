@@ -25,4 +25,6 @@ typedef struct _color_f
 
 #define SYMBOL(STR) ID2SYM(rb_intern(STR))
 
+#define DEGREES_TO_RADIANS(ANGLE) (ANGLE * (M_PI / 180.0))
+
 #endif // COMMON_H
