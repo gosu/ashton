@@ -59,6 +59,8 @@ VALUE Ashton_ParticleEmitter_get_interval_max(VALUE self)
 // ----------------------------------------
 void Init_Ashton_ParticleEmitter(VALUE module)
 {
+    initialize_fast_math(); // Needed to save HUGE amount of time calculating sin/cos all the time!
+
     VALUE rb_cParticleEmitter = rb_define_class_under(module, "ParticleEmitter", rb_cObject);
 
     rb_define_alloc_func(rb_cParticleEmitter, particle_emitter_allocate);
@@ -204,9 +206,8 @@ static void write_particle_vertices(Vertex2d* vertex, Particle* particle,
     float sizeX = width * particle->scale;
     float sizeY = height * particle->scale;
 
-    float angle = DEGREES_TO_RADIANS(particle->angle);
-    float offsX = sin(angle);
-    float offsY = cos(angle);
+    float offsX = fast_sin_deg(particle->angle);
+    float offsY = fast_cos_deg(particle->angle);
 
     float distToLeftX   = +offsY * sizeX * particle->center_x;
     float distToLeftY   = -offsX * sizeX * particle->center_x;

@@ -7,8 +7,7 @@
 #ifndef ASHTON_PARTICLE_EMITTER_H
 #define ASHTON_PARTICLE_EMITTER_H
 
-#include <math.h>
-
+#include "fast_math.h"
 #include "common.h"
 
 #define VERTICES_IN_PARTICLE 4
