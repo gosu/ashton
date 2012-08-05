@@ -11,46 +11,27 @@ module Ashton
     ]
 
     def initialize(x, y, z, options = {})
-
       # I'm MUCH too lazy to implement a huge options hash manager in C, especially on a constructor.
-      options = {
-          center_x: 0.5,
-          center_y: 0.5,
-          image: $window.pixel,
-          color: DEFAULT_COLOR,
-          max_particles: DEFAULT_MAX_PARTICLES,
-          gravity: 0.0,
-          angular_velocity: 0.0,
-          fade: 0.0,
-          friction: 0.0,
-          interval: 1_000_000_000, #Float::INFINITY, # BUG: INFINITY => NaN in C
-          offset: 0.0,
-          scale: 1.0,
-          speed: 0.0,
-          time_to_live: 1_000_000_000, #Float::INFINITY,  # BUG: INFINITY => NaN in C
-          zoom: 0.0,
-      }.merge! options
-      
-      @image = options[:image] || $window.pixel
+      max_particles = options[:max_particles] || DEFAULT_MAX_PARTICLES
+      initialize_ x, y, z, max_particles
 
-      @shader = options[:shader]
+      self.shader = options[:shader]
+      self.image = options[:image] || $window.pixel
 
-      initialize_ x, y, z, options[:max_particles]
+      self.gravity = options[:gravity] || 0.0
+      self.color = options[:color] || DEFAULT_COLOR
 
-      self.gravity = options[:gravity]
-      self.color = options[:color]
-
-      self.angular_velocity = options[:angular_velocity]
-      self.center_x = options[:center_x]
-      self.center_y = options[:center_y]
-      self.fade = options[:fade]
-      self.friction = options[:friction]
-      self.interval = options[:interval]
-      self.offset = options[:offset]
-      self.scale = options[:scale]
-      self.speed = options[:speed]
-      self.time_to_live = options[:time_to_live]
-      self.zoom = options[:zoom]
+      self.angular_velocity = options[:angular_velocity] || 0.0
+      self.center_x = options[:center_x] || 0.5
+      self.center_y = options[:center_y] || 0.5
+      self.fade = options[:fade] || 0.0
+      self.friction = options[:friction] || 0.0
+      self.interval = options[:interval] || 1_000_000_000 #Float::INFINITY,  # BUG: INFINITY => NaN in C
+      self.offset = options[:offset] || 0.0
+      self.scale = options[:scale] || 1.0
+      self.speed = options[:speed] || 0.0
+      self.time_to_live = options[:time_to_live] || 1_000_000_000 #Float::INFINITY,  # BUG: INFINITY => NaN in C
+      self.zoom = options[:zoom] || 0.0
     end
 
     # Gosu::Color
