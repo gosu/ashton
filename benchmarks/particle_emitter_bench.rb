@@ -53,12 +53,14 @@ benchmark("#emit creating particles", 100_000) { fading_emitter.emit }
 benchmark("#emit replacing particles", 100_000) { fading_emitter.emit }
 puts
 
-puts "for emitter with color-change"
+puts "for emitter with color-change (i.e fades)"
+puts
 benchmark("#draw for 10k particles", 1_000) { fading_emitter.draw; $window.flush  }
 benchmark("#update for 10k particles", 100) { fading_emitter.update delta }
 puts
 
-puts "for emitter without color-change"
+puts "for emitter without color-change (i.e. doesn't fade)"
+puts
 10_000.times { nonfading_emitter.emit }
 benchmark("#draw for 10k particles", 1_000) { nonfading_emitter.draw; $window.flush  }
 benchmark("#update for 10k particles", 100) { nonfading_emitter.update delta }
