@@ -13,7 +13,7 @@ fading_emitter = Ashton::ParticleEmitter.new 450, 100, 0,
                                             gravity: 4,
                                             max_particles: 10_000,
                                             interval: Float::INFINITY, # Never create in update.
-                                            fade: 0.001,
+                                            fade: 0.000001,
                                             angular_velocity: -50..50
 
 nonfading_emitter = Ashton::ParticleEmitter.new 450, 100, 0,
@@ -56,14 +56,14 @@ puts
 puts "for emitter with color-change (i.e fades)"
 puts
 benchmark("#draw for 10k particles", 1_000) { fading_emitter.draw; $window.flush  }
-benchmark("#update for 10k particles", 100) { fading_emitter.update delta }
+benchmark("#update for 10k particles", 1_000) { fading_emitter.update delta }
 puts
 
 puts "for emitter without color-change (i.e. doesn't fade)"
 puts
 10_000.times { nonfading_emitter.emit }
 benchmark("#draw for 10k particles", 1_000) { nonfading_emitter.draw; $window.flush  }
-benchmark("#update for 10k particles", 100) { nonfading_emitter.update delta }
+benchmark("#update for 10k particles", 1_000) { nonfading_emitter.update delta }
 
 
 puts "\n\nBenchmarks completed in #{"%.2f" % (Time.now - t)}s"
