@@ -26,11 +26,11 @@ module Ashton
       self.center_y = options[:center_y] || 0.5
       self.fade = options[:fade] || 0.0
       self.friction = options[:friction] || 0.0
-      self.interval = options[:interval] || 1_000_000_000 #Float::INFINITY,  # BUG: INFINITY => NaN in C
+      self.interval = options[:interval] || Float::INFINITY
       self.offset = options[:offset] || 0.0
       self.scale = options[:scale] || 1.0
       self.speed = options[:speed] || 0.0
-      self.time_to_live = options[:time_to_live] || 1_000_000_000 #Float::INFINITY,  # BUG: INFINITY => NaN in C
+      self.time_to_live = options[:time_to_live] || Float::INFINITY
       self.zoom = options[:zoom] || 0.0
     end
 
@@ -69,7 +69,7 @@ module Ashton
                      when Range
                        [value.min, value.max]
                      else
-                       raise TypeError
+                       raise TypeError, "Expecting Numeric or Range, not #{value.class}"
                    end
 
         send "#{attr}_min=", min

@@ -264,8 +264,15 @@ inline static float randf()
 // Deviate a value from a median value within a range.
 inline static float deviate(Range * range)
 {
-    float deviation = (range->max - range->min) / 2.0;
-    return range->min + deviation + randf() * deviation - randf() * deviation;
+    if(isfinite(range->min) && isfinite(range->max))
+    {
+        float deviation = (range->max - range->min) / 2.0;
+        return range->min + deviation + randf() * deviation - randf() * deviation;
+    }
+    else
+    {
+        return range->max;
+    }
 }
 
 // ----------------------------------------
