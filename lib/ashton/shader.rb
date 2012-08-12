@@ -65,6 +65,8 @@ module Ashton
       use do
         # GL_TEXTURE0 will be activated later.
         set_uniform uniform_location("in_Texture", required: false), 0
+        # GL_TEXTURE1 might be activated later, but it is not required.
+        set_uniform uniform_location("in_Mask", required: false), 1
 
         # These are optional, and can be used to check pixel size.
         set_uniform uniform_location("in_WindowWidth", required: false), $window.width

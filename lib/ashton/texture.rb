@@ -188,15 +188,19 @@ module Ashton
 
         glBegin GL_QUADS do
           glTexCoord2d 0, 1
+          glMultiTexCoord2d GL_TEXTURE1, 0, 1
           glVertex2d x, y + height # BL
 
           glTexCoord2d 0, 0
+          glMultiTexCoord2d GL_TEXTURE1, 0, 0
           glVertex2d x, y # TL
 
           glTexCoord2d 1, 0
+          glMultiTexCoord2d GL_TEXTURE1, 1, 0
           glVertex2d x + width, y # TR
 
           glTexCoord2d 1, 1
+          glMultiTexCoord2d GL_TEXTURE1, 1, 1
           glVertex2d x + width, y + height # BR
         end
       end
