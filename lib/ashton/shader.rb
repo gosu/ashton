@@ -63,8 +63,12 @@ module Ashton
       end
 
       use do
-        # GL_TEXTURE0 will be activated later.
+        # GL_TEXTURE0 will be activated later. This is the main image texture.
         set_uniform uniform_location("in_Texture", required: false), 0
+
+        # For multi-textured shaders, we use in_Texture<NUM> instead. 
+        set_uniform uniform_location("in_Texture0", required: false), 0
+        set_uniform uniform_location("in_Texture1", required: false), 1
 
         # These are optional, and can be used to check pixel size.
         set_uniform uniform_location("in_WindowWidth", required: false), $window.width
