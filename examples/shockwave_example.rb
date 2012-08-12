@@ -40,6 +40,8 @@ class TestWindow < Gosu::Window
   end
 
   def update
+    $gosu_blocks.clear # Workaround for Gosu bug (0.7.45)
+
     @waves.delete_if {|w| w.dead? }
     @waves.each {|w| w.update }
   end

@@ -68,6 +68,7 @@ void main()
   end
 
   def update
+    $gosu_blocks.clear # Workaround for Gosu bug (0.7.45)
     @noise.t = Time.now - @start_time
   end
 

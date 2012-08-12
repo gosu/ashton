@@ -21,8 +21,10 @@ class TestWindow < Gosu::Window
 
     @font = Gosu::Font.new self, Gosu::default_font_name, 40
     @star = Gosu::Image.new(self, media_path("LargeStar.png"), true)
+  end
 
-    update # Ensure the values are initially set.
+  def update
+    $gosu_blocks.clear # Workaround for Gosu bug (0.7.45)
   end
 
   def button_down(id)

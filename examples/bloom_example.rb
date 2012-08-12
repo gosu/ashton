@@ -26,6 +26,7 @@ class TestWindow < Gosu::Window
   end
 
   def update
+    $gosu_blocks.clear # Workaround for Gosu bug (0.7.45)
     @bloom.glare_size = [0.008 * mouse_x / width, 0.0].max
     @bloom.power = [0.5 * mouse_y / height, 0.0].max
   end

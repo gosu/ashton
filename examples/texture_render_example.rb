@@ -21,6 +21,8 @@ class GameWindow < Gosu::Window
   end
 
   def update
+    $gosu_blocks.clear # Workaround for Gosu bug (0.7.45)
+
     if button_down? Gosu::MsLeft
       # Draw into the texture, rather than onto the screen.
       @texture.render do

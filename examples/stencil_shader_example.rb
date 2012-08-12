@@ -69,6 +69,7 @@ class GameWindow < Gosu::Window
   # Not important --------
 
   def update
+    $gosu_blocks.clear # Workaround for Gosu bug (0.7.45)
     @rotation = (@rotation + 1) % 360
   end
 

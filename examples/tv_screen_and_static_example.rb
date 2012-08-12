@@ -29,6 +29,8 @@ class TestWindow < Gosu::Window
   end
 
   def update
+    $gosu_blocks.clear # Workaround for Gosu bug (0.7.45)
+
     @static.t = Math::sin(Gosu::milliseconds / 500.0) * 1000
     @static.intensity = Math::sin(Gosu::milliseconds / 2345.0) + 1.5
   end
