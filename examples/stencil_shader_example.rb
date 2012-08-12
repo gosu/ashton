@@ -15,7 +15,6 @@ class GameWindow < Gosu::Window
   def initialize
     super 640, 480, false
     self.caption = "Stencil shader - <space> new stencil layout"
-    GC.disable
 
     setup_example_objects
 
@@ -49,9 +48,9 @@ class GameWindow < Gosu::Window
     glActiveTexture GL_TEXTURE0
 
     # We'll use the window's primary buffer to draw our images that need to be masked
-    Gosu::Window.primary_buffer.render {
+    Gosu::Window.primary_buffer.render do
       @image.draw_rot(@image.width / 2, @image.height / 2, 0, @rotation)
-    }
+    end
 
     # Draw the primary buffer with our shader
     Gosu::Window.primary_buffer.draw(0, 0, 0, :shader => @shader)
