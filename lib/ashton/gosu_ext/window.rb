@@ -18,7 +18,9 @@ module Gosu
       end
     end
 
-    def pixel; Window.pixel; end
+    def pixel; Window.pixel end
+    def primary_buffer; Window.primary_buffer end
+    def secondary_buffer; Window.secondary_buffer end
 
     alias_method :ashton_initialize, :initialize
     def initialize(*args, &block)
@@ -50,7 +52,7 @@ module Gosu
         return
       end
 
-      buffer1 = Window.primary_buffer
+      buffer1 = primary_buffer
       buffer1.clear
 
       # Allow user to draw into a buffer, rather than the window.
@@ -59,7 +61,7 @@ module Gosu
       end
 
       if shaders.size > 1
-        buffer2 = Window.secondary_buffer # Don't need to clear, since we will :replace.
+        buffer2 = secondary_buffer # Don't need to clear, since we will :replace.
 
         # Draw into alternating buffers, applying each shader in turn.
         shaders[0...-1].each do |shader|

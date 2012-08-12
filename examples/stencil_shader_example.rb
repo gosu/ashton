@@ -47,13 +47,13 @@ class GameWindow < Gosu::Window
     # We'll use the window's primary buffer to draw our images that need to be masked.
     # We can use this buffer as long as we don't expect it to be cleared before we use it
     # or unaltered between our uses of it.
-    Gosu::Window.primary_buffer.render do |buffer|
+    primary_buffer.render do |buffer|
       buffer.clear
       @image.draw_rot(@image.width / 2, @image.height / 2, 0, @rotation)
     end
 
     # Draw the primary buffer with our shader
-    Gosu::Window.primary_buffer.draw 0, 0, 0, shader: @shader
+    primary_buffer.draw 0, 0, 0, shader: @shader
   end
 
   # Clear the stencil texture and draw new stencils on top of it
