@@ -21,10 +21,9 @@ class GameWindow < Gosu::Window
     @image = Gosu::Image.new self, media_path("LargeStar.png"), false
     @stencil = Gosu::Image.new self, media_path("SmallStar.png"), false
 
-    # The Ashton::Texture to draw the stencil on.
-    # It's best to use an Ashton::WindowBuffer.
-    # In this case, we'll just use the window's secundary buffer.
-    @stencil_texture = Gosu::Window.secondary_buffer
+    # The texture to draw the stencil on. It's best to use an
+    # Ashton::WindowBuffer, since it is the same size as the window itself.
+    @stencil_texture = Ashton::WindowBuffer.new
 
     # Fill the stencil texture
     place_stencils
@@ -33,8 +32,6 @@ class GameWindow < Gosu::Window
   end
 
   def draw
-    Gosu::Window.primary_buffer.clear
-
     # Draw the background and ship
     draw_example_objects
 
@@ -47,19 +44,22 @@ class GameWindow < Gosu::Window
     # Let Gosu use the default texture unit again. This is what we want to draw.
     glActiveTexture GL_TEXTURE0
 
-    # We'll use the window's primary buffer to draw our images that need to be masked
-    Gosu::Window.primary_buffer.render do
+    # We'll use the window's primary buffer to draw our images that need to be masked.
+    # We can use this buffer as long as we don't expect it to be cleared before we use it
+    # or unaltered between our uses of it.
+    Gosu::Window.primary_buffer.render do |buffer|
+      buffer.clear
       @image.draw_rot(@image.width / 2, @image.height / 2, 0, @rotation)
     end
 
     # Draw the primary buffer with our shader
-    Gosu::Window.primary_buffer.draw(0, 0, 0, :shader => @shader)
+    Gosu::Window.primary_buffer.draw 0, 0, 0, shader: @shader
   end
 
   # Clear the stencil texture and draw new stencils on top of it
   def place_stencils
-    @stencil_texture.clear
-    @stencil_texture.render do
+    @stencil_texture.render do |texture|
+      texture.clear
       5.times do
         @stencil.draw_rot(rand(@image.width), rand(@image.height), 1, 0, 0.5, 0.5, 2, 2)
       end
