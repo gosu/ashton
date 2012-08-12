@@ -16,8 +16,6 @@ class GameWindow < Gosu::Window
     super 640, 480, false
     self.caption = "Gosu & OpenGL Integration Demo (SHADERS)"
 
-    GC.disable
-
     @font = Gosu::Font.new self, Gosu::default_font_name, 24
     @image = Gosu::Image.new self, media_path("Earth.png"), true
 
@@ -34,6 +32,8 @@ class GameWindow < Gosu::Window
   end
 
   def update
+    $gosu_blocks.clear # workaround for Gosu 0.7.45 bug.
+
     @fade.fade = @fade_fade = Math::sin(Gosu::milliseconds / 1000.0) / 2 + 0.5
     @contrast.contrast = @contrast_contrast = Math::sin(Gosu::milliseconds / 1000.0) * 2 + 2
     @mezzotint.t = (Gosu::milliseconds / 100.0).to_i
