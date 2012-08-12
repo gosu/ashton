@@ -185,10 +185,18 @@ module Ashton
           glUniform1i location, 0
 
         when Float
-          glUniform1f location, value
+          begin
+            glUniform1f location, value
+          rescue
+            glUniform1i location, value.to_i
+          end
 
         when Integer
-          glUniform1i location, value
+          begin
+            glUniform1i location, value
+          rescue
+            glUniform1f location, value.to_f
+          end
 
         when Gosu::Color
           glUniform4f location, *value.to_opengl
@@ -201,10 +209,18 @@ module Ashton
 
           case value[0]
             when Float
-              GL.send "glUniform#{size}f", location, *value
+              begin
+                GL.send "glUniform#{size}f", location, *value.map(&:to_f)
+              rescue
+                GL.send "glUniform#{size}i", location, *value.map(&:to_i)
+              end
 
             when Integer
-              GL.send "glUniform#{size}i", location, *value
+              begin
+                GL.send "glUniform#{size}i", location, *value.map(&:to_i)
+              rescue
+                GL.send "glUniform#{size}f", location, *value.map(&:to_f)
+              end
 
             else
               raise ArgumentError, "Uniform data type not supported for element of type: #{value[0].class}"
