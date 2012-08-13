@@ -28,7 +28,7 @@ class GameWindow < Gosu::Window
     # Fill the stencil texture
     place_stencils
 
-    @shader = Ashton::Shader.new vertex: :multitexture, fragment: :stencil
+    @shader = Ashton::Shader.new vertex: :multitexture2, fragment: :stencil
   end
 
   def draw
