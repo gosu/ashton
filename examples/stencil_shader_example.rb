@@ -35,14 +35,6 @@ class GameWindow < Gosu::Window
     # Draw the background and ship
     draw_example_objects
 
-    # Bind the stencil texture to the GL_TEXTURE1 texture unit.
-    # This unit is used in both the 'multitexture' vertex shader and
-    # 'stencil' fragment shader.
-    glActiveTexture GL_TEXTURE1
-    glBindTexture GL_TEXTURE_2D, @stencil_texture.id
-
-    # Let Gosu use the default texture unit again. This is what we want to draw.
-    glActiveTexture GL_TEXTURE0
 
     # We'll use the window's primary buffer to draw our images that need to be masked.
     # We can use this buffer as long as we don't expect it to be cleared before we use it
@@ -52,8 +44,8 @@ class GameWindow < Gosu::Window
       @image.draw_rot(@image.width / 2, @image.height / 2, 0, @rotation)
     end
 
-    # Draw the primary buffer with our shader
-    primary_buffer.draw 0, 0, 0, shader: @shader
+    # Draw the primary buffer with our shader and give it our stencil to work with.
+    primary_buffer.draw 0, 0, 0, shader: @shader, multitexture: @stencil_texture
 
     # Show the stencil texture drawn directly on the screen, for comparison.
     @stencil_texture.draw 320, 0, 0, mode: :replace

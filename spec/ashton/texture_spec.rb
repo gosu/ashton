@@ -299,6 +299,14 @@ describe Ashton::Texture do
     it "should fail with a bad shader type" do
       ->{ @subject.draw 1, 2, 3, shader: 12 }.should raise_error TypeError
     end
+
+    it "should draw with a Texture passed to multitexture" do
+      @subject.draw 1, 2, 3, multitexture: Ashton::Texture.new(10, 10)
+    end
+
+    it "should fail with a bad multitexture option" do
+      ->{ @subject.draw 1, 2, 3, multitexture: :fish }.should raise_error(TypeError, /Expected :multitexture option of type Ashton::Texture/)
+    end
   end
 
   describe "to_blob" do

@@ -144,6 +144,7 @@ module Ashton
     #   @option options :shader [Ashton::Shader] Shader to apply to drawing.
     #   @option options :color [Gosu::Color] (Gosu::Color::WHITE) Color to apply to the drawing.
     #   @option options :mode [Symbol] (:alpha_blend) :alpha_blend, :add, :multiply, :replace
+    #   @option options :multitexture [Texture] A texture to be used in a multi-texturing shader.
 
     public
     # Convert the current contents of the buffer into a Gosu::Image

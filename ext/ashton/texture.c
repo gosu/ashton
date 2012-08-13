@@ -260,9 +260,9 @@ static VALUE draw_block(VALUE yield_value, VALUE parameters, int argc, VALUE arg
     VALUE blend_mode = rb_ary_entry(parameters, 3);
     VALUE color = rb_ary_entry(parameters, 4);
     VALUE shader = rb_ary_entry(parameters, 5);
+    VALUE multitexture = rb_ary_entry(parameters, 6);
 
-    TEXTURE(); // Uses 'self' value.
-
+    TEXTURE(); // Uses 'self' value, so can't be at start of function.
 
     if(!NIL_P(shader))
     {
@@ -301,6 +301,14 @@ static VALUE draw_block(VALUE yield_value, VALUE parameters, int argc, VALUE arg
         glBlendFunc(GL_ONE, GL_ZERO);
     }
 
+    // Enable multitexturing.
+    if(!NIL_P(multitexture))
+    {
+        uint texture_id = NUM2UINT(rb_funcall(multitexture, rb_intern("id"), 0));
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, texture_id);
+    }
+
     glBegin(GL_QUADS);
         glTexCoord2d(0.0, 1.0);
         glMultiTexCoord2d(GL_TEXTURE1, 0.0, 1.0);
@@ -319,6 +327,13 @@ static VALUE draw_block(VALUE yield_value, VALUE parameters, int argc, VALUE arg
         glVertex2d(x + texture->width, y + texture->height); // BR
     glEnd();
 
+    // Disable multitexturing.
+    if(!NIL_P(multitexture))
+    {
+        glBindTexture(GL_TEXTURE_2D, 0);
+        glActiveTexture(GL_TEXTURE0);
+    }
+
     return Qnil;
 }
 
@@ -328,7 +343,7 @@ VALUE Ashton_Texture_draw(int argc, VALUE argv[], VALUE self)
     TEXTURE();
 
     VALUE x, y, z, options;
-    VALUE shader, blend_mode, color;
+    VALUE shader, blend_mode, color, multitexture;
 
     if(rb_scan_args(argc, argv, "31", &x, &y, &z, &options) == 4)
     {
@@ -369,10 +384,17 @@ VALUE Ashton_Texture_draw(int argc, VALUE argv[], VALUE self)
         {
             rb_raise(rb_eTypeError, "Expecting :color to be a Gosu::Color");
         }
+
+        // Get :multitexture
+        multitexture = rb_hash_aref(options, SYMBOL("multitexture"));
+        if(!NIL_P(multitexture) && !rb_obj_is_kind_of(multitexture, rb_cTexture))
+        {
+            rb_raise(rb_eTypeError, "Expected :multitexture option of type Ashton::Texture");
+        }
     }
     else
     {
-       shader = Qnil;
+       shader = multitexture = Qnil;
        blend_mode = SYMBOL("alpha");
        color = UINT2NUM(0xffffffff);
     }
@@ -392,7 +414,8 @@ VALUE Ashton_Texture_draw(int argc, VALUE argv[], VALUE self)
     rb_ary_push(parameters, y);
     rb_ary_push(parameters, blend_mode);
     rb_ary_push(parameters, color);
-    if(!NIL_P(shader)) rb_ary_push(parameters, shader);
+    rb_ary_push(parameters, shader);
+    rb_ary_push(parameters, multitexture);
 
     rb_block_call(window, rb_intern("gl"), 1, block_argv,
                   RUBY_METHOD_FUNC(draw_block), parameters);
