@@ -54,6 +54,10 @@ class GameWindow < Gosu::Window
 
     # Draw the primary buffer with our shader
     primary_buffer.draw 0, 0, 0, shader: @shader
+
+    # Show the stencil texture drawn directly on the screen, for comparison.
+    @stencil_texture.draw 160, 0, 0, mode: :replace
+    @font.draw "Stencil texture", 450, 0, 0
   end
 
   # Clear the stencil texture and draw new stencils on top of it
@@ -90,6 +94,7 @@ class GameWindow < Gosu::Window
   end
 
   def setup_example_objects
+    @font = Gosu::Font.new $window, Gosu::default_font_name, 20
     @background = Gosu::Image.new self, media_path("Earth.png"), true
     @ship = Gosu::Image.new self, media_path("Starfighter.bmp"), false
     @rotation = 0
