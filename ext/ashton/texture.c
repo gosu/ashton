@@ -254,13 +254,12 @@ VALUE Ashton_Texture_to_blob(VALUE self)
 // ----------------------------------------
 static VALUE draw_block(VALUE yield_value, VALUE parameters, int argc, VALUE argv[])
 {
-    VALUE self, x, y, blend_mode, color, shader;
-    self = rb_ary_entry(parameters, 0);
-    x = rb_ary_entry(parameters, 1);
-    y = rb_ary_entry(parameters, 2);
-    blend_mode = rb_ary_entry(parameters, 3);
-    color = rb_ary_entry(parameters, 4);
-    shader = rb_ary_entry(parameters, 5);
+    VALUE self = rb_ary_entry(parameters, 0);
+    float x = NUM2DBL(rb_ary_entry(parameters, 1));
+    float y = NUM2DBL(rb_ary_entry(parameters, 2));
+    VALUE blend_mode = rb_ary_entry(parameters, 3);
+    VALUE color = rb_ary_entry(parameters, 4);
+    VALUE shader = rb_ary_entry(parameters, 5);
 
     TEXTURE(); // Uses 'self' value.
 

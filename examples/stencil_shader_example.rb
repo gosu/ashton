@@ -56,7 +56,7 @@ class GameWindow < Gosu::Window
     primary_buffer.draw 0, 0, 0, shader: @shader
 
     # Show the stencil texture drawn directly on the screen, for comparison.
-    @stencil_texture.draw 160, 0, 0, mode: :replace
+    @stencil_texture.draw 320, 0, 0, mode: :replace
     @font.draw "Stencil texture", 450, 0, 0
   end
 
