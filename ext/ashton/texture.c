@@ -262,7 +262,8 @@ static VALUE draw_block(VALUE yield_value, VALUE parameters, int argc, VALUE arg
     color = rb_ary_entry(parameters, 4);
     shader = rb_ary_entry(parameters, 5);
 
-    TEXTURE();
+    TEXTURE(); // Uses 'self' value.
+
 
     if(!NIL_P(shader))
     {
@@ -282,44 +283,40 @@ static VALUE draw_block(VALUE yield_value, VALUE parameters, int argc, VALUE arg
     glBindTexture(GL_TEXTURE_2D, texture->id);
 
     // Set blending mode.
+    // Don't need an 'else' clause, since we checked before.
     ID blend_id = SYM2ID(blend_mode);
-
-    if(blend_id == rb_intern("default") ||
-       blend_id == rb_intern("alpha"))
+    if(blend_id == rb_intern(DRAW_MODE_ALPHA_BLEND))
     {
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     }
-    else if(blend_id == rb_intern("additive") ||
-            blend_id == rb_intern("add"))
+    else if(blend_id == rb_intern(DRAW_MODE_ADD))
     {
         glBlendFunc(GL_ONE, GL_ONE);
     }
-    else if(blend_id == rb_intern("multiplicative") ||
-            blend_id == rb_intern("multiply"))
+    else if(blend_id == rb_intern(DRAW_MODE_MULTIPLY))
     {
         glBlendFunc(GL_DST_COLOR, GL_ZERO);
     }
-    else if(blend_id == rb_intern("copy"))
+    else if(blend_id == rb_intern(DRAW_MODE_REPLACE))
     {
         glBlendFunc(GL_ONE, GL_ZERO);
     }
-    else
-    {
-        rb_raise(rb_eArgError, "Unrecognised blend mode: :%s",
-                 rb_id2name(blend_id));
-    }
 
     glBegin(GL_QUADS);
-        glTexCoord2d(0, 0);
+        glTexCoord2d(0.0, 1.0);
+        glMultiTexCoord2d(GL_TEXTURE1, 0.0, 1.0);
         glVertex2d(x, y + texture->height); // BL
 
-        glTexCoord2d(0, 1);
+        glTexCoord2d(0.0, 0.0);
+        glMultiTexCoord2d(GL_TEXTURE1, 0.0, 0.0);
         glVertex2d(x, y); // TL
 
-        glTexCoord2d(1, 1);
+        glTexCoord2d(1.0, 0.0);
+        glMultiTexCoord2d(GL_TEXTURE1, 1.0, 0.0);
         glVertex2d(x + texture->width, y); // TR
 
-        glTexCoord2d(1, 0);
+        glTexCoord2d(1.0, 1.0);
+        glMultiTexCoord2d(GL_TEXTURE1, 1.0, 1.0);
         glVertex2d(x + texture->width, y + texture->height); // BR
     glEnd();
 
@@ -338,23 +335,29 @@ VALUE Ashton_Texture_draw(int argc, VALUE argv[], VALUE self)
     {
         // Get :shader
         shader = rb_hash_aref(options, SYMBOL("shader"));
-        if(!NIL_P(shader))
+        if(!NIL_P(shader) && !rb_obj_is_kind_of(shader, rb_cShader))
         {
-            if(!rb_obj_is_kind_of(shader, rb_cShader))
-            {
-               rb_raise(rb_eTypeError, "Expecting :shader to be an Ashton::Shader");
-            }
+            rb_raise(rb_eTypeError, "Expected :shader option of type Ashton::Shader");
         }
 
         // Get :blend mode
-        blend_mode = rb_hash_aref(options, SYMBOL("blend"));
+        blend_mode = rb_hash_aref(options, SYMBOL("mode"));
         if(NIL_P(blend_mode))
         {
-            blend_mode = SYMBOL("alpha");
+            blend_mode = SYMBOL(DRAW_MODE_ALPHA_BLEND);
         }
         else
         {
             Check_Type(blend_mode, T_SYMBOL);
+
+            ID blend_id = SYM2ID(blend_mode);
+            if(!(blend_id == rb_intern(DRAW_MODE_ALPHA_BLEND) ||
+                 blend_id == rb_intern(DRAW_MODE_ADD) ||
+                 blend_id == rb_intern(DRAW_MODE_MULTIPLY) ||
+                 blend_id == rb_intern(DRAW_MODE_REPLACE)))
+            {
+               rb_raise(rb_eArgError, "Unsupported draw :mode, :%s", rb_id2name(blend_id));
+            }
         }
 
         // Get :color
@@ -363,12 +366,9 @@ VALUE Ashton_Texture_draw(int argc, VALUE argv[], VALUE self)
         {
             color = UINT2NUM(0xffffffff);
         }
-        else
+        else if(!rb_obj_is_kind_of(color, rb_cColor))
         {
-            if(!rb_obj_is_kind_of(color, rb_cColor))
-            {
-                rb_raise(rb_eTypeError, "Expecting :color to be a Gosu::Color");
-            }
+            rb_raise(rb_eTypeError, "Expecting :color to be a Gosu::Color");
         }
     }
     else
@@ -378,15 +378,14 @@ VALUE Ashton_Texture_draw(int argc, VALUE argv[], VALUE self)
        color = UINT2NUM(0xffffffff);
     }
 
+    // Enable the shader, if provided.
+    if(!NIL_P(shader)) rb_funcall(shader, rb_intern("enable"), 1, z);
+
+    // Create a GL block to do the actual drawing.
     VALUE window = rb_gv_get("$window");
 
     VALUE block_argv[1];
     block_argv[0] = z;
-
-    if(!NIL_P(shader))
-    {
-        rb_funcall(shader, rb_intern("enable"), 1, z);
-    }
 
     VALUE parameters = rb_ary_new();
     rb_ary_push(parameters, self);

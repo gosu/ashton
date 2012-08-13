@@ -144,69 +144,6 @@ module Ashton
     #   @option options :shader [Ashton::Shader] Shader to apply to drawing.
     #   @option options :color [Gosu::Color] (Gosu::Color::WHITE) Color to apply to the drawing.
     #   @option options :mode [Symbol] (:alpha_blend) :alpha_blend, :add, :multiply, :replace
-    def draw(x, y, z, options = {})
-      shader = options[:shader]
-      color = options[:color] || DEFAULT_DRAW_COLOR
-      mode = options[:mode] || :alpha_blend
-
-      unless shader.nil? || shader.is_a?(Shader)
-        raise TypeError, "Expected :shader option of type Ashton::Shader"
-      end
-
-      raise TypeError, "Expected :color option of type Gosu::Color" unless color.is_a? Gosu::Color
-      raise TypeError, "Expected :mode option to be a Symbol" unless mode.is_a? Symbol
-      raise ArgumentError, "Unsupported draw :mode, #{mode.inspect}" unless VALID_DRAW_MODES.include? mode
-
-      shader.enable z if shader
-
-      $window.gl z do
-        if shader
-          shader.color = color
-          location = shader.send :uniform_location, "in_TextureEnabled", required: false
-          shader.send :set_uniform, location, true if location != Shader::INVALID_LOCATION
-        else
-          glColor4f *color.to_opengl
-        end
-
-        glEnable GL_TEXTURE_2D
-        glBindTexture GL_TEXTURE_2D, id
-
-        # Set blending mode.
-        glEnable GL_BLEND
-        case mode
-          when :alpha_blend
-            glBlendFunc GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA
-          when :add
-            glBlendFunc GL_ONE, GL_ONE
-          when :multiply
-            glBlendFunc GL_DST_COLOR, GL_ZERO
-          when :replace
-            glBlendFunc GL_ONE, GL_ZERO
-          else
-            raise ArgumentError, "Unrecognised draw :mode, #{mode.inspect}"
-        end
-
-        glBegin GL_QUADS do
-          glTexCoord2d 0, 1
-          glMultiTexCoord2d GL_TEXTURE1, 0, 1
-          glVertex2d x, y + height # BL
-
-          glTexCoord2d 0, 0
-          glMultiTexCoord2d GL_TEXTURE1, 0, 0
-          glVertex2d x, y # TL
-
-          glTexCoord2d 1, 0
-          glMultiTexCoord2d GL_TEXTURE1, 1, 0
-          glVertex2d x + width, y # TR
-
-          glTexCoord2d 1, 1
-          glMultiTexCoord2d GL_TEXTURE1, 1, 1
-          glVertex2d x + width, y + height # BR
-        end
-      end
-
-      shader.disable z if shader
-    end
 
     public
     # Convert the current contents of the buffer into a Gosu::Image
