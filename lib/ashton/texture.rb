@@ -126,6 +126,10 @@ module Ashton
       glOrtho 0, $window.width, $window.height, 0, -1, 1
 
       @rendering = false
+
+      cache.refresh # Force lazy reloading of the cache.
+
+      nil
     end
 
     # @!method draw(x, y, z, options = {})
