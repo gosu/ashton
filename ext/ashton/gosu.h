@@ -9,7 +9,7 @@
 
 #include "common.h"
 
-static VALUE rb_mGosu;
+VALUE rb_mGosu;
 
 #include "color.h"
 #include "font.h"

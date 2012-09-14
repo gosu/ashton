@@ -1,7 +1,5 @@
 #include "texture.h"
 
-extern VALUE rb_cPixelCache;
-
 void Init_Ashton_Texture(VALUE module)
 {
     rb_cTexture = rb_define_class_under(module, "Texture", rb_cObject);

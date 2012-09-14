@@ -25,4 +25,17 @@ typedef struct _color_f
 
 #define SYMBOL(STR) ID2SYM(rb_intern(STR))
 
+// Global variables for each Gosu module/class.
+extern VALUE rb_mGosu;
+extern VALUE rb_cColor;
+extern VALUE rb_cFont;
+extern VALUE rb_cImage;
+extern VALUE rb_cWindow;
+
+// Global variables for each Ashton module/class.
+extern VALUE rb_mAshton;
+extern VALUE rb_cPixelCache;
+extern VALUE rb_cShader;
+extern VALUE rb_cTexture;
+
 #endif // COMMON_H

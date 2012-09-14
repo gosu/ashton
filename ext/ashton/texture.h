@@ -13,14 +13,12 @@
 #include "common.h"
 #include "pixel_cache.h"
 
+VALUE rb_cTexture;
+
 #define DRAW_MODE_ALPHA_BLEND "alpha_blend"
 #define DRAW_MODE_ADD "add"
 #define DRAW_MODE_MULTIPLY "multiply"
 #define DRAW_MODE_REPLACE "replace"
-
-VALUE rb_cTexture;
-extern VALUE rb_cColor;
-extern VALUE rb_cShader;
 
 typedef struct _texture
 {

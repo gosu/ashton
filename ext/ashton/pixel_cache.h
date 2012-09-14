@@ -13,9 +13,6 @@
 #include "common.h"
 
 VALUE rb_cPixelCache;
-extern VALUE rb_cImage;
-extern VALUE rb_cColor;
-extern VALUE rb_cTexture;
 
 typedef struct _pixel_cache
 {

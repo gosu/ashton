@@ -12,7 +12,7 @@
 #include <ruby.h>
 #include <time.h>
 
-static VALUE rb_mAshton;
+VALUE rb_mAshton;
 
 #include "common.h"
 #include "fast_math.h"

@@ -1,7 +1,6 @@
 #include "shader.h"
 
 
-
 // ----------------------------------------
 void Init_Ashton_Shader(VALUE module)
 {

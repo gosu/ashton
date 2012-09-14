@@ -10,6 +10,8 @@
 
 #include "common.h"
 
+VALUE rb_cFont;
+
 void Init_Gosu_Font(VALUE module);
 
 #endif // GOSU_FONT_H
