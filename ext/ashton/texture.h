@@ -36,13 +36,6 @@ typedef struct _texture
 
 void Init_Ashton_Texture(VALUE module);
 
-// Helpers
-static VALUE texture_allocate(VALUE klass);
-static void texture_mark(Texture* texture);
-static void texture_free(Texture* texture);
-static void ensure_cache_exists(VALUE self, Texture* texture);
-static void ensure_fbo_exists(Texture* texture);
-
 // Getters.
 VALUE Ashton_Texture_get_cache(VALUE self);
 VALUE Ashton_Texture_get_width(VALUE self);

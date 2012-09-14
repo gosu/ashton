@@ -13,7 +13,7 @@ void Init_ashton()
 {
     rb_mAshton = rb_define_module("Ashton");
 
-    srand(time(NULL));
+    srand((float)time(NULL));
 
     Init_Gosu();
 
@@ -32,11 +32,11 @@ void Init_ashton()
 
 VALUE Ashton_fast_sin(VALUE self, VALUE angle)
 {
-    rb_float_new(fast_sin_deg(NUM2DBL(angle)));
+    return rb_float_new(fast_sin_deg(NUM2DBL(angle)));
 }
 
 VALUE Ashton_fast_cos(VALUE self, VALUE angle)
 {
-   rb_float_new(fast_cos_deg(NUM2DBL(angle)));
+   return rb_float_new(fast_cos_deg(NUM2DBL(angle)));
 }
 

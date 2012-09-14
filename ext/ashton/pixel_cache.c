@@ -2,6 +2,13 @@
 
 VALUE rb_cPixelCache;
 
+// Helpers
+static void cache_texture(PixelCache* pixel_cache);
+static Color_i get_pixel_color(PixelCache* pixel_cache, VALUE x, VALUE y);
+static VALUE pixel_cache_allocate(VALUE klass);
+static void pixel_cache_mark(PixelCache* pixel_cache);
+static void pixel_cache_free(PixelCache* pixel_cache);
+
 void Init_Ashton_PixelCache(VALUE module)
 {
     rb_cPixelCache = rb_define_class_under(module, "PixelCache", rb_cObject);

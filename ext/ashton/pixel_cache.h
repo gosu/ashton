@@ -34,13 +34,6 @@ typedef struct _pixel_cache
     Data_Get_Struct(self, PixelCache, pixel_cache);
 
 void Init_Ashton_PixelCache(VALUE module);
-    
-// Helpers
-static void cache_texture(PixelCache* pixel_cache);
-static Color_i get_pixel_color(PixelCache* pixel_cache, VALUE x, VALUE y);
-static VALUE pixel_cache_allocate(VALUE klass);
-static void pixel_cache_mark(PixelCache* pixel_cache);
-static void pixel_cache_free(PixelCache* pixel_cache);
 
 // Creation and destruction.
 VALUE Ashton_PixelCache_init(VALUE self, VALUE owner);

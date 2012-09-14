@@ -36,6 +36,7 @@ $CFLAGS << " -std=gnu99"
 
 # Stop getting annoying warnings for valid C99 code.
 $warnflags.gsub!('-Wdeclaration-after-statement', '') if $warnflags
+$warnflags << ' -Wall' # Let's be good boys and girls!
 
 create_header
 create_makefile extension_name

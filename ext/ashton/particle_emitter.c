@@ -1,23 +1,60 @@
 #include "particle_emitter.h"
 
+// Helpers.
+inline static float randf();
+inline static float deviate(Range * range);
+static bool color_changes(ParticleEmitter* emitter);
+static bool texture_changes(ParticleEmitter* emitter);
+
+static void update_particle(ParticleEmitter* emitter, Particle* particle, const float delta);
+static void update_vbo(ParticleEmitter* emitter);
+static void draw_vbo(ParticleEmitter* emitter);
+
+static Vertex2d* write_particle_vertices(Vertex2d* vertex,
+                                         Particle* particle,
+                                         const uint width, const uint height);
+static uint write_vertices_for_particles(Vertex2d* vertex,
+                                         Particle* first, Particle* last,
+                                         const uint width, const uint height);
+
+static Vertex2d* write_particle_texture_coords(Vertex2d* texture_coord,
+                                               TextureInfo* texture_info);
+static void write_texture_coords_for_particles(Vertex2d* texture_coord,
+                                               Particle* first, Particle* last,
+                                               TextureInfo* texture_info);
+static void write_texture_coords_for_all_particles(Vertex2d *texture_coord,
+                                                   TextureInfo* texture_info,
+                                                   const uint num_particles);
+
+static Color_i* write_particle_colors(Color_i* color_out, Color_f* color_in);
+static void write_colors_for_particles(Color_i* color,
+                                       Particle* first, Particle* last);
+
+static uint color_to_argb(Color_f* color);
+
+static void init_vbo(ParticleEmitter* emitter);
+static VALUE particle_emitter_allocate(VALUE klass);
+static void particle_emitter_mark(ParticleEmitter* emitter);
+static void particle_emitter_free(ParticleEmitter* emitter);
+
 
 // === GETTERS & SETTERS ===
-GET_SET_EMITTER_DATA(x, rb_float_new, NUM2DBL);
-GET_SET_EMITTER_DATA(y, rb_float_new, NUM2DBL);
-GET_SET_EMITTER_DATA(z, rb_float_new, NUM2DBL);
-GET_SET_EMITTER_DATA(gravity, rb_float_new, NUM2DBL);
+GET_SET_EMITTER_DATA(x, rb_float_new, (float)NUM2DBL);
+GET_SET_EMITTER_DATA(y, rb_float_new, (float)NUM2DBL);
+GET_SET_EMITTER_DATA(z, rb_float_new, (float)NUM2DBL);
+GET_SET_EMITTER_DATA(gravity, rb_float_new, (float)NUM2DBL);
 
-GET_SET_EMITTER_DATA_RANGE(center_x, rb_float_new, NUM2DBL);
-GET_SET_EMITTER_DATA_RANGE(center_y, rb_float_new, NUM2DBL);
+GET_SET_EMITTER_DATA_RANGE(center_x, rb_float_new, (float)NUM2DBL);
+GET_SET_EMITTER_DATA_RANGE(center_y, rb_float_new, (float)NUM2DBL);
 
-GET_SET_EMITTER_DATA_RANGE(angular_velocity, rb_float_new, NUM2DBL);
-GET_SET_EMITTER_DATA_RANGE(fade, rb_float_new, NUM2DBL);
-GET_SET_EMITTER_DATA_RANGE(friction, rb_float_new, NUM2DBL);
-GET_SET_EMITTER_DATA_RANGE(offset, rb_float_new, NUM2DBL);
-GET_SET_EMITTER_DATA_RANGE(scale, rb_float_new, NUM2DBL);
-GET_SET_EMITTER_DATA_RANGE(speed, rb_float_new, NUM2DBL);
-GET_SET_EMITTER_DATA_RANGE(time_to_live, rb_float_new, NUM2DBL);
-GET_SET_EMITTER_DATA_RANGE(zoom, rb_float_new, NUM2DBL);
+GET_SET_EMITTER_DATA_RANGE(angular_velocity, rb_float_new, (float)NUM2DBL);
+GET_SET_EMITTER_DATA_RANGE(fade, rb_float_new, (float)NUM2DBL);
+GET_SET_EMITTER_DATA_RANGE(friction, rb_float_new, (float)NUM2DBL);
+GET_SET_EMITTER_DATA_RANGE(offset, rb_float_new, (float)NUM2DBL);
+GET_SET_EMITTER_DATA_RANGE(scale, rb_float_new, (float)NUM2DBL);
+GET_SET_EMITTER_DATA_RANGE(speed, rb_float_new, (float)NUM2DBL);
+GET_SET_EMITTER_DATA_RANGE(time_to_live, rb_float_new, (float)NUM2DBL);
+GET_SET_EMITTER_DATA_RANGE(zoom, rb_float_new, (float)NUM2DBL);
 
 GET_EMITTER_DATA(max_particles, max_particles, UINT2NUM);
 GET_EMITTER_DATA(count, count, UINT2NUM);
@@ -28,7 +65,7 @@ GET_EMITTER_DATA(count, count, UINT2NUM);
 VALUE Ashton_ParticleEmitter_set_interval_min(VALUE self, VALUE value)
 {
     EMITTER();
-    emitter->interval.min = NUM2DBL(value);
+    emitter->interval.min = (float)NUM2DBL(value);
     emitter->time_until_emit = deviate(&emitter->interval);
     return value;
 }
@@ -44,7 +81,7 @@ VALUE Ashton_ParticleEmitter_get_interval_min(VALUE self)
 VALUE Ashton_ParticleEmitter_set_interval_max(VALUE self, VALUE value)
 {
     EMITTER();
-    emitter->interval.max = NUM2DBL(value);
+    emitter->interval.max = (float)NUM2DBL(value);
     emitter->time_until_emit = deviate(&emitter->interval);
     return value;
 }
@@ -111,9 +148,9 @@ VALUE Ashton_ParticleEmitter_init(VALUE self, VALUE x, VALUE y, VALUE z, VALUE m
 {
     EMITTER();
 
-    emitter->x = NUM2DBL(x);
-    emitter->y = NUM2DBL(y);
-    emitter->z = NUM2DBL(z);
+    emitter->x = (float)NUM2DBL(x);
+    emitter->y = (float)NUM2DBL(y);
+    emitter->z = (float)NUM2DBL(z);
 
     // Create space for all the particles we'll ever need!
     emitter->max_particles = NUM2UINT(max_particles);
@@ -201,10 +238,10 @@ VALUE Ashton_ParticleEmitter_set_image(VALUE self, VALUE image)
     // Fill the array with all the same coords (won't be used if the image changes dynamically).
     VALUE tex_info = rb_funcall(image, rb_intern("gl_tex_info"), 0);
     emitter->texture_info.id     = FIX2UINT(rb_funcall(tex_info, rb_intern("tex_name"), 0));
-    emitter->texture_info.left   = NUM2DBL(rb_funcall(tex_info, rb_intern("left"), 0));
-    emitter->texture_info.right  = NUM2DBL(rb_funcall(tex_info, rb_intern("right"), 0));
-    emitter->texture_info.top    = NUM2DBL(rb_funcall(tex_info, rb_intern("top"), 0));
-    emitter->texture_info.bottom = NUM2DBL(rb_funcall(tex_info, rb_intern("bottom"), 0));
+    emitter->texture_info.left   = (float)NUM2DBL(rb_funcall(tex_info, rb_intern("left"), 0));
+    emitter->texture_info.right  = (float)NUM2DBL(rb_funcall(tex_info, rb_intern("right"), 0));
+    emitter->texture_info.top    = (float)NUM2DBL(rb_funcall(tex_info, rb_intern("top"), 0));
+    emitter->texture_info.bottom = (float)NUM2DBL(rb_funcall(tex_info, rb_intern("bottom"), 0));
 
     write_texture_coords_for_all_particles(emitter->texture_coords_array,
                                            &emitter->texture_info,
@@ -720,7 +757,7 @@ VALUE Ashton_ParticleEmitter_update(VALUE self, VALUE delta)
 {
     EMITTER();
 
-    float _delta = NUM2DBL(delta);
+    float _delta = (float)NUM2DBL(delta);
     if(_delta < 0.0) rb_raise(rb_eArgError, "delta must be >= 0");
 
     if(emitter->count > 0)

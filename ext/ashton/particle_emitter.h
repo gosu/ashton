@@ -104,10 +104,6 @@ typedef struct _particle_emitter
 
 
 void Init_Ashton_ParticleEmitter(VALUE module);
-static void init_vbo(ParticleEmitter* emitter);
-static VALUE particle_emitter_allocate(VALUE klass);
-static void particle_emitter_mark(ParticleEmitter* emitter);
-static void particle_emitter_free(ParticleEmitter* emitter);
 
 // Initialization
 VALUE Ashton_ParticleEmitter_init(VALUE self, VALUE x, VALUE y, VALUE z, VALUE max_particles);
@@ -161,38 +157,6 @@ VALUE Ashton_ParticleEmitter_init(VALUE self, VALUE x, VALUE y, VALUE z, VALUE m
 
 VALUE Ashton_ParticleEmitter_get_color_argb(VALUE self);
 VALUE Ashton_ParticleEmitter_set_color_argb(VALUE self, VALUE color);
-
-// Helpers.
-inline static float randf();
-inline static float deviate(Range * range);
-static bool color_changes(ParticleEmitter* emitter);
-static bool texture_changes(ParticleEmitter* emitter);
-
-static void update_particle(ParticleEmitter* emitter, Particle* particle, const float delta);
-static void update_vbo(ParticleEmitter* emitter);
-static void draw_vbo(ParticleEmitter* emitter);
-
-static Vertex2d* write_particle_vertices(Vertex2d* vertex,
-                                         Particle* particle,
-                                         const uint width, const uint height);
-static uint write_vertices_for_particles(Vertex2d* vertex,
-                                         Particle* first, Particle* last,
-                                         const uint width, const uint height);
-
-static Vertex2d* write_particle_texture_coords(Vertex2d* texture_coord,
-                                               TextureInfo* texture_info);
-static void write_texture_coords_for_particles(Vertex2d* texture_coord,
-                                               Particle* first, Particle* last,
-                                               TextureInfo* texture_info);
-static void write_texture_coords_for_all_particles(Vertex2d *texture_coord,
-                                                   TextureInfo* texture_info,
-                                                   const uint num_particles);
-
-static Color_i* write_particle_colors(Color_i* color_out, Color_f* color_in);
-static void write_colors_for_particles(Color_i* color,
-                                       Particle* first, Particle* last);
-
-static uint color_to_argb(Color_f* color);
 
 // Methods
 VALUE Ashton_ParticleEmitter_get_shader(VALUE self);

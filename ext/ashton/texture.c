@@ -2,6 +2,13 @@
 
 VALUE rb_cTexture;
 
+// Helpers
+static VALUE texture_allocate(VALUE klass);
+static void texture_mark(Texture* texture);
+static void texture_free(Texture* texture);
+static void ensure_cache_exists(VALUE self, Texture* texture);
+static void ensure_fbo_exists(Texture* texture);
+
 void Init_Ashton_Texture(VALUE module)
 {
     rb_cTexture = rb_define_class_under(module, "Texture", rb_cObject);
@@ -98,7 +105,7 @@ VALUE Ashton_Texture_init(VALUE self, VALUE width, VALUE height, VALUE blob)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
     // Create the texture, either undefined or based on RGBA blob data string.
-    uchar* data;
+    char* data;
     if(NIL_P(blob))
     {
        data = NULL; // Create an empty texture, that might be filled with junk.
@@ -166,7 +173,7 @@ static void texture_free(Texture* texture)
 }
 
 //
-static void ensure_cache_exists(VALUE self, Texture* texture)
+void ensure_cache_exists(VALUE self, Texture* texture)
 {
     if(NIL_P(texture->rb_cache))
     {
@@ -255,8 +262,8 @@ VALUE Ashton_Texture_to_blob(VALUE self)
 static VALUE draw_block(VALUE yield_value, VALUE parameters, int argc, VALUE argv[])
 {
     VALUE self = rb_ary_entry(parameters, 0);
-    float x = NUM2DBL(rb_ary_entry(parameters, 1));
-    float y = NUM2DBL(rb_ary_entry(parameters, 2));
+    float x = (float)NUM2DBL(rb_ary_entry(parameters, 1));
+    float y = (float)NUM2DBL(rb_ary_entry(parameters, 2));
     VALUE blend_mode = rb_ary_entry(parameters, 3);
     VALUE color = rb_ary_entry(parameters, 4);
     VALUE shader = rb_ary_entry(parameters, 5);
@@ -269,10 +276,10 @@ static VALUE draw_block(VALUE yield_value, VALUE parameters, int argc, VALUE arg
         VALUE options = rb_hash_new();
         rb_hash_aset(options, SYMBOL("required"), Qfalse);
 
-        int location = rb_funcall(shader, rb_intern("send"), 3, SYMBOL("uniform_location"), SYMBOL("texture_enabled"), options);
-        if(location != -1)
+        VALUE location = rb_funcall(shader, rb_intern("send"), 3, SYMBOL("uniform_location"), SYMBOL("texture_enabled"), options);
+        if(FIX2INT(location) != -1)
         {
-            rb_funcall(shader, rb_intern("send"), 3, SYMBOL("set_uniform"), INT2NUM(location), Qtrue);
+            rb_funcall(shader, rb_intern("send"), 3, SYMBOL("set_uniform"), location, Qtrue);
         }
         rb_funcall(shader, rb_intern("color="), 1, color);
     }
@@ -422,4 +429,6 @@ VALUE Ashton_Texture_draw(int argc, VALUE argv[], VALUE self)
 
     // Disable the shader, if provided.
     if(!NIL_P(shader)) rb_funcall(shader, rb_intern("disable"), 1, z);
+
+    return Qnil;
 }
