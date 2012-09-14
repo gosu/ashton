@@ -72,7 +72,7 @@ class TestWindow < Gosu::Window
   def needs_cursor?; true end
 
   def update
-    $gosu_blocks.clear # workaround for Gosu 0.7.45 bug.
+    $gosu_blocks.clear if defined? $gosu_blocks # workaround for Gosu 0.7.45 bug.
 
     # Calculate delta from milliseconds.
     @last_update_at ||= Gosu::milliseconds

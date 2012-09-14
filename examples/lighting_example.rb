@@ -54,7 +54,7 @@ class TestWindow < Gosu::Window
   end
 
   def update
-    $gosu_blocks.clear # workaround for Gosu 0.7.45 bug.
+    $gosu_blocks.clear if defined? $gosu_blocks # workaround for Gosu 0.7.45 bug.
 
     @camera_x -= 2 if button_down? Gosu::KbLeft
     @camera_x += 2 if button_down? Gosu::KbRight

@@ -32,7 +32,7 @@ class GameWindow < Gosu::Window
   end
 
   def update
-    $gosu_blocks.clear # workaround for Gosu 0.7.45 bug.
+    $gosu_blocks.clear if defined? $gosu_blocks # workaround for Gosu 0.7.45 bug.
 
     @fade.fade = @fade_fade = Math::sin(Gosu::milliseconds / 1000.0) / 2 + 0.5
     @contrast.contrast = @contrast_contrast = Math::sin(Gosu::milliseconds / 1000.0) * 2 + 2
