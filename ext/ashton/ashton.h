@@ -12,8 +12,6 @@
 #include <ruby.h>
 #include <time.h>
 
-VALUE rb_mAshton;
-
 #include "common.h"
 #include "fast_math.h"
 

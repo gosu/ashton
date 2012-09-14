@@ -7,6 +7,8 @@
 
 #include "ashton.h"
 
+VALUE rb_mAshton;
+
 void Init_ashton()
 {
     rb_mAshton = rb_define_module("Ashton");
