@@ -12,8 +12,6 @@
 
 #include "common.h"
 
-VALUE rb_cPixelCache;
-
 typedef struct _pixel_cache
 {
     float x;

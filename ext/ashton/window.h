@@ -10,8 +10,6 @@
 
 #include "common.h"
 
-VALUE rb_cWindow;
-
 void Init_Gosu_Window(VALUE module);
 
 #endif // GOSU_WINDOW_H

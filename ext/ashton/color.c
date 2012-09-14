@@ -1,5 +1,7 @@
 #include "color.h"
 
+VALUE rb_cColor;
+
 void Init_Gosu_Color(VALUE module)
 {
     rb_cColor = rb_define_class_under(module, "Color", rb_cObject);

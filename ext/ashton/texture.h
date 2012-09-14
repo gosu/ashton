@@ -13,8 +13,6 @@
 #include "common.h"
 #include "pixel_cache.h"
 
-VALUE rb_cTexture;
-
 #define DRAW_MODE_ALPHA_BLEND "alpha_blend"
 #define DRAW_MODE_ADD "add"
 #define DRAW_MODE_MULTIPLY "multiply"

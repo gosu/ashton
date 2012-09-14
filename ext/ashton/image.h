@@ -10,8 +10,6 @@
 
 #include "common.h"
 
-VALUE rb_cImage;
-
 void Init_Gosu_Image(VALUE module);
 
 #endif // GOSU_IMAGE_H

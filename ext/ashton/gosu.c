@@ -5,6 +5,8 @@
 
 #include "gosu.h"
 
+VALUE rb_mGosu;
+
 void Init_Gosu()
 {
     rb_mGosu = rb_define_module("Gosu");

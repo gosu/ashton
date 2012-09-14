@@ -1,5 +1,7 @@
 #include "pixel_cache.h"
 
+VALUE rb_cPixelCache;
+
 void Init_Ashton_PixelCache(VALUE module)
 {
     rb_cPixelCache = rb_define_class_under(module, "PixelCache", rb_cObject);

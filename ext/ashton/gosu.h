@@ -9,8 +9,6 @@
 
 #include "common.h"
 
-VALUE rb_mGosu;
-
 #include "color.h"
 #include "font.h"
 #include "image.h"
