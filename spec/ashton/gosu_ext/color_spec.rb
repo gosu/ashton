@@ -1,8 +1,8 @@
 require File.expand_path("../../../helper.rb", __FILE__)
 
 describe Gosu::Color do
-  before :all do
-    @conversions = [
+  let :conversions do
+    [
         [Gosu::Color::RED,                  [1.0, 0.0, 0.0, 1.0]],
         [Gosu::Color::GREEN,                [0.0, 1.0, 0.0, 1.0]],
         [Gosu::Color::BLUE,                 [0.0, 0.0, 1.0, 1.0]],
@@ -12,7 +12,7 @@ describe Gosu::Color do
 
   describe "to_opengl" do
     it "should convert from Color to float array" do
-      @conversions.each do |gosu, opengl|
+      conversions.each do |gosu, opengl|
         gosu.to_opengl.should eq opengl
       end
     end
@@ -20,7 +20,7 @@ describe Gosu::Color do
 
   describe ".from_opengl" do
     it "should create the expected Colors from a float array" do
-      @conversions.each do |gosu, opengl|
+      conversions.each do |gosu, opengl|
         Gosu::Color.from_opengl(opengl).should eq gosu
       end
     end

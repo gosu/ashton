@@ -4,10 +4,10 @@ require File.expand_path("../../helper.rb", __FILE__)
 describe Ashton::Shader do
   before :all do
     $window = Gosu::Window.new 16, 16, false
-
-    @subject = described_class.new # Default code.
-    @program = @subject.instance_variable_get :@program
   end
+
+  let(:subject) { described_class.new}
+  let(:program) { subject.instance_variable_get :@program }
 
   after :each do
     glUseProgram 0
@@ -46,79 +46,79 @@ describe Ashton::Shader do
 
   describe "dup" do
     it "should create a new object containing the same source" do
-      new_shader = @subject.dup
-      new_shader.vertex_source.should eq @subject.vertex_source
-      new_shader.fragment_source.should eq @subject.fragment_source
+      new_shader = subject.dup
+      new_shader.vertex_source.should eq subject.vertex_source
+      new_shader.fragment_source.should eq subject.fragment_source
     end
   end
 
   describe "use" do
     it "should fail if the shader is already active" do
-      glUseProgram @program
+      glUseProgram program
 
-      ->{ @subject.use {} }.should raise_error Ashton::ShaderError
+      ->{ subject.use {} }.should raise_error Ashton::ShaderError
     end
 
     it "should fail without a block" do
-      ->{ @subject.use }.should raise_error ArgumentError
+      ->{ subject.use }.should raise_error ArgumentError
     end
 
     it "should pass itself into the block" do
       shader = nil
-      @subject.use do |s|
+      subject.use do |s|
         shader = s
       end
 
-      shader.should eq @subject
+      shader.should eq subject
     end
 
     it "should be current within the block?" do
-      @subject.use do
-        @subject.should be_current
+      subject.use do
+        subject.should be_current
       end
     end
 
     it "should be not current after the block" do
-      @subject.use do
+      subject.use do
       end
 
-      @subject.should_not be_current
+      subject.should_not be_current
     end
   end
 
   describe "enable" do
     it "should fail if the shader is already active" do
-      glUseProgram @program
+      glUseProgram program
 
-      ->{ @subject.enable }.should raise_error Ashton::ShaderError
+      ->{ subject.enable }.should raise_error Ashton::ShaderError
     end
 
     it "should toggle current?" do
-      ->{ @subject.enable }.should change(@subject, :current?).from(false).to true
+      ->{ subject.enable }.should change(subject, :current?).from(false).to true
     end
 
   end
 
   describe "disable" do
     it "should fail if the shader is not active" do
-      -> { @subject.disable }.should raise_error Ashton::ShaderError
+      -> { subject.disable }.should raise_error Ashton::ShaderError
     end
 
     it "should toggle current?" do
-      @subject.enable
-      ->{ @subject.disable }.should change(@subject, :current?).from(true).to false
+      subject.enable
+      ->{ subject.disable }.should change(subject, :current?).from(true).to false
     end
   end
 
   describe "current?" do
     it "should be true if the program is current" do
-      glUseProgram @program
-      @subject.should be_current
+      glUseProgram program
+      subject.should be_current
     end
 
     it "should be false if the program isn't current" do
       glUseProgram 0
-      @subject.should_not be_current
+      subject.should_not be_current
     end
   end
 
