@@ -149,9 +149,10 @@ module Ashton
     public
     # Set the value of a uniform.
     #
-    # @param [String, Symbol] If a Symbol, :frog_paste is looked up as "in_FrogPaste", otherwise the Sting is used directly.
+    # @param uniform [String, Symbol] If a Symbol, :frog_paste is looked up as "in_FrogPaste", otherwise the Sting is used directly.
+    # @param value [Any] Value to set the uniform to
     #
-    # @raises ShaderUniformError unless requested uniform is defined in vertex or fragment shaders.
+    # @raise ShaderUniformError unless requested uniform is defined in vertex or fragment shaders.
     def []=(uniform, value)
       uniform = uniform_name_from_symbol(uniform) if uniform.is_a? Symbol
 

@@ -3,7 +3,7 @@ module Ashton
     module VersionChecking
       # Check if a specific OpenGL version is supported on this machine.
       #
-      # @raises NotSupportedError
+      # @raise NotSupportedError
       def check_opengl_version(version)
         unless GL.version_supported? version
           raise NotSupportedError, "OpenGL #{version} required to utilise #{self.class}"
@@ -12,7 +12,7 @@ module Ashton
 
       # Check if a specific OpenGL extension is supported on this machine.
       #
-      # @raises NotSupportedError
+      # @raise NotSupportedError
       def check_opengl_extension(extension)
         unless GL.extension_supported? extension
           raise NotSupportedError, "OpenGL extension #{extension} required to utilise #{self.class}"

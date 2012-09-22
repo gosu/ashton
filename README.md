@@ -33,9 +33,9 @@ Features
 * Ashton
     - {Ashton::Texture} - Single texture (compared to Gosu::Image which uses a spritesheet) which can be drawn directly onto and drawn to the Window.
 
-    - {Ashton::LightManager} -  Manages and combines the lighting from {Ashton::LightSource} objects.
+    - {Ashton::Lighting::Manager} -  Manages and combines the lighting from {Ashton::Lighting::LightSource} objects.
 
-    - {Ashton::LightSource} -  A single light-source that illuminates and whose can be blocked by shadow-casting objects.
+    - {Ashton::Lighting::LightSource} -  A single light-source that illuminates and whose can be blocked by shadow-casting objects.
 
     - {Ashton::ParticleEmitter} - Generates, manages and displays particles.
 
@@ -52,7 +52,7 @@ Requirements
 
 * OSX/Linux: Requires OpenGL library be installed.
 
-* {Ashton::Shader} and {Ashton::LightSource} or anything else using shaders, require OpenGL 2.0.
+* {Ashton::Shader} and {Ashton::Lighting} or anything else using shaders, require OpenGL 2.0.
 
 Similar Libraries
 -----------------
@@ -86,7 +86,7 @@ Third party
 
 - Lighting based on, but much optimised from, Catalin Zima's shader based dynamic shadows system.
   * http://www.catalinzima.com/2010/07/my-technique-for-the-shader-based-dynamic-2d-shadows/
-  * {Ashton::LightSource} and {Aston::LightingManager} classes.
+  * {Ashton::Lighting::LightSource} and {Ashton::Lighting::Manager} classes.
   * shadow_blur.frag
   * shadow_distory.frag
   * shadow_draw_shadows.frag

@@ -5,7 +5,9 @@ module Ashton
   class ImageStub
 
     # @return [Integer]
-    attr_reader :rows, :columns
+    attr_reader :rows
+    # @return [Integer]
+    attr_reader :columns
 
     # The first pixel in the blob will be at the top left hand corner of the created image, since that is the orientation
     # of Gosu images.

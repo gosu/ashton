@@ -8,7 +8,7 @@ module Ashton
     # When drawing into the SDF, drawing should ONLY have alpha of 0 (clear) or 255 (solid)
     #
     # @param width [Integer]
-    # @params height [Integer]
+    # @param height [Integer]
     # @param max_distance [Integer] Maximum distance to measure.
     # @option options :step_size [Integer] (1) pixels to step out.
     # @option options :scale [Integer] (1) Scale relative to the image.
