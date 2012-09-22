@@ -71,15 +71,15 @@ module Lighting
         end
 
         # Use each shader on every light, to save setting and un-setting shaders (a bit faster, depending on number of light sources).
-        LightSource.distort_shader.use do
+        LightSource.distort_shader.enable do
           @lights.each {|light| light.send :distort }
         end
 
-        LightSource.draw_shadows_shader.use do
+        LightSource.draw_shadows_shader.enable do
           @lights.each {|light| light.send :draw_shadows }
         end
 
-        LightSource.blur_shader.use do
+        LightSource.blur_shader.enable do
           @lights.each {|light| light.send :blur }
         end
       end

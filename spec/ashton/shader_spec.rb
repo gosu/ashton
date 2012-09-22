@@ -52,51 +52,48 @@ describe Ashton::Shader do
     end
   end
 
-  describe "use" do
-    it "should fail if the shader is already active" do
-      glUseProgram program
-
-      ->{ subject.use {} }.should raise_error Ashton::ShaderError
-    end
-
-    it "should fail without a block" do
-      ->{ subject.use }.should raise_error ArgumentError
-    end
-
-    it "should pass itself into the block" do
-      shader = nil
-      subject.use do |s|
-        shader = s
-      end
-
-      shader.should eq subject
-    end
-
-    it "should be current within the block?" do
-      subject.use do
-        subject.should be_current
-      end
-    end
-
-    it "should be not current after the block" do
-      subject.use do
-      end
-
-      subject.should_not be_current
-    end
-  end
-
   describe "enable" do
-    it "should fail if the shader is already active" do
-      glUseProgram program
+    context "with a block" do
+      it "should fail if the shader is already active" do
+        glUseProgram program
 
-      ->{ subject.enable }.should raise_error Ashton::ShaderError
+        ->{ subject.enable {} }.should raise_error Ashton::ShaderError
+      end
+
+      it "should pass itself into the block" do
+        shader = nil
+        subject.enable do |s|
+          shader = s
+        end
+
+        shader.should eq subject
+      end
+
+      it "should be current within the block?" do
+        subject.enable do
+          subject.should be_current
+        end
+      end
+
+      it "should be not current after the block" do
+        subject.enable do
+        end
+
+        subject.should_not be_current
+      end
     end
 
-    it "should toggle current?" do
-      ->{ subject.enable }.should change(subject, :current?).from(false).to true
-    end
+    context "without a block" do
+      it "should fail if the shader is already active" do
+        glUseProgram program
 
+        ->{ subject.enable }.should raise_error Ashton::ShaderError
+      end
+
+      it "should toggle current?" do
+        ->{ subject.enable }.should change(subject, :current?).from(false).to true
+      end
+    end
   end
 
   describe "disable" do

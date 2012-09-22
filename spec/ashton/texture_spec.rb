@@ -202,10 +202,18 @@ describe Ashton::Texture do
 
   describe "render" do
     it "should fail without a block" do
-      ->{ subject.render }.should raise_error ArgumentError
+      ->{ subject.render }.should raise_error ArgumentError, /block required/i
     end
 
-    it "should passing itself into the block" do
+    it "should fail if nested" do
+      ->{
+        subject.render do
+          subject.render {}
+        end
+      }.should raise_error Ashton::Error, /nest rendering/i
+    end
+
+    it "should pass itself into the block" do
       buffer = nil
       subject.render do |fb|
         buffer = fb
@@ -214,16 +222,12 @@ describe Ashton::Texture do
       buffer.should eq subject
     end
 
-    it "should bind the rendering during the block" do
-      pending
-    end
-
-    it "should reset to rendering to the window after the block" do
-      pending
-    end
-
-    it "should fail without a block" do
-      lambda { subject.render }.should raise_error ArgumentError
+    it "should be rendering in the block, but not rendering before and after it" do
+      subject.should_not be_rendering
+      subject.render do
+        subject.should be_rendering
+      end
+      subject.should_not be_rendering
     end
   end
 

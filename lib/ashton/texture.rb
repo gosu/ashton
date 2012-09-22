@@ -89,47 +89,33 @@ module Ashton
     public
     # Enable the texture to use (e.g. to draw or convert it).
     def render
-      raise ArgumentError, "block required (use #enable/#disable without blocks)" unless block_given?
-
-      enable
-      begin
-        result = yield self
-      ensure
-        disable
-      end
-
-      result
-    end
-
-    public
-    def enable
-      raise AshtonError if rendering?
+      raise ArgumentError, "Block required" unless block_given?
+      raise Error, "Can't nest rendering" if rendering?
 
       $window.flush # Ensure that any drawing _before_ the render block is drawn to screen, rather than into the buffer.
 
       enable_
 
       @rendering = true
-    end
 
-    public
-    def disable
-      raise AshtonError unless rendering?
+      begin
+        yield self
+      ensure
+        $window.flush # Force all the drawing to draw now!
+        glBindFramebufferEXT GL_FRAMEBUFFER_EXT, 0
 
-      $window.flush # Force all the drawing to draw now!
-      glBindFramebufferEXT GL_FRAMEBUFFER_EXT, 0
+        # Back to Gosu projection.
+        glMatrixMode GL_PROJECTION
+        glLoadIdentity
+        glViewport 0, 0, $window.width, $window.height
+        glOrtho 0, $window.width, $window.height, 0, -1, 1
 
-      # Back to Gosu projection.
-      glMatrixMode GL_PROJECTION
-      glLoadIdentity
-      glViewport 0, 0, $window.width, $window.height
-      glOrtho 0, $window.width, $window.height, 0, -1, 1
+        @rendering = false
 
-      @rendering = false
+        cache.refresh # Force lazy reloading of the cache.
+      end
 
-      cache.refresh # Force lazy reloading of the cache.
-
-      nil
+      self
     end
 
     # @!method draw(x, y, z, options = {})

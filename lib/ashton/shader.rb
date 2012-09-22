@@ -62,7 +62,7 @@ module Ashton
         # Might fail on an old system, but they will be fine just running GLSL 1.10 or 1.20
       end
 
-      use do
+      enable do
         # GL_TEXTURE0 will be activated later. This is the main image texture.
         set_uniform uniform_location("in_Texture", required: false), 0
 
@@ -97,23 +97,7 @@ module Ashton
     end
 
     public
-    # Make this the current shader program.
-    def use(z = nil)
-      raise ArgumentError, "Block required (use #enable/#disable without blocks)" unless block_given?
-
-      enable z
-
-      result = nil
-      begin
-        result = yield self
-      ensure
-        disable z
-      end
-
-      result
-    end
-
-    # Enable the shader program. Use #use for block version.
+    # Make this the current shader program. Use with a block or, alternatively, use #enable and #disable separately.
     def enable(z = nil)
       $window.gl z do
         raise ShaderError, "This shader already enabled." if enabled?
@@ -124,10 +108,20 @@ module Ashton
         glUseProgram @program
       end
 
-      nil
+      result = nil
+
+      if block_given?
+        begin
+          result = yield self
+        ensure
+          disable z
+        end
+      end
+
+      result
     end
 
-    # Disable the shader program.
+    # Disable the shader program. Only required if using #enable without a block.
     def disable(z = nil)
       $window.gl z do
         raise ShaderError, "Shader not enabled." unless enabled?

@@ -39,13 +39,13 @@ module Lighting
       render_shadow_casters &block
 
       # Distort the shadow casters and reduce into a a 2-pixel wide shadow-map of the blockages.
-      LightSource.distort_shader.use { distort }
+      LightSource.distort_shader.enable { distort }
 
       # Render the shadows themselves, before blurring.
-      LightLightSource.draw_shadows_shader.use { draw_shadows }
+      LightLightSource.draw_shadows_shader.enable { draw_shadows }
 
       # Finally blur it up and apply the radial lighting.
-      LightSource.blur_shader.use { blur }
+      LightSource.blur_shader.enable { blur }
 
       nil
     end

@@ -115,7 +115,7 @@ module Ashton
         end
       end
 
-      @shader.use do
+      @shader.enable do
         @field.render do
           @mask.draw 0, 0, 0
         end
