@@ -68,12 +68,12 @@ Third party
 - Various trivial shaders - "randomly found on the Internet" :$
 
 - (Classic and Simplex noise functions)[https://github.com/ashima/webgl-noise/] - Copyright (C) 2011 Ashima Arts - MIT license.
-  * classicnoise2D.glsl - 2D Classic Perlin noise implementation - `cnoise(vec2)`
-  * classicnoise3D.glsl - 3D Classic Perlin noise implementation - `cnoise(vec3)`
-  * classicnoise4D.glsl - 4D Classic Perlin noise implementation - `cnoise(vec4)`
-  * noise2D.glsl - 2D Simplex noise implementation - `snoise(vec2)`
-  * noise3D.glsl - 3D Simplex noise implementation - `snoise(vec3)`
-  * noise4D.glsl - 4D Simplex noise implementation - `snoise(vec4)`
+  * classicnoise2d.glsl - 2D Classic Perlin noise implementation - `cnoise(vec2)`
+  * classicnoise3d.glsl - 3D Classic Perlin noise implementation - `cnoise(vec3)`
+  * classicnoise4d.glsl - 4D Classic Perlin noise implementation - `cnoise(vec4)`
+  * noise2d.glsl - 2D Simplex noise implementation - `snoise(vec2)`
+  * noise3d.glsl - 3D Simplex noise implementation - `snoise(vec3)`
+  * noise4d.glsl - 4D Simplex noise implementation - `snoise(vec4)`
 
 - [Bloom filter by myheroics](http://myheroics.wordpress.com/2008/09/04/glsl-bloom-shader/)
   * bloom.frag
