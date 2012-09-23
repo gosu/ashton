@@ -23,10 +23,10 @@ module Lighting
       @x, @y, @z, @radius = x, y, z, radius.to_i
       @color = options[:color] || Gosu::Color::WHITE
 
-      @shadow_casters_fb = Ashton::Texture.new width, height
-      @shadow_map_fb = Ashton::Texture.new 2, height
-      @shadows_fb = Ashton::Texture.new width, height
-      @blurred_fb = Ashton::Texture.new width, height
+      @shadow_casters = Ashton::Texture.new width, height
+      @shadow_map = Ashton::Texture.new 2, height
+      @shadows = Ashton::Texture.new width, height
+      @blurred = Ashton::Texture.new width, height
 
       load_shaders
     end
@@ -54,7 +54,7 @@ module Lighting
     def render_shadow_casters
       raise "block required" unless block_given?
       # Get a copy of the shadow-casting objects in out light-zone.
-      @shadow_casters_fb.render do |buffer|
+      @shadow_casters.render do |buffer|
         buffer.clear
         $window.translate @radius - @x, @radius - @y do
           yield
@@ -65,9 +65,9 @@ module Lighting
     protected
     def distort
       LightSource.distort_shader.texture_width = width
-      @shadow_map_fb.render do
+      @shadow_map.render do
         $window.scale 1.0 / radius, 1 do
-          @shadow_casters_fb.draw 0, 0, 0
+          @shadow_casters.draw 0, 0, 0
         end
       end
     end
@@ -75,11 +75,11 @@ module Lighting
     protected
     def draw_shadows
       LightSource.draw_shadows_shader.texture_width = width
-      @shadows_fb.render do
+      @shadows.render do
         # Not actually drawing anything from the shadow map buffer.
         # It is just a data input to what will be drawn.
         $window.scale radius, 1 do
-          @shadow_map_fb.draw 0, 0, 0
+          @shadow_map.draw 0, 0, 0
         end
       end
     end
@@ -87,8 +87,8 @@ module Lighting
     protected
     def blur
       LightSource.blur_shader.texture_width = width
-      @blurred_fb.render do
-        @shadows_fb.draw 0, 0, 0
+      @blurred.render do
+        @shadows.draw 0, 0, 0
       end
     end
 
@@ -99,8 +99,8 @@ module Lighting
           color: @color,
       }.merge! options
 
-      @blurred_fb.draw @x - @radius, @y - @radius, @z, options
-      @shadow_casters_fb.draw @x - @radius, @y - @radius, @z, options
+      @blurred.draw @x - @radius, @y - @radius, @z, options
+      @shadow_casters.draw @x - @radius, @y - @radius, @z, options
       nil
     end
 
@@ -136,10 +136,10 @@ module Lighting
     # Used for debugging purposes only.
     def save_buffers
       # Only save once. for purposes of this example only.
-      @shadow_casters_fb.to_image.save "output/shadow_casters_#{x}_#{y}.png"
-      @shadow_map_fb.to_image.save "output/shadow_map_#{x}_#{y}.png"
-      @shadows_fb.to_image.save "output/shadows_#{x}_#{y}.png"
-      @blurred_fb.to_image.save "output/blurred_#{x}_#{y}.png"
+      @shadow_casters.to_image.save "output/shadow_casters_#{x}_#{y}.png"
+      @shadow_map.to_image.save "output/shadow_map_#{x}_#{y}.png"
+      @shadows.to_image.save "output/shadows_#{x}_#{y}.png"
+      @blurred.to_image.save "output/blurred_#{x}_#{y}.png"
     end
   end
 end
