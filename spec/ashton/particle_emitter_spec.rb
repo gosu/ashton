@@ -1,5 +1,4 @@
-
-require File.expand_path("../../helper.rb", __FILE__)
+require_relative "../helper.rb"
 
 # Values and their defaults. The deviations default to 0.
 FLOATS_WITH_RANGE = {

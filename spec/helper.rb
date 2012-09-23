@@ -1,5 +1,4 @@
-$LOAD_PATH.unshift File.expand_path("../../lib", __FILE__)
-require "ashton"
+require_relative "../lib/ashton"
 
 require "rspec"
 require 'rspec/autorun'

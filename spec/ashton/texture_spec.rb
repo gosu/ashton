@@ -1,5 +1,4 @@
-
-require File.expand_path("../../helper.rb", __FILE__)
+require_relative "../helper.rb"
 
 describe Ashton::Texture do
   before :each do
@@ -301,6 +300,14 @@ describe Ashton::Texture do
 
     it "should fail with a bad multitexture option" do
       ->{ subject.draw 1, 2, 3, multitexture: :fish }.should raise_error(TypeError, /Expected :multitexture option of type Ashton::Texture/)
+    end
+
+    it "should draw with pixelated on" do
+      subject.draw 1, 2, 3, pixelated: true
+    end
+
+    it "should draw with pixelated off" do
+      subject.draw 1, 2, 3, pixelated: false
     end
   end
 

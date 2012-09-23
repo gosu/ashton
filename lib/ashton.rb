@@ -21,21 +21,18 @@ module Ashton
   class ShaderLoadError < ShaderError; end
 end
 
-require "ashton/gosu_ext/window"
-require "ashton/gosu_ext/font"
-require "ashton/gosu_ext/image"
-require "ashton/gosu_ext/color"
+require_relative "ashton/gosu_ext/gosu_module"
 
-require "ashton/mixins/version_checking"
+require_relative "ashton/mixins/version_checking"
 
-require "ashton/version"
-require "ashton/shader"
-require "ashton/signed_distance_field"
-require "ashton/texture"
-require "ashton/window_buffer"
-require "ashton/image_stub"
-require "ashton/particle_emitter"
-require "ashton/pixel_cache"
+require_relative "ashton/version"
+require_relative "ashton/shader"
+require_relative "ashton/signed_distance_field"
+require_relative "ashton/texture"
+require_relative "ashton/window_buffer"
+require_relative "ashton/image_stub"
+require_relative "ashton/particle_emitter"
+require_relative "ashton/pixel_cache"
 
-require "ashton/lighting/light_source"
-require "ashton/lighting/manager"
+require_relative "ashton/lighting/light_source"
+require_relative "ashton/lighting/manager"

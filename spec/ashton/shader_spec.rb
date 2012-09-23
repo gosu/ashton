@@ -1,5 +1,4 @@
-
-require File.expand_path("../../helper.rb", __FILE__)
+require_relative "../helper.rb"
 
 describe Ashton::Shader do
   before :all do

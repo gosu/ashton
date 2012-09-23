@@ -1,5 +1,5 @@
 
-require File.expand_path("../../helper.rb", __FILE__)
+require_relative "../helper.rb"
 
 describe Ashton do
   let(:accuracy) { 0.000001 }
