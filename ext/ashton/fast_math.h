@@ -14,7 +14,7 @@
 #define NUM_LOOKUP_VALUES (360 * LOOKUPS_PER_DEGREE)
 #define LOOKUP_PRECISION (1.0f / LOOKUPS_PER_DEGREE)
 
-float sin_lookup[NUM_LOOKUP_VALUES];
+extern float sin_lookup[NUM_LOOKUP_VALUES];
 
 void initialize_fast_math();
 

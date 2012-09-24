@@ -1,5 +1,7 @@
 #include "fast_math.h"
 
+float sin_lookup[NUM_LOOKUP_VALUES];
+
 //
 void initialize_fast_math()
 {

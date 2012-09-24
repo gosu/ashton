@@ -101,8 +101,8 @@ VALUE Ashton_Texture_init(VALUE self, VALUE width, VALUE height, VALUE blob)
 
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    // MAG_FILTER set on each draw
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
     // Create the texture, either undefined or based on RGBA blob data string.
     char* data;
@@ -268,7 +268,6 @@ static VALUE draw_block(VALUE yield_value, VALUE parameters, int argc, VALUE arg
     VALUE color = rb_ary_entry(parameters, 4);
     VALUE shader = rb_ary_entry(parameters, 5);
     VALUE multitexture = rb_ary_entry(parameters, 6);
-    VALUE pixelated = rb_ary_entry(parameters, 7);
 
     TEXTURE(); // Uses 'self' value, so can't be at start of function.
 
@@ -288,10 +287,6 @@ static VALUE draw_block(VALUE yield_value, VALUE parameters, int argc, VALUE arg
     glEnable(GL_BLEND);
     glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, texture->id);
-
-    // Pixelate or smooth, depending on preference.
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
-        RTEST(pixelated) ? GL_NEAREST : GL_LINEAR);
 
     // Set blending mode.
     // Don't need an 'else' clause, since we checked before.
@@ -355,7 +350,7 @@ VALUE Ashton_Texture_draw(int argc, VALUE argv[], VALUE self)
     TEXTURE();
 
     VALUE x, y, z, options;
-    VALUE shader, blend_mode, color, multitexture, pixelated;
+    VALUE shader, blend_mode, color, multitexture;
 
     if(rb_scan_args(argc, argv, "31", &x, &y, &z, &options) == 4)
     {
@@ -366,7 +361,7 @@ VALUE Ashton_Texture_draw(int argc, VALUE argv[], VALUE self)
             rb_raise(rb_eTypeError, "Expected :shader option of type Ashton::Shader");
         }
 
-        // Get draw :mode
+        // Get :blend mode
         blend_mode = rb_hash_aref(options, SYMBOL("mode"));
         if(NIL_P(blend_mode))
         {
@@ -403,20 +398,12 @@ VALUE Ashton_Texture_draw(int argc, VALUE argv[], VALUE self)
         {
             rb_raise(rb_eTypeError, "Expected :multitexture option of type Ashton::Texture");
         }
-
-        // Get :pixelated
-        pixelated = rb_hash_aref(options, SYMBOL("pixelated"));
-        if(NIL_P(pixelated))
-        {
-            pixelated = rb_funcall(rb_cTexture, rb_intern("pixelated?"), 0);
-        }
     }
     else
     {
        shader = multitexture = Qnil;
-       blend_mode = SYMBOL(DRAW_MODE_ALPHA_BLEND);
+       blend_mode = SYMBOL("alpha");
        color = UINT2NUM(0xffffffff);
-       pixelated = rb_funcall(rb_cTexture, rb_intern("pixelated?"), 0);
     }
 
     // Enable the shader, if provided.
@@ -436,7 +423,6 @@ VALUE Ashton_Texture_draw(int argc, VALUE argv[], VALUE self)
     rb_ary_push(parameters, color);
     rb_ary_push(parameters, shader);
     rb_ary_push(parameters, multitexture);
-    rb_ary_push(parameters, pixelated);
 
     rb_block_call(window, rb_intern("gl"), 1, block_argv,
                   RUBY_METHOD_FUNC(draw_block), parameters);

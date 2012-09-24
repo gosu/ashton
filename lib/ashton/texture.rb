@@ -5,35 +5,11 @@ module Ashton
     DEFAULT_DRAW_COLOR = Gosu::Color::WHITE
     VALID_DRAW_MODES = [:alpha_blend, :add, :multiply, :replace]
 
-    class << self
-      # [Boolean] Whether or not to pixelate (rather than smooth) on #draw
-      attr_writer :pixelated
-      # [Boolean] Whether or not to pixelate (rather than smooth) on #draw. Set true when Gosu::enable_undocumented_retrofication called.
-      def pixelated?; @pixelated end
-    end
-    self.pixelated = false
-
-    # [Boolean] Is this texture being rendered to currently?
     def rendering?; @rendering end
 
     # @overload initialize(image)
-    #   Create a texture from a Gosu::Image
-    #
-    #   @see Image#to_texture
-    #   @param image [Gosu::Image]
-    #
     # @overload initialize(blob, width, height)
-    #   Create a texture from a binary blob.
-    #
-    #   @param blob [String]
-    #   @param width [Integer]
-    #   @param height [Integer]
-    #
     # @overload initialize(width, height)
-    #   Create a blank (transparent) texture.
-    #
-    #   @param width [Integer]
-    #   @param height [Integer]
     def initialize(*args)
       case args.size
         when 1
@@ -159,7 +135,6 @@ module Ashton
     #   @option options :color [Gosu::Color] (Gosu::Color::WHITE) Color to apply to the drawing.
     #   @option options :mode [Symbol] (:alpha_blend) :alpha_blend, :add, :multiply, :replace
     #   @option options :multitexture [Texture] A texture to be used in a multi-texturing shader.
-    #   @option options :pixelated [Boolean] (true if Gosu::enable_undocumented_retrofication ever called) Pixelate, rather than smooth, when zoomed out.
 
     public
     # Convert the current contents of the buffer into a Gosu::Image
