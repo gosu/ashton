@@ -57,7 +57,7 @@ VALUE Ashton_Texture_get_alpha(VALUE self, VALUE x, VALUE y);
 VALUE Ashton_Texture_is_transparent(VALUE self, VALUE x, VALUE y);
 VALUE Ashton_Texture_to_blob(VALUE self);
 VALUE Ashton_Texture_draw(int argc, VALUE argv[], VALUE self);
-VALUE Ashton_Texture_enable(VALUE self);
+VALUE Ashton_Texture_render(VALUE self);
 
 #endif // ASHTON_FRAMEBUFFER_H
 
