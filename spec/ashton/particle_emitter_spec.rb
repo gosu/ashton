@@ -17,10 +17,12 @@ FLOATS_WITH_RANGE = {
 describe Ashton::ParticleEmitter do
   before :all do
     $window ||= Gosu::Window.new 16, 16, false
+    # Need not to create a large number of these.
+    @emitter = described_class.new 1, 2, 3
   end
 
   let(:default_max) { 1000 }
-  let(:subject) { described_class.new 1, 2, 3 }
+  let(:subject) { @emitter }
 
   describe "initialize" do
     [:x, :y, :z].each.with_index(1) do |attr, value|
