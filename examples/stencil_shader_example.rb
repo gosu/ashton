@@ -14,7 +14,7 @@ def output_path(file); File.expand_path "output/#{file}", File.dirname(__FILE__)
 class GameWindow < Gosu::Window
   def initialize
     super 640, 480, false
-    self.caption = "Stencil shader - <space> new stencil layout"
+    self.caption = "Stencil shader - <space> new stencil layout <I> to invert stencilling effect"
 
     setup_example_objects
 
@@ -29,6 +29,7 @@ class GameWindow < Gosu::Window
     place_stencils
 
     @shader = Ashton::Shader.new vertex: :multitexture2, fragment: :stencil
+    @inverted = false
   end
 
   def draw
@@ -47,9 +48,11 @@ class GameWindow < Gosu::Window
     # Draw the primary buffer with our shader and give it our stencil to work with.
     primary_buffer.draw 0, 0, 0, shader: @shader, multitexture: @stencil_texture
 
+	@font.draw "Stencil effect #{"(INVERTED)" if @inverted}", 0, 0, 0
+
     # Show the stencil texture drawn directly on the screen, for comparison.
     @stencil_texture.draw 320, 0, 0, mode: :replace
-    @font.draw "Stencil texture", 450, 0, 0
+    @font.draw "Stencil texture (black is transparent)", 320, 0, 0
   end
 
   # Clear the stencil texture and draw new stencils on top of it
@@ -76,6 +79,10 @@ class GameWindow < Gosu::Window
 
       when Gosu::KbSpace
         place_stencils
+
+      when Gosu::KbI
+        @inverted = !@inverted
+        @shader.inverted = @inverted
     end
   end
 
