@@ -12,7 +12,7 @@ void initialize_fast_math()
     }
 
     // Ensure the cardinal directions are 100% accurate.
-    for (int i = 0; i <= 360; i += 90)
+    for (int i = 0; i <= 270; i += 90)
     {
         sin_lookup[i * LOOKUPS_PER_DEGREE] = sin(DEGREES_TO_RADIANS(i));
     }
@@ -25,6 +25,6 @@ float fast_sin_deg(float degrees)
     if(degrees < 0.0f) degrees += 360.0f;
 
     int index = (int)(degrees * LOOKUPS_PER_DEGREE);
-    
+
     return sin_lookup[index % NUM_LOOKUP_VALUES];
 }
