@@ -8,3 +8,4 @@
 /junk
 *.so
 *.o
+.fuse*

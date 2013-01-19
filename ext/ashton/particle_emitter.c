@@ -476,46 +476,38 @@ static void update_vbo(ParticleEmitter* emitter)
     // Ensure that drawing order is correct by drawing in order of creation...
 
     // First, we draw all those from after the current, going up to the last one.
-    uint num_particles_written;
-    if(emitter->next_particle_index != emitter->max_particles - 1) 
+    Particle* first = &emitter->particles[emitter->next_particle_index];
+    Particle* last = &emitter->particles[emitter->max_particles - 1];
+    if(color_changes(emitter))
     {
-        Particle* first = &emitter->particles[emitter->next_particle_index];
-        Particle* last = &emitter->particles[emitter->max_particles - 1];
-        if(color_changes(emitter))
-        {
-            write_colors_for_particles(emitter->color_array,
-                                       first, last);
-        }
-        if(texture_changes(emitter))
-        {
-            write_texture_coords_for_particles(emitter->texture_coords_array,
-                                               first, last,
-                                               &emitter->texture_info);
-        }
-        num_particles_written = write_vertices_for_particles(emitter->vertex_array,
-                                                                  first, last,
-                                                                  emitter->width, emitter->height);
+        write_colors_for_particles(emitter->color_array,
+                                   first, last);
     }
-    else
+    if(texture_changes(emitter))
     {
-        num_particles_written = 0;
+        write_texture_coords_for_particles(emitter->texture_coords_array,
+                                           first, last,
+                                           &emitter->texture_info);
     }
+    uint num_particles_written = write_vertices_for_particles(emitter->vertex_array,
+                                                              first, last,
+                                                              emitter->width, emitter->height);
 
     // When we copy the second half of the particles, we want to start writing further on.
     uint offset = num_particles_written * VERTICES_IN_PARTICLE;
 
     // Then go from the first to the current.
-    if (emitter->next_particle_index > 0)
+    if(emitter->next_particle_index > 0)
     {
         Particle* first = &emitter->particles[0];
         Particle* last = &emitter->particles[emitter->next_particle_index - 1];
-        if (color_changes(emitter))
+        if(color_changes(emitter))
         {
             write_colors_for_particles(&emitter->color_array[offset],
                                        first, last);
         }
 
-        if (texture_changes(emitter))
+        if(texture_changes(emitter))
         {
             write_texture_coords_for_particles(&emitter->texture_coords_array[offset],
                                                first, last,
