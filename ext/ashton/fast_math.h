@@ -19,19 +19,9 @@ extern float sin_lookup[NUM_LOOKUP_VALUES];
 void initialize_fast_math();
 
 // sin implementation using lookup table, accepting degrees rather than radians.
-inline float fast_sin_deg(float degrees)
-{
-    // Normalize to 0..360 (i.e. 0..2PI)
-    degrees = fmod(degrees, 360.0f);
-    if(degrees < 0) degrees += 360.0f;
-
-    return sin_lookup[(int)(degrees * LOOKUPS_PER_DEGREE)];
-}
+float fast_sin_deg(float degrees);
 
 // cos implementation using lookup table, accepting degrees rather than radians.
-inline float fast_cos_deg(float degrees)
-{
-    return fast_sin_deg(degrees + 90.0f);
-}
+#define fast_cos_deg(degrees) fast_sin_deg((degrees) + 90.0f)
 
 #endif // FAST_MATH_H
