@@ -13,7 +13,7 @@
 #define LOOKUPS_PER_DEGREE 10
 
 // Enough for values from 0..360 inclusive
-#define NUM_LOOKUP_VALUES ((360 + 1) * LOOKUPS_PER_DEGREE)
+#define NUM_LOOKUP_VALUES (360 * LOOKUPS_PER_DEGREE)
 
 #define LOOKUP_PRECISION (1.0f / LOOKUPS_PER_DEGREE)
 
