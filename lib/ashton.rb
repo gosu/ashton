@@ -3,9 +3,9 @@ require 'gosu'
 
 begin
   RUBY_VERSION =~ /(\d+.\d+)/
-  require "ashton/#{$1}/ashton.so"
+  require "ashton/#{$1}/ashton.#{RbConfig::CONFIG['DLEXT']}"
 rescue LoadError
-  require "ashton/ashton.so"
+  require "ashton/ashton.#{RbConfig::CONFIG['DLEXT']}"
 end
 
 module Ashton
