@@ -346,7 +346,7 @@ static VALUE draw_block(VALUE yield_value, VALUE parameters, int argc, VALUE arg
 // ----------------------------------------
 VALUE Ashton_Texture_draw(int argc, VALUE argv[], VALUE self)
 {
-    TEXTURE();
+    // TEXTURE(); // This isn't actually needed in this function.
 
     VALUE x, y, z, options;
     VALUE shader, blend_mode, color, multitexture, pixelated;
