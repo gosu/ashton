@@ -476,44 +476,56 @@ static void update_vbo(ParticleEmitter* emitter)
     // Ensure that drawing order is correct by drawing in order of creation...
 
     // First, we draw all those from after the current, going up to the last one.
-    Particle* first = &emitter->particles[emitter->next_particle_index];
-    Particle* last = &emitter->particles[emitter->max_particles - 1];
-    if(color_changes(emitter))
+    uint num_particles_written;
+    if(emitter->next_particle_index != emitter->max_particles - 1) 
     {
-        write_colors_for_particles(emitter->color_array,
-                                   first, last);
+        Particle* first = &emitter->particles[emitter->next_particle_index];
+        Particle* last = &emitter->particles[emitter->max_particles - 1];
+        if(color_changes(emitter))
+        {
+            write_colors_for_particles(emitter->color_array,
+                                       first, last);
+        }
+        if(texture_changes(emitter))
+        {
+            write_texture_coords_for_particles(emitter->texture_coords_array,
+                                               first, last,
+                                               &emitter->texture_info);
+        }
+        num_particles_written = write_vertices_for_particles(emitter->vertex_array,
+                                                                  first, last,
+                                                                  emitter->width, emitter->height);
     }
-    if(texture_changes(emitter))
+    else
     {
-        write_texture_coords_for_particles(emitter->texture_coords_array,
-                                           first, last,
-                                           &emitter->texture_info);
+        num_particles_written = 0;
     }
-    uint num_particles_written = write_vertices_for_particles(emitter->vertex_array,
-                                                              first, last,
-                                                              emitter->width, emitter->height);
+
     // When we copy the second half of the particles, we want to start writing further on.
     uint offset = num_particles_written * VERTICES_IN_PARTICLE;
 
     // Then go from the first to the current.
-    first = emitter->particles;
-    last = &emitter->particles[emitter->next_particle_index - 1];
-    if(color_changes(emitter))
+    if (emitter->next_particle_index > 0)
     {
-        write_colors_for_particles(&emitter->color_array[offset],
-                                   first, last);
-    }
+        Particle* first = &emitter->particles[0];
+        Particle* last = &emitter->particles[emitter->next_particle_index - 1];
+        if (color_changes(emitter))
+        {
+            write_colors_for_particles(&emitter->color_array[offset],
+                                       first, last);
+        }
 
-    if(texture_changes(emitter))
-    {
-        write_texture_coords_for_particles(&emitter->texture_coords_array[offset],
-                                           first, last,
-                                           &emitter->texture_info);
-    }
+        if (texture_changes(emitter))
+        {
+            write_texture_coords_for_particles(&emitter->texture_coords_array[offset],
+                                               first, last,
+                                               &emitter->texture_info);
+        }
 
-    write_vertices_for_particles(&emitter->vertex_array[offset],
-                                 first, last,
-                                 emitter->width, emitter->height);
+        write_vertices_for_particles(&emitter->vertex_array[offset],
+                                     first, last,
+                                     emitter->width, emitter->height);
+    }
 
     // Upload the data, but only as much as we are actually using.
     glBindBufferARB(GL_ARRAY_BUFFER_ARB, emitter->vbo_id);
@@ -738,8 +750,8 @@ static void update_particle(ParticleEmitter* emitter, Particle* particle,
 
     // Die if out of time, invisible or shrunk to nothing.
     if((particle->time_to_live <= 0) ||
-            (particle->color.alpha < 0) ||
-            (particle->scale < 0))
+            (particle->color.alpha <= 0) ||
+            (particle->scale <= 0))
     {
         particle->time_to_live = 0;
         emitter->count -= 1;

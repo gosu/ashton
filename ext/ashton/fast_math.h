@@ -11,7 +11,10 @@
 #define DEGREES_TO_RADIANS(ANGLE) ((ANGLE - 90) * (M_PI / 180.0f))
 
 #define LOOKUPS_PER_DEGREE 10
-#define NUM_LOOKUP_VALUES (360 * LOOKUPS_PER_DEGREE)
+
+// Enough for values from 0..360 inclusive
+#define NUM_LOOKUP_VALUES ((360 + 1) * LOOKUPS_PER_DEGREE)
+
 #define LOOKUP_PRECISION (1.0f / LOOKUPS_PER_DEGREE)
 
 extern float sin_lookup[NUM_LOOKUP_VALUES];
