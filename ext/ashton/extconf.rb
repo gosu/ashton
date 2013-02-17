@@ -34,9 +34,12 @@ $CFLAGS << " -std=gnu99"
 # Make it possible to use a debugger.
 #$CFLAGS << " -g -O0"
 
-# Stop getting annoying warnings for valid C99 code.
-$warnflags.gsub!('-Wdeclaration-after-statement', '') if $warnflags
-$warnflags << ' -Wall' # Let's be good boys and girls!
+if $warnflags
+  # Stop getting annoying warnings for valid C99 code.
+  $warnflags.gsub!('-Wdeclaration-after-statement', '') 
+  # Let's be good boys and girls!
+  $warnflags << ' -Wall' 
+end
 
 create_header
 create_makefile extension_name
