@@ -67,7 +67,7 @@ Third party
 
 - Various trivial shaders - "randomly found on the Internet" :$
 
-- (Classic and Simplex noise functions)[https://github.com/ashima/webgl-noise/] - Copyright (C) 2011 Ashima Arts - MIT license.
+- [Classic and Simplex noise functions](https://github.com/ashima/webgl-noise/) - Copyright (C) 2011 Ashima Arts - MIT license.
   * classicnoise2d.glsl - 2D Classic Perlin noise implementation - `cnoise(vec2)`
   * classicnoise3d.glsl - 3D Classic Perlin noise implementation - `cnoise(vec3)`
   * classicnoise4d.glsl - 4D Classic Perlin noise implementation - `cnoise(vec4)`
