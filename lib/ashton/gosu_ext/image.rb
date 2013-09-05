@@ -22,7 +22,7 @@ module Gosu
       end
 
       begin
-        draw_without_hash *args
+        draw_without_hash(*args)
       ensure
         shader.disable z if shader
       end
@@ -47,7 +47,7 @@ module Gosu
       end
 
       begin
-        draw_rot_without_hash *args
+        draw_rot_without_hash(*args)
       ensure
         shader.disable z if shader
       end

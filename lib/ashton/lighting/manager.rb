@@ -9,7 +9,7 @@ module Lighting
 
     attr_accessor :camera_x, :camera_y, :z
 
-    def each(&block); @lights.each &block end
+    def each(&block); @lights.each(&block) end
     def size; @lights.size end
     def empty?; @lights.empty? end
     def width; @shadows.width end
@@ -86,7 +86,7 @@ module Lighting
 
       @shadows.render do |buffer|
         buffer.clear
-        $window.translate -@camera_x, -@camera_y do
+        $window.translate(-@camera_x, -@camera_y) do
           @lights.each {|light| light.draw } unless empty?
         end
       end
