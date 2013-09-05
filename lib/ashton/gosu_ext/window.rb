@@ -25,16 +25,16 @@ module Gosu
     alias_method :ashton_initialize, :initialize
     def initialize(*args, &block)
       $window = self
-      ashton_initialize *args, &block
+      ashton_initialize(*args, &block)
     end
 
     alias_method :gl_not_liking_nil, :gl
     protected :gl_not_liking_nil
     def gl(z = nil, &block)
       if z
-        gl_not_liking_nil z, &block
+        gl_not_liking_nil(z, &block)
       else
-        gl_not_liking_nil &block
+        gl_not_liking_nil(&block)
       end
     end
 

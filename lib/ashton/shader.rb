@@ -19,7 +19,8 @@ module Ashton
     attr_reader :vertex_source, :fragment_source
 
     # Is the shader currently in use?
-    def enabled?; !!@previous_program end
+    def enabled?; defined?(@previous_program) ? @previous_program : false end
+    
     # Is this the currently activated shader program?
     def current?; glGetIntegerv(GL_CURRENT_PROGRAM) == @program end
 
@@ -368,11 +369,11 @@ module Ashton
     #
     # @return [String] Source code that has been expanded.
     def replace_include(source)
-      source.gsub! /^#include\s+<([^>]*)>/ do
+      source.gsub!(/^#include\s+<([^>]*)>/) do
         replace_include File.read(File.expand_path("#{$1}.glsl", INCLUDE_PATH))
       end
 
-      source.gsub /^#include\s+"([^"]*)"/ do
+      source.gsub(/^#include\s+"([^"]*)"/) do
         replace_include File.read($1)
       end
     end

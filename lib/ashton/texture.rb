@@ -101,7 +101,7 @@ module Ashton
       glBindFramebufferEXT GL_FRAMEBUFFER_EXT, fbo_id unless rendering?
 
       glDisable GL_BLEND # Need to replace the alpha too.
-      glClearColor *color
+      glClearColor(*color)
       glClear GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT
       glEnable GL_BLEND
 
@@ -171,7 +171,7 @@ module Ashton
     # @option options :tileable [Boolean] (false) Standard Gosu behaviour.
     # @option options :rect [Array<Integer>] ([0, 0, width, height]) Rectangular area of buffer to use to create the image [x, y, w, h]
     def to_image(*args)
-      cache.to_image *args
+      cache.to_image(*args)
     end
 
     def dup
