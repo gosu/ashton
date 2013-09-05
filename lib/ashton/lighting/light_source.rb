@@ -36,7 +36,7 @@ module Lighting
     def render_shadows(&block)
       raise "block required" unless block_given?
 
-      render_shadow_casters &block
+      render_shadow_casters(&block)
 
       # Distort the shadow casters and reduce into a a 2-pixel wide shadow-map of the blockages.
       LightSource.distort_shader.enable { distort }
@@ -110,7 +110,7 @@ module Lighting
       color = @color.dup
       color.alpha = 75
 
-      $window.translate -@radius, -@radius do
+      $window.translate(-@radius, -@radius) do
         $window.draw_line x, y, color, x + width, y, color, z
         $window.draw_line x + width, y, color, x + width, y + height, color, z
         $window.draw_line x + width, y + height, color, x, y + height, color, z
