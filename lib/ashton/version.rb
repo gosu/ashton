@@ -1,3 +1,3 @@
 module Ashton
-  VERSION = "0.0.4alpha"
+  VERSION = "0.1.0"
 end
