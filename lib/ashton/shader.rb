@@ -19,8 +19,8 @@ module Ashton
     attr_reader :vertex_source, :fragment_source
 
     # Is the shader currently in use?
-    def enabled?; defined?(@previous_program) ? @previous_program : false end
-    
+    def enabled?; !!@previous_program end
+
     # Is this the currently activated shader program?
     def current?; glGetIntegerv(GL_CURRENT_PROGRAM) == @program end
 
@@ -48,6 +48,7 @@ module Ashton
       @uniform_locations = {}
       @attribute_locations = {}
       @program = nil
+      @previous_program = nil
       @image = nil
       @color = [1, 1, 1, 1]
 
@@ -67,7 +68,7 @@ module Ashton
         # GL_TEXTURE0 will be activated later. This is the main image texture.
         set_uniform uniform_location("in_Texture", required: false), 0
 
-        # For multi-textured shaders, we use in_Texture<NUM> instead. 
+        # For multi-textured shaders, we use in_Texture<NUM> instead.
         set_uniform uniform_location("in_Texture0", required: false), 0
         set_uniform uniform_location("in_Texture1", required: false), 1
 
@@ -234,7 +235,7 @@ module Ashton
       options = {
           required: true
       }.merge! options
-      
+
       location = @uniform_locations[name]
       if location
         location
