@@ -201,7 +201,7 @@ module Ashton
           size = value.size
 
           raise ArgumentError, "Empty array not supported for uniform data" if size.zero?
-          raise ArgumentError, "Only support uniforms up to 4 elements" if size > 4
+          # raise ArgumentError, "Only support uniforms up to 4 elements" if size > 4
 
           case value[0]
             when Float
@@ -217,6 +217,9 @@ module Ashton
               rescue
                 GL.send "glUniform#{size}f", location, *value.map(&:to_f)
               end
+
+            when Gosu::Color
+              GL.send "glUniform4fv", location, value.map(&:to_opengl).flatten
 
             else
               raise ArgumentError, "Uniform data type not supported for element of type: #{value[0].class}"
