@@ -31,7 +31,7 @@ module Ashton
       @mask = Texture.new @field.width, @field.height
 
       if block_given?
-        render_field &block
+        render_field(&block)
       else
         @field.clear color: Gosu::Color.rgb(*([ZERO_DISTANCE + max_distance] * 3))
       end
