@@ -348,12 +348,12 @@ module Ashton
     def process_source(shader, extension)
       source = if shader.is_a? Symbol
                  file = File.expand_path "#{shader}#{extension}", BUILT_IN_SHADER_PATH
-                 unless File.exists? file
+                 unless File.exist? file
                    raise ShaderLoadError, "Failed to load built-in shader: #{shader.inspect}"
                  end
                  File.read file
 
-               elsif File.exists? shader
+               elsif File.exist? shader
                  File.read shader
                else
                  shader
