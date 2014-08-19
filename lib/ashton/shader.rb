@@ -22,7 +22,7 @@ module Ashton
     def enabled?; !!@previous_program end
 
     # Is this the currently activated shader program?
-    def current?; glGetIntegerv(GL_CURRENT_PROGRAM) == @program end
+    def current?; Gl.glGetIntegerv(Gl::GL_CURRENT_PROGRAM) == @program end
 
     # Instead of passing in source code, a file-name will be loaded or use a symbol to choose a built-in shader.
     #
@@ -53,13 +53,14 @@ module Ashton
       @color = [1, 1, 1, 1]
 
       # Actually compile and link.
-      @vertex = compile GL_VERTEX_SHADER, @vertex_source
-      @fragment = compile GL_FRAGMENT_SHADER, @fragment_source
+
+      @vertex = compile Gl::GL_VERTEX_SHADER, @vertex_source
+      @fragment = compile Gl::GL_FRAGMENT_SHADER, @fragment_source
       link
 
       # In case we are using '#version 130' or higher, set out own color output.
       begin
-        glBindFragDataLocationEXT @program, 0, "out_FragColor"
+        Gl.glBindFragDataLocationEXT @program, 0, "out_FragColor"
       rescue NotImplementedError
         # Might fail on an old system, but they will be fine just running GLSL 1.10 or 1.20
       end
@@ -103,11 +104,11 @@ module Ashton
     def enable(z = nil)
       $window.gl z do
         raise ShaderError, "This shader already enabled." if enabled?
-        current_shader = glGetIntegerv GL_CURRENT_PROGRAM
+        current_shader = Gl.glGetIntegerv GL::GL_CURRENT_PROGRAM
         raise ShaderError, "Another shader already enabled." if current_shader > 0
 
         @previous_program = current_shader
-        glUseProgram @program
+        Gl.glUseProgram @program
       end
 
       result = nil
@@ -127,7 +128,7 @@ module Ashton
     def disable(z = nil)
       $window.gl z do
         raise ShaderError, "Shader not enabled." unless enabled?
-        glUseProgram @previous_program # Disable the shader!
+        Gl.glUseProgram @previous_program # Disable the shader!
         @previous_program = nil
       end
 
@@ -175,28 +176,28 @@ module Ashton
       return if location == INVALID_LOCATION # Not for end-users :)
 
       case value
-        when true, GL_TRUE
-          glUniform1i location, 1
+        when true, Gl::GL_TRUE
+          Gl.glUniform1i location, 1
 
-        when false, GL_FALSE
-          glUniform1i location, 0
+        when false, Gl::GL_FALSE
+          Gl.glUniform1i location, 0
 
         when Float
           begin
-            glUniform1f location, value
+            Gl.glUniform1f location, value
           rescue
-            glUniform1i location, value.to_i
+            Gl.glUniform1i location, value.to_i
           end
 
         when Integer
           begin
-            glUniform1i location, value
+            Gl.glUniform1i location, value
           rescue
-            glUniform1f location, value.to_f
+            Gl.glUniform1f location, value.to_f
           end
 
         when Gosu::Color
-          glUniform4f location, *value.to_opengl
+          Gl.glUniform4f location, *value.to_opengl
 
         when Array
           size = value.size
@@ -207,16 +208,16 @@ module Ashton
           case value[0]
             when Float
               begin
-                GL.send "glUniform#{size}f", location, *value.map(&:to_f)
+                Gl.send "glUniform#{size}f", location, *value.map(&:to_f)
               rescue
-                GL.send "glUniform#{size}i", location, *value.map(&:to_i)
+                Gl.send "glUniform#{size}i", location, *value.map(&:to_i)
               end
 
             when Integer
               begin
-                GL.send "glUniform#{size}i", location, *value.map(&:to_i)
+                Gl.send "glUniform#{size}i", location, *value.map(&:to_i)
               rescue
-                GL.send "glUniform#{size}f", location, *value.map(&:to_f)
+                Gl.send "glUniform#{size}f", location, *value.map(&:to_f)
               end
 
             else
@@ -240,7 +241,7 @@ module Ashton
       if location
         location
       else
-        location = glGetUniformLocation @program, name.to_s
+        location = Gl.glGetUniformLocation @program, name.to_s
         if options[:required] && location == INVALID_LOCATION
           raise ShaderUniformError, "No #{name.inspect} uniform specified in program"
         end
@@ -255,8 +256,8 @@ module Ashton
       if image
         info = image.gl_tex_info
 
-        glActiveTexture GL_TEXTURE0
-        glBindTexture GL_TEXTURE_2D, info.tex_name
+        Gl.glActiveTexture Gl::GL_TEXTURE0
+        Gl.glBindTexture Gl::GL_TEXTURE_2D, info.tex_name
       end
 
       set_uniform uniform_location("in_TextureEnabled", required: false), !!image
@@ -279,8 +280,8 @@ module Ashton
 
       needs_use = !current?
       enable if needs_use
-      location = glGetAttribLocation @program, "in_Color"
-      glVertexAttrib4f location, *opengl_color unless location == INVALID_LOCATION
+      location = Gl.glGetAttribLocation @program, "in_Color"
+      Gl.glVertexAttrib4f location, *opengl_color unless location == INVALID_LOCATION
       disable if needs_use
 
       @color = opengl_color
@@ -292,7 +293,7 @@ module Ashton
       if location
         location
       else
-        location = glGetAttribLocation @program, name.to_s
+        location = Gl.glGetAttribLocation @program, name.to_s
         raise ShaderAttributeError, "No #{name} attribute specified in program" if location == INVALID_LOCATION
         @attribute_locations[name] = location
       end
@@ -300,15 +301,15 @@ module Ashton
 
     protected
     def compile(type, source)
-      shader = glCreateShader type
-      glShaderSource shader, source
-      glCompileShader shader
+      shader = Gl.glCreateShader type
+      Gl.glShaderSource shader, source
+      Gl.glCompileShader shader
 
-      unless glGetShaderiv shader, GL_COMPILE_STATUS
-        error = glGetShaderInfoLog shader
+      unless Gl.glGetShaderiv shader, Gl::GL_COMPILE_STATUS
+        error = Gl.glGetShaderInfoLog shader
         error_lines = error.scan(/0\((\d+)\)+/m).map {|num| num.first.to_i }.uniq
 
-        if type == GL_VERTEX_SHADER
+        if type == Gl::GL_VERTEX_SHADER
           type_name =  "Vertex"
           source = @vertex_source
         else
@@ -326,12 +327,12 @@ module Ashton
 
     protected
     def link
-      @program = glCreateProgram
-      glAttachShader @program, @vertex
-      glAttachShader @program, @fragment
-      glLinkProgram @program
+      @program = Gl.glCreateProgram
+      Gl.glAttachShader @program, @vertex
+      Gl.glAttachShader @program, @fragment
+      Gl.glLinkProgram @program
 
-      unless glGetProgramiv @program, GL_LINK_STATUS
+      unless Gl.glGetProgramiv @program, Gl::GL_LINK_STATUS
         raise ShaderLinkError, "Shader link error: #{glGetProgramInfoLog(@program)}"
       end
 

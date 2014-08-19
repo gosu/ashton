@@ -46,23 +46,23 @@ module Ashton
             # TODO: Ideally we'd draw the image in replacement mode, but Gosu doesn't support that.
             $window.gl do
               info = image.gl_tex_info
-              glEnable GL_TEXTURE_2D
-              glBindTexture GL_TEXTURE_2D, info.tex_name
-              glEnable GL_BLEND
-              glBlendFunc GL_ONE, GL_ZERO
+              Gl.glEnable Gl::GL_TEXTURE_2D
+              Gl.glBindTexture Gl::GL_TEXTURE_2D, info.tex_name
+              Gl.glEnable Gl::GL_BLEND
+              Gl.glBlendFunc Gl::GL_ONE, Gl::GL_ZERO
 
-              glBegin GL_QUADS do
-                glTexCoord2d info.left, info.top
-                glVertex2d 0, height # BL
+              Gl.glBegin Gl::GL_QUADS do
+                Gl.glTexCoord2d info.left, info.top
+                Gl.glVertex2d 0, height # BL
 
-                glTexCoord2d info.left, info.bottom
-                glVertex2d 0, 0 # TL
+                Gl.glTexCoord2d info.left, info.bottom
+                Gl.glVertex2d 0, 0 # TL
 
-                glTexCoord2d info.right, info.bottom
-                glVertex2d width, 0 # TR
+                Gl.glTexCoord2d info.right, info.bottom
+                Gl.glVertex2d width, 0 # TR
 
-                glTexCoord2d info.right, info.top
-                glVertex2d width, height # BR
+                Gl.glTexCoord2d info.right, info.top
+                Gl.glVertex2d width, height # BR
               end
             end
           end
@@ -98,14 +98,14 @@ module Ashton
       color = options[:color]
       color = color.to_opengl if color.is_a? Gosu::Color
 
-      glBindFramebufferEXT GL_FRAMEBUFFER_EXT, fbo_id unless rendering?
+      Gl.glBindFramebufferEXT Gl::GL_FRAMEBUFFER_EXT, fbo_id unless rendering?
 
-      glDisable GL_BLEND # Need to replace the alpha too.
-      glClearColor(*color)
-      glClear GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT
-      glEnable GL_BLEND
+      Gl.glDisable Gl::GL_BLEND # Need to replace the alpha too.
+      Gl.glClearColor(*color)
+      Gl.glClear Gl::GL_COLOR_BUFFER_BIT | Gl::GL_DEPTH_BUFFER_BIT
+      Gl.glEnable Gl::GL_BLEND
 
-      glBindFramebufferEXT GL_FRAMEBUFFER_EXT, 0 unless rendering?
+      Gl.glBindFramebufferEXT Gl::GL_FRAMEBUFFER_EXT, 0 unless rendering?
 
       nil
     end
@@ -123,21 +123,21 @@ module Ashton
       @rendering = true
 
       # Project onto the texture itself, using Gosu (inverted) coordinates.
-      glPushMatrix
-      glMatrixMode GL_PROJECTION
-      glLoadIdentity
-      glViewport 0, 0, width, height
-      glOrtho 0, width, height, 0, -1, 1
+      Gl.glPushMatrix
+      Gl.glMatrixMode Gl::GL_PROJECTION
+      Gl.glLoadIdentity
+      Gl.glViewport 0, 0, width, height
+      Gl.glOrtho 0, width, height, 0, -1, 1
 
       begin
         yield self
       ensure
         $window.flush # Force all the drawing to draw now!
-        glBindFramebufferEXT GL_FRAMEBUFFER_EXT, 0
+        Gl.glBindFramebufferEXT Gl::GL_FRAMEBUFFER_EXT, 0
 
         @rendering = false
 
-        glPopMatrix
+        Gl.glPopMatrix
 
         cache.refresh # Force lazy reloading of the cache.
       end

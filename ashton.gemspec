@@ -13,7 +13,7 @@ Gem::Specification.new do |s|
 
   s.email = %w<bil.bagpuss@gmail.com>
   s.files = Dir.glob %w<CHANGELOG LICENSE Rakefile README.md lib/**/*.* lib examples/**/*.* spec/**/*.* ext/**/*.{c,h,rb}>
-  
+
   s.extensions << 'ext/ashton/extconf.rb'
   s.homepage = 'https://github.com/spooner/ashton'
   s.licenses = %w<MIT>
@@ -22,8 +22,8 @@ Gem::Specification.new do |s|
   s.has_rdoc = 'yard'
   s.required_ruby_version = '>= 1.9.2'
 
-  s.add_dependency 'opengl', '~> 0.8.0.pre1'
-  s.add_dependency 'gosu', '~> 0.7.45'
+  s.add_dependency 'opengl', '~> 0.9.0'
+  s.add_dependency 'gosu', '~> 0.7'
 
   s.add_development_dependency 'rake-compiler', '~> 0.8.1'
   s.add_development_dependency 'rspec', '~> 2.10.0'
