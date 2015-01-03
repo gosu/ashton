@@ -757,8 +757,10 @@ GLEE_EXTERN GLboolean _GLEE_SGIX_texture_range;
 #endif
 
 #ifndef GL_ARB_vertex_buffer_object
-	typedef ptrdiff_t GLintptrARB;
-	typedef ptrdiff_t GLsizeiptrARB;
+	#if !__x86_64__
+		typedef ptrdiff_t GLintptrARB;
+		typedef ptrdiff_t GLsizeiptrARB;
+	#endif
 #endif
 
 #ifndef GL_ARB_shader_objects
