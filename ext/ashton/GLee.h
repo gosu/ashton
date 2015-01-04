@@ -756,9 +756,10 @@ GLEE_EXTERN GLboolean _GLEE_SGIX_texture_range;
 	typedef unsigned short GLhalfNV;
 #endif
 
+// Changed these from 'ptrdiff_t' to 'long', since 64 bit OSX expects that
 #ifndef GL_ARB_vertex_buffer_object
-	typedef ptrdiff_t GLintptrARB;
-	typedef ptrdiff_t GLsizeiptrARB;
+	typedef long GLintptrARB;
+	typedef long GLsizeiptrARB;
 #endif
 
 #ifndef GL_ARB_shader_objects
