@@ -32,5 +32,5 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'RedCloth', '~> 4.2.9'
   s.add_development_dependency 'redcarpet', '~> 2.1.1'
   s.add_development_dependency 'yard', '~> 0.9.11'
-  s.add_development_dependency 'texplay', '~> 0.4.3'
+  s.add_development_dependency 'texplay', '= 0.4.4.pre'
 end

@@ -16,7 +16,7 @@ with a particularly colourful imagination.
 Usage
 -----
 
-    gem install ashton --pre
+    gem install ashton
 
 Features
 --------
